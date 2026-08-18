@@ -60,52 +60,100 @@
     render(el.textContent);
   }
 
+  // Main lesson screen.
   bindBitmap(document.querySelector('.title'), 'petscii-title', '#6c69ff');
   bindBitmap(document.querySelector('.subtitle'), 'petscii-subtitle', '#f2f2e8');
   bindBitmap(document.getElementById('word'), 'petscii-word', '#f2f2e8');
   bindBitmap(document.getElementById('prompt'), 'petscii-prompt', '#f2f2e8');
   bindBitmap(document.getElementById('progress'), 'petscii-progress', '#aaa9ca');
 
-  // The original web CSS had two complete teacher images for walking frames.
-  // Copy the standing image directly onto the alternate frame rule so the
-  // head/face can never blink while app.js toggles frame-b.
-  try {
-    let standingContent = null;
-    let alternateRule = null;
-    for (const sheet of Array.from(document.styleSheets)) {
-      let rules;
-      try { rules = sheet.cssRules; } catch (_) { continue; }
-      for (const rule of Array.from(rules || [])) {
-        if (rule.selectorText === '.teacher > #teacherSprite') {
-          standingContent = rule.style.content;
-        } else if (rule.selectorText === '.teacher > #teacherSprite.frame-b') {
-          alternateRule = rule;
-        }
+  // Start screen: use the exact same ROM renderer instead of the web font.
+  bindBitmap(document.querySelector('.start-logo'), 'petscii-start-logo', '#6c69ff');
+  bindBitmap(document.querySelector('.start-panel p'), 'petscii-start-subtitle', '#f2f2e8');
+  bindBitmap(document.getElementById('startButton'), 'petscii-start-button', '#020202');
+  bindBitmap(document.querySelector('.start-panel small'), 'petscii-start-small', '#aaa9ca');
+
+  // Also make the small top controls genuine C64 bitmap text.
+  bindBitmap(document.getElementById('shuffleButton'), 'petscii-mini', '#c6c5dd');
+  bindBitmap(document.getElementById('muteButton'), 'petscii-mini', '#c6c5dd');
+
+  // ------------------------------------------------------------------
+  // Feet-only walking animation.
+  //
+  // styles.css contains two complete teacher frames. Swapping the whole
+  // image made her face blink. Capture both frames once, lock the original
+  // image to the standing frame, then create two clipped lower-body layers.
+  // app.js can keep toggling frame-b every 115ms; only the feet/lower dress
+  // now changes while the head and upper body remain completely stationary.
+  // ------------------------------------------------------------------
+  const teacherSprite = document.getElementById('teacherSprite');
+  if (teacherSprite && teacherSprite.parentElement) {
+    try {
+      teacherSprite.classList.remove('frame-b');
+      const standingContent = getComputedStyle(teacherSprite).content;
+      teacherSprite.classList.add('frame-b');
+      const walkingContent = getComputedStyle(teacherSprite).content;
+      teacherSprite.classList.remove('frame-b');
+
+      if (standingContent && standingContent !== 'none' && standingContent !== 'normal') {
+        teacherSprite.style.setProperty('content', standingContent, 'important');
+        teacherSprite.classList.add('upper-body-only');
+
+        const makeFeet = (className, content) => {
+          const img = document.createElement('img');
+          img.alt = '';
+          img.setAttribute('aria-hidden', 'true');
+          img.className = `teacher-feet ${className}`;
+          img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+          img.style.setProperty('content', content || standingContent, 'important');
+          return img;
+        };
+
+        const feetA = makeFeet('teacher-feet-a', standingContent);
+        const feetB = makeFeet('teacher-feet-b', walkingContent || standingContent);
+        const pointer = teacherSprite.parentElement.querySelector('.pointer');
+        teacherSprite.parentElement.insertBefore(feetA, pointer || null);
+        teacherSprite.parentElement.insertBefore(feetB, pointer || null);
       }
+    } catch (error) {
+      console.warn('Could not build feet-only walk frames.', error);
     }
-    if (standingContent && alternateRule) {
-      alternateRule.style.setProperty('content', standingContent, 'important');
-      alternateRule.style.setProperty('transform', 'translateY(1px)', 'important');
-    }
-  } catch (error) {
-    console.warn('Could not lock teacher walk frame.', error);
   }
 
-  // Some browsers were not reliably delivering the board's normal button
-  // click to app.js. Intercept real pointer clicks in capture phase and route
-  // them through the game's already-proven Space-key control path exactly once.
+  // ------------------------------------------------------------------
+  // Reliable chalkboard input.
+  //
+  // The normal button click has been inconsistent in Chrome on this page.
+  // Handle the physical pointer release in capture phase and route it to the
+  // game's already-working outer-screen click path. Then swallow the browser's
+  // follow-up click so a single tap cannot advance twice. Keyboard-generated
+  // button clicks are left alone for accessibility.
+  // ------------------------------------------------------------------
   const board = document.getElementById('board');
-  if (board) {
-    board.addEventListener('click', event => {
-      if (event.detail <= 0) return; // keyboard-generated click: let app.js handle it
+  const game = document.getElementById('game');
+  let lastBoardPointerAdvance = -Infinity;
+
+  if (board && game) {
+    board.addEventListener('pointerup', event => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      document.dispatchEvent(new KeyboardEvent('keydown', {
-        key: ' ',
-        code: 'Space',
+      lastBoardPointerAdvance = performance.now();
+
+      game.dispatchEvent(new MouseEvent('click', {
         bubbles: true,
         cancelable: true,
+        view: window,
+        detail: 1,
       }));
+    }, true);
+
+    board.addEventListener('click', event => {
+      if (performance.now() - lastBoardPointerAdvance < 700) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+      // Otherwise this is likely a keyboard-generated click; app.js handles it.
     }, true);
   }
 })();
