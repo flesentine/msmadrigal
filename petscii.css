@@ -7,9 +7,9 @@
 #prompt,
 .progress,
 .start-logo,
-.start-panel p,
+.start-subtitle,
 #startButton,
-.start-panel small,
+.start-hint,
 .mini-button {
   font-size: 0 !important;
   line-height: 0 !important;
@@ -28,8 +28,8 @@
 .title,
 .subtitle,
 .start-logo,
-.start-panel p,
-.start-panel small,
+.start-subtitle,
+.start-hint,
 #startButton,
 .mini-button {
   display: flex;
@@ -94,25 +94,64 @@
   height: 8px;
 }
 
-/* Start overlay now uses the exact same 8x8 C64 ROM renderer. */
+/* ------------------------------------------------------------------
+   Start screen.
+   PETSCII canvases do not create normal font line boxes, so every row gets
+   a real fixed layout slot. This prevents the title/button/hint collapsing
+   into each other at any viewport size.
+   ------------------------------------------------------------------ */
+.start-panel {
+  width: min(82%, 560px) !important;
+  min-height: 340px;
+  padding: 38px 34px !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.start-panel > * {
+  flex: 0 0 auto;
+  margin: 0 !important;
+}
+
+.start-logo {
+  width: 100%;
+  min-height: 24px;
+}
+
+.start-subtitle {
+  width: 100%;
+  min-height: 16px;
+}
+
+.start-hint {
+  width: 100%;
+  min-height: 12px;
+  color: #aaa9ca;
+}
+
+#startButton {
+  width: min(100%, 330px);
+  min-width: 0 !important;
+  min-height: 56px;
+  padding: 0 22px !important;
+  margin: 8px 0 !important;
+  flex: 0 0 56px;
+}
+
 .petscii-start-logo {
   height: 20px;
-  max-width: 90%;
+  max-width: 94%;
   object-fit: contain;
-  margin: 0 auto;
 }
 
 .petscii-start-subtitle {
   height: 12px;
-  max-width: 80%;
+  max-width: 88%;
   object-fit: contain;
-  margin: 0 auto;
-}
-
-#startButton {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
 }
 
 .petscii-start-button {
@@ -123,9 +162,8 @@
 
 .petscii-start-small {
   height: 8px;
-  max-width: 94%;
+  max-width: 96%;
   object-fit: contain;
-  margin: 0 auto;
 }
 
 .petscii-mini {
@@ -144,14 +182,15 @@
   pointer-events: none !important;
 }
 
-/*
-  Feet-only animation. The original teacher image is clipped above the lower
-  body and stays on the standing frame forever. Two lower-body layers are
-  clipped from the original two C64-style walk frames and alternate when
-  app.js toggles frame-b. Head, hair, face, arm, and torso never change.
-*/
-.teacher > #teacherSprite.upper-body-only {
+/* ------------------------------------------------------------------
+   Feet-only animation. The full standing frame supplies the upper body.
+   Two separate full-frame images are clipped to their lower 45% and swap
+   underneath it. The face/head/arm therefore never change while walking.
+   ------------------------------------------------------------------ */
+.teacher > #teacherSprite.upper-body-only,
+.teacher > #teacherSprite.upper-body-only.frame-b {
   clip-path: inset(0 0 45% 0);
+  content: normal !important;
   transform: none !important;
 }
 
@@ -169,7 +208,6 @@
 
 .teacher > .teacher-feet-b {
   display: none;
-  transform: translateY(2px);
 }
 
 .teacher > #teacherSprite.frame-b ~ .teacher-feet-a {
@@ -185,8 +223,17 @@
   .petscii-subtitle { height: 11px; }
   .petscii-word { height: 14px; max-width: 92%; }
   .petscii-prompt { height: 8px; max-width: 88vw; }
+
+  .start-panel {
+    width: min(88%, 560px) !important;
+    min-height: 290px;
+    padding: 28px 22px !important;
+    gap: 16px;
+  }
+
   .petscii-start-logo { height: 16px; }
   .petscii-start-subtitle { height: 10px; }
   .petscii-start-button { height: 9px; }
-  .petscii-start-small { height: 7px; max-width: 96%; }
+  .petscii-start-small { height: 7px; max-width: 98%; }
+  #startButton { min-height: 50px; flex-basis: 50px; }
 }
