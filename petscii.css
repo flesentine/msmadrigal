@@ -1,5 +1,5 @@
-/* Bitmap PETSCII overlay: keep the browser layout, but draw main game text
-   from actual 8x8 C64 character-ROM glyphs instead of a scalable font. */
+/* Actual C64 bitmap character-ROM text.
+   Main game copy is deliberately kept close to native C64 character sizing. */
 
 .title,
 .subtitle,
@@ -26,13 +26,14 @@
   align-items: center;
 }
 
+/* About 2x the C64's native 8-pixel character height on desktop. */
 .petscii-title {
-  height: clamp(16px, 2.15vw, 22px);
+  height: 16px;
   margin: 0 auto;
 }
 
 .petscii-subtitle {
-  height: clamp(13px, 1.75vw, 18px);
+  height: 12px;
   margin: 5px auto 0;
 }
 
@@ -47,11 +48,13 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  pointer-events: none;
 }
 
+/* This is intentionally much smaller than the old scalable web font. */
 .petscii-word {
-  height: clamp(18px, 2.45vw, 25px);
-  max-width: 88%;
+  height: 16px;
+  max-width: 90%;
   object-fit: contain;
 }
 
@@ -66,7 +69,7 @@
 }
 
 .petscii-prompt {
-  height: clamp(9px, 1.25vw, 13px);
+  height: 8px;
   max-width: min(78vw, 650px);
   object-fit: contain;
 }
@@ -78,17 +81,17 @@
 }
 
 .petscii-progress {
-  height: clamp(8px, 1vw, 10px);
+  height: 8px;
 }
 
-/* The walk still moves across the room, but no full-body sprite swap/blink. */
-.teacher > #teacherSprite {
-  transition: transform 45ms steps(1, end);
+/* Make sure the canvas itself can never steal a chalkboard pointer event. */
+.board .petscii-bitmap {
+  pointer-events: none;
 }
 
 @media (max-width: 700px) {
-  .petscii-title { height: clamp(14px, 4.5vw, 19px); }
-  .petscii-subtitle { height: clamp(11px, 3.6vw, 15px); }
-  .petscii-word { height: clamp(15px, 5.2vw, 22px); max-width: 92%; }
-  .petscii-prompt { height: clamp(8px, 2.8vw, 11px); max-width: 88vw; }
+  .petscii-title { height: 14px; }
+  .petscii-subtitle { height: 11px; }
+  .petscii-word { height: 14px; max-width: 92%; }
+  .petscii-prompt { height: 8px; max-width: 88vw; }
 }
