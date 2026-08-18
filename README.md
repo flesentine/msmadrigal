@@ -4,18 +4,25 @@ A Commodore 64-style Spanish vocabulary game with a walking teacher, randomized 
 
 ## Web version
 
-The browser version is now in the repository root:
+The browser version is in the repository root:
 
 - `index.html`
 - `styles.css`
 - `app.js`
 - `vocab.csv`
+- `tools/build_web_audio.py`
 
-It keeps the C64 look, shuffles all 500 words without repeats, supports click/tap or Space, speaks the Spanish side using the browser's Spanish voice, and has a responsive phone layout.
+It keeps the C64 look, uses a C64/PETSCII-style character set, shuffles all 500 words without repeats, and supports click/tap or Space.
 
-A GitHub Pages deployment workflow is included at `.github/workflows/pages.yml`.
+### C64 voice on the web
 
-Once GitHub Pages is enabled with **Settings → Pages → Source: GitHub Actions**, the expected project URL is:
+The Pages build now generates **500 deliberately crunchy C64-style Spanish samples plus the Ms. Madrigral introduction**. Speech is rendered at 4500 Hz and reduced to 16 amplitude levels to approximate the C64 `$D418` 4-bit sample sound.
+
+The generated speech is packed into 10 small WAV banks, so the browser can prefetch and cache them instead of making 500 separate requests. Browser text-to-speech is kept only as a fallback if a sample bank cannot be loaded.
+
+The GitHub Pages deployment workflow is at `.github/workflows/pages.yml`.
+
+Once GitHub Pages is enabled with **Settings → Pages → Source: GitHub Actions**, the project URL is:
 
 `https://flesentine.github.io/msmadrigal/`
 
