@@ -1,0 +1,94 @@
+/* Bitmap PETSCII overlay: keep the browser layout, but draw main game text
+   from actual 8x8 C64 character-ROM glyphs instead of a scalable font. */
+
+.title,
+.subtitle,
+.word,
+#prompt,
+.progress {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+
+.petscii-bitmap {
+  display: block;
+  width: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.title,
+.subtitle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.petscii-title {
+  height: clamp(16px, 2.15vw, 22px);
+  margin: 0 auto;
+}
+
+.petscii-subtitle {
+  height: clamp(13px, 1.75vw, 18px);
+  margin: 5px auto 0;
+}
+
+.board {
+  padding: 6% 5%;
+}
+
+.word {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.petscii-word {
+  height: clamp(18px, 2.45vw, 25px);
+  max-width: 88%;
+  object-fit: contain;
+}
+
+.statusbar {
+  gap: 1.1rem;
+}
+
+#prompt {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.petscii-prompt {
+  height: clamp(9px, 1.25vw, 13px);
+  max-width: min(78vw, 650px);
+  object-fit: contain;
+}
+
+.progress {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.petscii-progress {
+  height: clamp(8px, 1vw, 10px);
+}
+
+/* The walk still moves across the room, but no full-body sprite swap/blink. */
+.teacher > #teacherSprite {
+  transition: transform 45ms steps(1, end);
+}
+
+@media (max-width: 700px) {
+  .petscii-title { height: clamp(14px, 4.5vw, 19px); }
+  .petscii-subtitle { height: clamp(11px, 3.6vw, 15px); }
+  .petscii-word { height: clamp(15px, 5.2vw, 22px); max-width: 92%; }
+  .petscii-prompt { height: clamp(8px, 2.8vw, 11px); max-width: 88vw; }
+}
