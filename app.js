@@ -24,6 +24,15 @@
   let spanishVoice = null;
   let loadError = null;
 
+  // Prefer the same deliberately crunchy 4-bit-style samples as the C64
+  // build. Browser speech remains only as a fallback.
+  let c64AudioIndex = null;
+  let audioContext = null;
+  const packPromises = new Map();
+  let currentSource = null;
+  let currentSourceDone = null;
+  let speechSerial = 0;
+
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
   function parseCsvLine(line) {
@@ -103,14 +112,53 @@
     promptEl.textContent = spanishSide ? 'CLICK FOR NEXT WORD' : 'CLICK TO REVEAL SPANISH';
   }
 
+  async function ensureAudioContext() {
+    if (audioContext) {
+      if (audioContext.state === 'suspended') {
+        try { await audioContext.resume(); } catch (_) {}
+      }
+      return audioContext;
+    }
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+
+    try {
+      audioContext = new AudioContextClass();
+      if (audioContext.state === 'suspended') {
+        try { await audioContext.resume(); } catch (_) {}
+      }
+      return audioContext;
+    } catch (error) {
+      console.warn('Web Audio unavailable; using browser speech fallback.', error);
+      return null;
+    }
+  }
+
+  function stopCurrentSource() {
+    const source = currentSource;
+    currentSource = null;
+    if (source) {
+      source.onended = null;
+      try { source.stop(); } catch (_) {}
+    }
+    if (currentSourceDone) {
+      const done = currentSourceDone;
+      currentSourceDone = null;
+      done();
+    }
+  }
+
   function stopSpeech() {
+    speechSerial++;
+    stopCurrentSource();
     if (window.speechSynthesis) speechSynthesis.cancel();
   }
 
-  function speak(text, options = {}) {
+  function browserSpeak(text, options = {}) {
     if (!window.speechSynthesis || muted) return Promise.resolve();
 
-    stopSpeech();
+    speechSynthesis.cancel();
     return new Promise(resolve => {
       const u = new SpeechSynthesisUtterance(text);
       let finished = false;
@@ -129,16 +177,101 @@
       u.onend = finish;
       u.onerror = finish;
 
-      // Some browser speech engines occasionally fail to fire onend.
-      // Never let speech block the game UI indefinitely.
       const timeout = setTimeout(finish, Math.max(2200, text.length * 115));
       speechSynthesis.speak(u);
     });
   }
 
+  async function loadPack(packId) {
+    if (!c64AudioIndex) return null;
+    const key = String(packId);
+    if (packPromises.has(key)) return packPromises.get(key);
+
+    const filename = c64AudioIndex.packs?.[key];
+    if (!filename) return null;
+
+    const promise = (async () => {
+      const context = await ensureAudioContext();
+      if (!context) return null;
+      const response = await fetch(`audio/${filename}?v=49`, { cache: 'force-cache' });
+      if (!response.ok) throw new Error(`C64 voice pack ${packId} failed: ${response.status}`);
+      const bytes = await response.arrayBuffer();
+      return context.decodeAudioData(bytes.slice(0));
+    })().catch(error => {
+      console.warn(error);
+      packPromises.delete(key);
+      return null;
+    });
+
+    packPromises.set(key, promise);
+    return promise;
+  }
+
+  function prefetchTrack(trackKey) {
+    const track = c64AudioIndex?.tracks?.[String(trackKey)];
+    if (!track) return;
+    void loadPack(track.pack);
+  }
+
+  async function playC64Track(trackKey, fallbackText, options = {}) {
+    if (muted) return;
+
+    const serial = ++speechSerial;
+    const track = c64AudioIndex?.tracks?.[String(trackKey)];
+    if (!track) {
+      if (fallbackText) await browserSpeak(fallbackText, options);
+      return;
+    }
+
+    const context = await ensureAudioContext();
+    const buffer = context ? await loadPack(track.pack) : null;
+    if (!buffer || muted || serial !== speechSerial) {
+      if (!buffer && fallbackText && serial === speechSerial && !muted) {
+        await browserSpeak(fallbackText, options);
+      }
+      return;
+    }
+
+    stopCurrentSource();
+    if (window.speechSynthesis) speechSynthesis.cancel();
+
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    currentSource = source;
+
+    const maxDuration = Math.max(0, buffer.duration - track.start);
+    const duration = Math.min(track.duration, maxDuration);
+    if (duration <= 0) return;
+
+    let resolveDone;
+    const donePromise = new Promise(resolve => { resolveDone = resolve; });
+    currentSourceDone = resolveDone;
+
+    source.onended = () => {
+      if (currentSource === source) currentSource = null;
+      if (currentSourceDone === resolveDone) currentSourceDone = null;
+      resolveDone();
+    };
+
+    source.start(0, track.start, duration);
+    if (options.wait) await donePromise;
+  }
+
   function speakCurrent() {
-    if (!deck.length) return Promise.resolve();
-    return speak(vocab[currentId()].es, { rate: 0.82, pitch: 1.03 });
+    if (!deck.length) return;
+    const entry = vocab[currentId()];
+    if (!entry) return;
+    void playC64Track(String(entry.id), entry.es, { rate: 0.82, pitch: 1.03 });
+  }
+
+  function prefetchCurrentAndNext() {
+    if (!deck.length || !c64AudioIndex) return;
+    const current = vocab[currentId()];
+    if (current) prefetchTrack(String(current.id));
+    const nextPos = (deckPos + 1) % deck.length;
+    const next = vocab[deck[nextPos]];
+    if (next) prefetchTrack(String(next.id));
   }
 
   function setWalkFrame(frame) {
@@ -162,9 +295,16 @@
         return;
       }
 
+      // This runs from a click/tap/keypress, so Web Audio may be unlocked.
+      // Load the intro and first random word while Ms. Madrigral walks in.
+      await ensureAudioContext();
+
       started = true;
       startOverlay.classList.add('hidden');
       newDeck();
+      prefetchTrack('intro');
+      prefetchCurrentAndNext();
+
       wordEl.textContent = '';
       progressEl.textContent = '0 / 500';
       promptEl.textContent = 'MS. MADRIGRAL IS COMING...';
@@ -185,22 +325,27 @@
       teacher.classList.add('arrived');
 
       promptEl.textContent = 'HOLA...';
-      await speak('Hola, soy la señorita Madrigral.', { rate: 0.76, pitch: 1.04 });
-      await sleep(80);
+      await playC64Track('intro', 'Hola, soy la señorita Madrigral.', {
+        rate: 0.76,
+        pitch: 1.04,
+        wait: true,
+      });
+      await sleep(60);
       renderWord();
     } finally {
       starting = false;
     }
   }
 
-  // Deliberately synchronous: clicking must never wait for speech playback.
+  // Clicking never waits for sample playback.
   function advance() {
-    if (!started || !deck.length) return;
+    if (!started || !deck.length || starting) return;
 
     if (!spanishSide) {
       spanishSide = true;
       renderWord();
-      void speakCurrent();
+      speakCurrent();
+      prefetchCurrentAndNext();
       return;
     }
 
@@ -212,15 +357,24 @@
       deckPos = 0;
     }
     renderWord();
+    prefetchCurrentAndNext();
   }
 
   async function loadGame() {
     try {
-      const response = await fetch(`vocab.csv?v=48`, { cache: 'no-store' });
+      const vocabRequest = fetch(`vocab.csv?v=49`, { cache: 'no-store' });
+      const audioIndexRequest = fetch(`audio/c64-speech-index.json?v=49`, { cache: 'no-store' })
+        .then(response => response.ok ? response.json() : null)
+        .catch(() => null);
+
+      const [response, audioIndex] = await Promise.all([vocabRequest, audioIndexRequest]);
       if (!response.ok) throw new Error(`Vocabulary load failed: ${response.status}`);
+
       vocab = parseVocabularyCsv(await response.text());
       if (vocab.length !== 500) throw new Error(`Expected 500 vocabulary entries, got ${vocab.length}.`);
+      c64AudioIndex = audioIndex;
 
+      // Fallback only; the normal path is the C64-style sample packs.
       chooseSpanishVoice();
       if (window.speechSynthesis && typeof speechSynthesis.addEventListener === 'function') {
         speechSynthesis.addEventListener('voiceschanged', chooseSpanishVoice, { once: true });
@@ -228,7 +382,9 @@
 
       startButton.disabled = false;
       startButton.textContent = 'START CLASS';
-      promptEl.textContent = 'CLICK / TAP / SPACE TO START';
+      promptEl.textContent = c64AudioIndex
+        ? 'C64 VOICE READY - CLICK / TAP / SPACE'
+        : 'CLICK / TAP / SPACE TO START';
     } catch (error) {
       loadError = error;
       console.error(error);
@@ -238,7 +394,6 @@
     }
   }
 
-  // Start button AND the whole start overlay work.
   startButton.addEventListener('click', event => {
     event.stopPropagation();
     void startClass();
@@ -249,7 +404,6 @@
     void startClass();
   });
 
-  // Chalkboard is the primary mouse/touch control once class starts.
   board.addEventListener('click', event => {
     event.stopPropagation();
     advance();
@@ -257,9 +411,10 @@
 
   shuffleButton.addEventListener('click', event => {
     event.stopPropagation();
-    if (!started) return;
+    if (!started || starting) return;
     stopSpeech();
     newDeck();
+    prefetchCurrentAndNext();
     promptEl.textContent = 'RESHUFFLED 500 WORDS';
     setTimeout(renderWord, 350);
   });
@@ -274,19 +429,18 @@
 
   document.addEventListener('keydown', event => {
     if (event.code === 'Space' || event.key === 'Enter') {
-      // Enter on a focused control should keep normal button behavior.
       if (event.key === 'Enter' && event.target instanceof HTMLButtonElement) return;
       event.preventDefault();
       if (!started) void startClass();
       else advance();
-    } else if (event.key.toLowerCase() === 'r' && started) {
+    } else if (event.key.toLowerCase() === 'r' && started && !starting) {
       event.preventDefault();
       stopSpeech();
       newDeck();
+      prefetchCurrentAndNext();
     }
   });
 
-  // Clicking anywhere on the C64 screen advances too, except actual controls.
   game.addEventListener('click', event => {
     if (event.target.closest('.controls, .board, .start-overlay')) return;
     if (!started) void startClass();
