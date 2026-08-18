@@ -32,7 +32,7 @@ jobs:
       - name: Build web site and C64 voice banks
         run: |
           mkdir -p _site
-          cp index.html styles.css app.js vocab.csv _site/
+          cp index.html styles.css app.js petscii.css petscii.js vocab.csv _site/
           python3 tools/build_web_audio.py --vocab vocab.csv --out _site/audio
 
       - name: Setup Pages
