@@ -1,3 +1,16 @@
+/*
+  C64 Pro Mono / Style — Commodore 64 / PETSCII glyph set.
+  The font is loaded unchanged as a web font, as permitted by its license:
+  https://style64.org/c64-truetype/license
+*/
+@font-face {
+  font-family: "C64 Pro Mono";
+  src: url("https://raw.githubusercontent.com/loopier/trackatron/main/C64_TrueType_v1.2.1-STYLE/fonts/C64_Pro_Mono-STYLE.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
   --black: #030303;
@@ -6,6 +19,7 @@
   --green: #43d85a;
   --red: #ff6b6b;
   --dim: #aaa9ca;
+  --petscii: "C64 Pro Mono", "Courier New", Courier, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -15,7 +29,8 @@ html, body {
   margin: 0;
   background: #0a0a0f;
   color: var(--ink);
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--petscii);
+  font-variant-ligatures: none;
 }
 
 body {
@@ -24,7 +39,8 @@ body {
   padding: 18px;
 }
 
-button { font: inherit; }
+button, kbd { font: inherit; }
+button { touch-action: manipulation; }
 
 .page-shell { width: min(100%, 1024px); }
 
@@ -39,6 +55,8 @@ button { font: inherit; }
   box-shadow: 0 20px 70px #000, inset 0 0 70px rgba(40, 30, 100, .12);
   isolation: isolate;
   user-select: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .scanlines {
@@ -67,7 +85,7 @@ button { font: inherit; }
   right: 0;
   z-index: 5;
   text-align: center;
-  letter-spacing: .07em;
+  letter-spacing: 0;
   text-transform: uppercase;
   text-shadow: 2px 2px #15134f;
 }
@@ -75,14 +93,14 @@ button { font: inherit; }
 .title {
   color: var(--blue);
   font-size: clamp(20px, 3.3vw, 43px);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .subtitle {
   margin-top: .1em;
   color: var(--ink);
   font-size: clamp(16px, 2.5vw, 32px);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .scene { position: absolute; inset: 23% 7% 18% 7%; }
@@ -93,6 +111,7 @@ button { font: inherit; }
   top: 13%;
   width: 55%;
   height: 61%;
+  z-index: 8;
   border: clamp(4px, .65vw, 8px) solid var(--green);
   border-radius: 0;
   background: #050505;
@@ -103,6 +122,7 @@ button { font: inherit; }
   cursor: pointer;
   box-shadow: 0 0 7px rgba(67,216,90,.35), inset 0 0 20px rgba(67,216,90,.03);
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .board:focus-visible { outline: 3px solid var(--blue); outline-offset: 6px; }
@@ -111,10 +131,11 @@ button { font: inherit; }
 .word {
   max-width: 100%;
   text-align: center;
+  font-family: var(--petscii);
   font-size: clamp(28px, 4.6vw, 62px);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: .025em;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
   overflow-wrap: anywhere;
   text-shadow: 2px 2px #242424;
 }
@@ -129,6 +150,7 @@ button { font: inherit; }
   height: 76%;
   z-index: 4;
   transform: translateX(-125%);
+  pointer-events: none;
 }
 
 .teacher.walking { animation: walk-in 1.35s steps(18, end) forwards; }
@@ -146,7 +168,7 @@ button { font: inherit; }
 }
 
 .teacher > #teacherSprite.frame-b {
-  content: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACoCAYAAAAfI+vhAAACe0lEQVR4nO3dUU7cMBRAUajYLethvfDdUNWyksmNk3O+qwrp6j03Dp15ewPgqd7rH+D78/N75s+/f33lP/OR/tQ/wNMJEBMg9vJ9Orvj91rtjDABMQFiAsQEiAkQEyAmQOzj6L/w7H/3r84ExASICRA7/AyYtffuZvUzxwTEBIgJEMvPgJHVd/yICYgJEBMglp8B2x0/+1yw2jvgLRMQEyAmQGz3GeD3fvYxATEBYgLEps+Ao3f+3Xb6LBMQEyAmQGx4Brx659/9vn/EBMQEiAkQO/19wNN3/pYJiAkQEyA2fQ9z9R2+2t2SCYgJEBMgdvpzgLugv5mAmAAxAWICxASICRATIJb//4C9Vrv72TIBMQFiAsSmz4DRXc7RO3n27mi1z6I2ATEBYgLEdj8HzO7Q0Znx6vcD9c7fMgExAWICxE7//oDRDh6dAUefOTUTEBMgJkAs/w6Zo58DrrbjR0xATICYALHD9+Xeu56z3zfUTEBMgJgAsfz3go5+57vaGWECYgLEBIidvi+f9s53xATEBIgJEFvuOeBuTEBMgJgAsfz3gp7+XGACYgLEBIi9/J1wzRnAfwkQEyAmQEyAmAAxAWLLfZfk3ZiAmAAxAWICxASICRATIJZ/n/DTmYCYADEBYsP3pXfb+Vd7R2wCYgLEBIj9eg64286/OhMQEyAmQOzDzm+ZgJgAMQFi7oJiJiAmQEyA2K99ePZnPdfqM8EExASICRDb/Ryw2plQ7/wtExATICZAbPoMuNoOXZ0JiAkQEyCWf27oXqufUSYgJkBMgNj0vqx37uxd09XPBBMQEyAmQOzS+/Ffjv4s6vqMMAExAWICAAAAnOwH7TjAn98/KdoAAAAASUVORK5CYII=");
+  content: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACoCAYAAAAfI+vhAAACe0lEQVR4nO3dUU7cMBRAUajYLethvfDdUNWyksmNk3O+qwrp6j03Dp15ewPgqd7rH+D78/N75s+/f33lP/OR/tQ/wNMJEBMg9vJ9Orvj91rtjDABMQFiAsQEiAkQEyAmQOzj6L/w7H/3r84ExASICRA7/AyYtffuZvUzxwTEBIgJEMvPgJHVd/yICYgJEBMglp8B2x0/+1yw2jvgLRMQEyAmQGz3GeD3fvYxATEBYgLEps+Ao3f+3Xb6LBMQEyAmQGx4Brx659/9vn/EBMQEiAkQO/19wNN3/pYJiAkQEyA2fQ9z9R2+2t2SCYgJEBMgdvpzgLugv5mAmAAxAWICxASICRATIJb//4C9Vrv72TIBMQFiAsSmz4DRXc7RO3n27mi1z6I2ATEBYgLEdj8HzO7Q0Znx6vcD9c7fMgExAWICxE7//oDRDh6dAUefOTUTEBMgJkAs/w6Zo58DrrbjR0xATICYALHD9+Xeu56z3zfUTEBMgJgAsfz3go5+57vaGWECYgLEBIidvi+f9s53xATEBIgJEFvuOeBuTEBMgJgAsfz3gp7+XGACYgLEBIi9/J1wzRnAfwkQEyAmQEyAmAAxAWLLfZfk3ZiAmAAxAWICxASICRATIJZ/n/DTmYCYADEBYsP3pXfb+Vd7R2wCYgLEBIj9eg64286/OhMQEyAmQOzDzm+ZgJgAMQFi7oJiJiAmQEyA2K99ePZnPdfqM8EExASICRDb/Ryw2plQ7/wtExSTATICYAbPoMuNoOXZ0JiAkQEyCWf27oXqufUSYgJkBMgNj0vqx37uxd09XPBBMQEyAmQOzS+/Ffjv4s6vqMMAExAWICAAAAnOwH7TjAn98/KdoAAAAASUVORK5CYII=");
 }
 
 .teacher .pointer {
@@ -158,6 +180,7 @@ button { font: inherit; }
   image-rendering: pixelated;
   transform-origin: left center;
   content: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAqCAYAAABMW14yAAAAqElEQVR4nO3WQQ6DIABEUe11PY/ntXtsSonoWHxv68bofMI0AQAAAAA8wZx+gdFty7J9e/666kX4TAGd1RZfUkCYAipaFz2va9M3VUCYAgq1xbcuvEYBYcMXcPYZfpQCwoYr4Ooz/CgFhN1qDb/4t4XXKCAsvpa731LOpoCwy9c02hl+lALCuq/NwtsoIGy3xnLB5WItvC8FhM1Pv4enKSDMDwjzA4CgNwX6MdE+AMSPAAAAAElFTkSuQmCC");
+  pointer-events: none;
 }
 
 @keyframes walk-in { from { transform: translateX(-125%); } to { transform: translateX(0); } }
@@ -174,9 +197,10 @@ button { font: inherit; }
   gap: 2rem;
   color: var(--ink);
   font-size: clamp(14px, 2.15vw, 28px);
-  font-weight: 700;
-  letter-spacing: .07em;
+  font-weight: 400;
+  letter-spacing: 0;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .progress { position: absolute; right: 0; color: var(--dim); font-size: .62em; }
@@ -188,6 +212,7 @@ button { font: inherit; }
   z-index: 30;
   display: flex;
   gap: 8px;
+  cursor: default;
 }
 
 .mini-button {
@@ -197,7 +222,7 @@ button { font: inherit; }
   padding: 7px 9px;
   cursor: pointer;
   font-size: clamp(9px, 1.05vw, 13px);
-  letter-spacing: .03em;
+  letter-spacing: 0;
 }
 
 .mini-button:hover, .mini-button:focus-visible { color: white; border-color: var(--blue); }
@@ -210,6 +235,8 @@ button { font: inherit; }
   place-items: center;
   background: rgba(0,0,0,.91);
   transition: opacity .25s ease;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .start-overlay.hidden { opacity: 0; pointer-events: none; }
@@ -221,9 +248,10 @@ button { font: inherit; }
   border: 4px solid var(--green);
   background: #050505;
   box-shadow: 0 0 20px rgba(67,216,90,.18);
+  pointer-events: auto;
 }
 
-.start-logo { color: var(--blue); font-size: clamp(28px, 5vw, 56px); font-weight: 700; }
+.start-logo { color: var(--blue); font-size: clamp(28px, 5vw, 56px); font-weight: 400; }
 .start-panel p { margin: .45em 0 1.35em; font-size: clamp(18px, 2.5vw, 30px); }
 .start-panel small { display: block; margin-top: 1.2em; color: #aeadc6; }
 
@@ -233,9 +261,10 @@ button { font: inherit; }
   padding: 15px 18px;
   background: var(--green);
   color: #020202;
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
   box-shadow: 5px 5px 0 #1c6528;
+  touch-action: manipulation;
 }
 
 .start-button:disabled {
@@ -246,7 +275,7 @@ button { font: inherit; }
 }
 
 .help { text-align: center; color: #8f8fa7; font-size: 13px; margin: 12px 8px 0; }
-kbd { border: 1px solid #555568; background: #191923; padding: 1px 5px; border-radius: 3px; }
+kbd { border: 1px solid #555568; background: #191923; padding: 1px 5px; border-radius: 0; }
 
 @media (max-width: 700px) {
   body { padding: 0; align-items: start; }
