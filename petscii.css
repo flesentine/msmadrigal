@@ -5,7 +5,12 @@
 .subtitle,
 .word,
 #prompt,
-.progress {
+.progress,
+.start-logo,
+.start-panel p,
+#startButton,
+.start-panel small,
+.mini-button {
   font-size: 0 !important;
   line-height: 0 !important;
   letter-spacing: 0 !important;
@@ -17,16 +22,22 @@
   width: auto;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  pointer-events: none;
 }
 
 .title,
-.subtitle {
+.subtitle,
+.start-logo,
+.start-panel p,
+.start-panel small,
+#startButton,
+.mini-button {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* About 2x the C64's native 8-pixel character height on desktop. */
+/* Main screen: close to the small text size of the C64 binary. */
 .petscii-title {
   height: 16px;
   margin: 0 auto;
@@ -51,7 +62,6 @@
   pointer-events: none;
 }
 
-/* This is intentionally much smaller than the old scalable web font. */
 .petscii-word {
   height: 16px;
   max-width: 90%;
@@ -84,9 +94,90 @@
   height: 8px;
 }
 
-/* Make sure the canvas itself can never steal a chalkboard pointer event. */
-.board .petscii-bitmap {
+/* Start overlay now uses the exact same 8x8 C64 ROM renderer. */
+.petscii-start-logo {
+  height: 20px;
+  max-width: 90%;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+.petscii-start-subtitle {
+  height: 12px;
+  max-width: 80%;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+#startButton {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.petscii-start-button {
+  height: 10px;
+  max-width: 88%;
+  object-fit: contain;
+}
+
+.petscii-start-small {
+  height: 8px;
+  max-width: 94%;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+.petscii-mini {
+  height: 8px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* Nothing drawn inside the board may intercept a pointer. */
+.board,
+.board * {
+  touch-action: manipulation;
+}
+.board .petscii-bitmap,
+.board .word {
+  pointer-events: none !important;
+}
+
+/*
+  Feet-only animation. The original teacher image is clipped above the lower
+  body and stays on the standing frame forever. Two lower-body layers are
+  clipped from the original two C64-style walk frames and alternate when
+  app.js toggles frame-b. Head, hair, face, arm, and torso never change.
+*/
+.teacher > #teacherSprite.upper-body-only {
+  clip-path: inset(0 0 45% 0);
+  transform: none !important;
+}
+
+.teacher > .teacher-feet {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 76%;
+  height: auto;
+  clip-path: inset(55% 0 0 0);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
   pointer-events: none;
+}
+
+.teacher > .teacher-feet-b {
+  display: none;
+  transform: translateY(2px);
+}
+
+.teacher > #teacherSprite.frame-b ~ .teacher-feet-a {
+  display: none;
+}
+
+.teacher > #teacherSprite.frame-b ~ .teacher-feet-b {
+  display: block;
 }
 
 @media (max-width: 700px) {
@@ -94,4 +185,8 @@
   .petscii-subtitle { height: 11px; }
   .petscii-word { height: 14px; max-width: 92%; }
   .petscii-prompt { height: 8px; max-width: 88vw; }
+  .petscii-start-logo { height: 16px; }
+  .petscii-start-subtitle { height: 10px; }
+  .petscii-start-button { height: 9px; }
+  .petscii-start-small { height: 7px; max-width: 96%; }
 }
