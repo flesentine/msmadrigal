@@ -1,8 +1,25 @@
-# Ms. Madrigal
+# Ms. Madrigral
 
-A Commodore 64 Spanish vocabulary game with a walking teacher sprite, sampled speech, randomized vocabulary, and 500 English/Spanish word pairs.
+A Commodore 64-style Spanish vocabulary game with a walking teacher, randomized vocabulary, and 500 English/Spanish word pairs.
 
-## Current build
+## Web version
+
+The browser version is now in the repository root:
+
+- `index.html`
+- `styles.css`
+- `app.js`
+- `vocab.csv`
+
+It keeps the C64 look, shuffles all 500 words without repeats, supports click/tap or Space, speaks the Spanish side using the browser's Spanish voice, and has a responsive phone layout.
+
+A GitHub Pages deployment workflow is included at `.github/workflows/pages.yml`.
+
+Once GitHub Pages is enabled with **Settings → Pages → Source: GitHub Actions**, the expected project URL is:
+
+`https://flesentine.github.io/msmadrigal/`
+
+## C64 build
 
 **V46 — MS. MADRIGRAL**
 
@@ -13,21 +30,19 @@ Features:
 - sampled Spanish speech
 - randomized vocabulary order with no repeats per 500-word round
 - double-buffered speech packet loading
-- Spanish intro after Ms. Madrigal walks to the board
+- Spanish intro after Ms. Madrigral walks to the board
 - joystick FIRE (port 2) or SPACE controls
 - C64 hardware sprites and 6510 machine-language hot paths
 
-## Source
+### Source
 
 The current BASIC driver is in:
 
 `src/ESPANOL64V46_MS_MADRIGRAL.bas`
 
-The finished build also contains binary sprite data, machine-language routines, vocabulary tables, the intro sample, and 250 external two-word speech packets packed into the D81 image.
+### Running V46 in VICE
 
-## Running the current V46 build
-
-Attach the V46 D81 to drive 8 in VICE, then:
+Attach the V46 D81 to drive 8, then:
 
 ```text
 LOAD "ESP500V46",8,1
