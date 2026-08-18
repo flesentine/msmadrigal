@@ -67,50 +67,56 @@
   bindBitmap(document.getElementById('prompt'), 'petscii-prompt', '#f2f2e8');
   bindBitmap(document.getElementById('progress'), 'petscii-progress', '#aaa9ca');
 
-  // Start screen: use the exact same ROM renderer instead of the web font.
-  bindBitmap(document.querySelector('.start-logo'), 'petscii-start-logo', '#6c69ff');
-  bindBitmap(document.querySelector('.start-panel p'), 'petscii-start-subtitle', '#f2f2e8');
+  // Start screen: every line uses the same real C64 ROM renderer.
+  bindBitmap(document.getElementById('startLogo'), 'petscii-start-logo', '#6c69ff');
+  bindBitmap(document.getElementById('startSubtitle'), 'petscii-start-subtitle', '#f2f2e8');
   bindBitmap(document.getElementById('startButton'), 'petscii-start-button', '#020202');
-  bindBitmap(document.querySelector('.start-panel small'), 'petscii-start-small', '#aaa9ca');
+  bindBitmap(document.getElementById('startHint'), 'petscii-start-small', '#aaa9ca');
 
-  // Also make the small top controls genuine C64 bitmap text.
+  // Small top controls are bitmap text too.
   bindBitmap(document.getElementById('shuffleButton'), 'petscii-mini', '#c6c5dd');
   bindBitmap(document.getElementById('muteButton'), 'petscii-mini', '#c6c5dd');
 
   // ------------------------------------------------------------------
   // Feet-only walking animation.
-  //
-  // styles.css contains two complete teacher frames. Swapping the whole
-  // image made her face blink. Capture both frames once, lock the original
-  // image to the standing frame, then create two clipped lower-body layers.
-  // app.js can keep toggling frame-b every 115ms; only the feet/lower dress
-  // now changes while the head and upper body remain completely stationary.
+  // Read the two full CSS walk frames once, turn them into real <img> src
+  // values, and then freeze the original sprite on the standing frame.
+  // Only the clipped lower-body layers alternate when app.js toggles frame-b.
   // ------------------------------------------------------------------
+  function contentUrl(value) {
+    if (!value || value === 'none' || value === 'normal') return null;
+    const match = String(value).match(/^url\((['"]?)(.*)\1\)$/);
+    return match ? match[2] : null;
+  }
+
   const teacherSprite = document.getElementById('teacherSprite');
   if (teacherSprite && teacherSprite.parentElement) {
     try {
       teacherSprite.classList.remove('frame-b');
-      const standingContent = getComputedStyle(teacherSprite).content;
+      const standingUrl = contentUrl(getComputedStyle(teacherSprite).content);
+
       teacherSprite.classList.add('frame-b');
-      const walkingContent = getComputedStyle(teacherSprite).content;
+      const walkingUrl = contentUrl(getComputedStyle(teacherSprite).content);
       teacherSprite.classList.remove('frame-b');
 
-      if (standingContent && standingContent !== 'none' && standingContent !== 'normal') {
-        teacherSprite.style.setProperty('content', standingContent, 'important');
+      if (standingUrl) {
+        teacherSprite.parentElement.querySelectorAll('.teacher-feet').forEach(el => el.remove());
+
+        teacherSprite.src = standingUrl;
+        teacherSprite.style.setProperty('content', 'normal', 'important');
         teacherSprite.classList.add('upper-body-only');
 
-        const makeFeet = (className, content) => {
+        const makeFeet = (className, src) => {
           const img = document.createElement('img');
           img.alt = '';
           img.setAttribute('aria-hidden', 'true');
           img.className = `teacher-feet ${className}`;
-          img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
-          img.style.setProperty('content', content || standingContent, 'important');
+          img.src = src || standingUrl;
           return img;
         };
 
-        const feetA = makeFeet('teacher-feet-a', standingContent);
-        const feetB = makeFeet('teacher-feet-b', walkingContent || standingContent);
+        const feetA = makeFeet('teacher-feet-a', standingUrl);
+        const feetB = makeFeet('teacher-feet-b', walkingUrl || standingUrl);
         const pointer = teacherSprite.parentElement.querySelector('.pointer');
         teacherSprite.parentElement.insertBefore(feetA, pointer || null);
         teacherSprite.parentElement.insertBefore(feetB, pointer || null);
@@ -121,39 +127,43 @@
   }
 
   // ------------------------------------------------------------------
-  // Reliable chalkboard input.
-  //
-  // The normal button click has been inconsistent in Chrome on this page.
-  // Handle the physical pointer release in capture phase and route it to the
-  // game's already-working outer-screen click path. Then swallow the browser's
-  // follow-up click so a single tap cannot advance twice. Keyboard-generated
-  // button clicks are left alone for accessibility.
+  // Chalkboard input.
+  // Do not depend on which DOM element Chrome says was clicked. If the
+  // physical pointer release is geometrically inside the green board, send
+  // one Space-key action to the game. Then swallow the follow-up synthetic
+  // click so a single tap cannot advance twice.
   // ------------------------------------------------------------------
   const board = document.getElementById('board');
-  const game = document.getElementById('game');
   let lastBoardPointerAdvance = -Infinity;
 
-  if (board && game) {
-    board.addEventListener('pointerup', event => {
+  function pointInsideBoard(x, y) {
+    if (!board) return false;
+    const r = board.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  }
+
+  if (board) {
+    document.addEventListener('pointerup', event => {
+      if (!pointInsideBoard(event.clientX, event.clientY)) return;
       if (event.pointerType === 'mouse' && event.button !== 0) return;
+
       event.preventDefault();
       event.stopImmediatePropagation();
       lastBoardPointerAdvance = performance.now();
 
-      game.dispatchEvent(new MouseEvent('click', {
+      document.dispatchEvent(new KeyboardEvent('keydown', {
+        key: ' ',
+        code: 'Space',
         bubbles: true,
         cancelable: true,
-        view: window,
-        detail: 1,
       }));
     }, true);
 
-    board.addEventListener('click', event => {
-      if (performance.now() - lastBoardPointerAdvance < 700) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-      }
-      // Otherwise this is likely a keyboard-generated click; app.js handles it.
+    document.addEventListener('click', event => {
+      if (performance.now() - lastBoardPointerAdvance > 800) return;
+      if (!pointInsideBoard(event.clientX, event.clientY)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
     }, true);
   }
 })();
