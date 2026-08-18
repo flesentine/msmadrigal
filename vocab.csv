@@ -1,0 +1,501 @@
+index,spanish,english,display_es,display_en
+0,"hola","hello",HOLA,HELLO
+1,"adiós","goodbye",ADIOS,GOODBYE
+2,"por favor","please",POR FAVOR,PLEASE
+3,"gracias","thank you",GRACIAS,THANK YOU
+4,"sí","yes",SI,YES
+5,"no","no",NO,NO
+6,"casa","house",CASA,HOUSE
+7,"escuela","school",ESCUELA,SCHOOL
+8,"libro","book",LIBRO,BOOK
+9,"mesa","table",MESA,TABLE
+10,"silla","chair",SILLA,CHAIR
+11,"puerta","door",PUERTA,DOOR
+12,"ventana","window",VENTANA,WINDOW
+13,"agua","water",AGUA,WATER
+14,"comida","food",COMIDA,FOOD
+15,"pan","bread",PAN,BREAD
+16,"leche","milk",LECHE,MILK
+17,"manzana","apple",MANZANA,APPLE
+18,"perro","dog",PERRO,DOG
+19,"gato","cat",GATO,CAT
+20,"pájaro","bird",PAJARO,BIRD
+21,"amigo","friend",AMIGO,FRIEND
+22,"familia","family",FAMILIA,FAMILY
+23,"madre","mother",MADRE,MOTHER
+24,"padre","father",PADRE,FATHER
+25,"hermano","brother",HERMANO,BROTHER
+26,"hermana","sister",HERMANA,SISTER
+27,"niño","boy",NINO,BOY
+28,"niña","girl",NINA,GIRL
+29,"uno","one",UNO,ONE
+30,"dos","two",DOS,TWO
+31,"tres","three",TRES,THREE
+32,"rojo","red",ROJO,RED
+33,"azul","blue",AZUL,BLUE
+34,"verde","green",VERDE,GREEN
+35,"amarillo","yellow",AMARILLO,YELLOW
+36,"negro","black",NEGRO,BLACK
+37,"blanco","white",BLANCO,WHITE
+38,"feliz","happy",FELIZ,HAPPY
+39,"triste","sad",TRISTE,SAD
+40,"grande","big",GRANDE,BIG
+41,"pequeño","small",PEQUENO,SMALL
+42,"rápido","fast",RAPIDO,FAST
+43,"lento","slow",LENTO,SLOW
+44,"caliente","hot",CALIENTE,HOT
+45,"frío","cold",FRIO,COLD
+46,"comer","to eat",COMER,TO EAT
+47,"beber","to drink",BEBER,TO DRINK
+48,"hablar","to speak",HABLAR,TO SPEAK
+49,"escribir","to write",ESCRIBIR,TO WRITE
+50,"yo","I",YO,I
+51,"tú","you",TU,YOU
+52,"él","he",EL,HE
+53,"ella","she",ELLA,SHE
+54,"nosotros","we",NOSOTROS,WE
+55,"ustedes","you plural",USTEDES,YOU PLURAL
+56,"ser","to be",SER,TO BE
+57,"estar","to be temporary",ESTAR,TO BE TEMP
+58,"tener","to have",TENER,TO HAVE
+59,"hacer","to do",HACER,TO DO
+60,"ir","to go",IR,TO GO
+61,"venir","to come",VENIR,TO COME
+62,"dar","to give",DAR,TO GIVE
+63,"decir","to say",DECIR,TO SAY
+64,"ver","to see",VER,TO SEE
+65,"saber","to know",SABER,TO KNOW
+66,"querer","to want",QUERER,TO WANT
+67,"poder","can",PODER,CAN
+68,"deber","should",DEBER,SHOULD
+69,"porque","because",PORQUE,BECAUSE
+70,"pero","but",PERO,BUT
+71,"y","and",Y,AND
+72,"o","or",O,OR
+73,"con","with",CON,WITH
+74,"sin","without",SIN,WITHOUT
+75,"para","for",PARA,FOR
+76,"por","by",POR,BY
+77,"aquí","here",AQUI,HERE
+78,"allí","there",ALLI,THERE
+79,"ahora","now",AHORA,NOW
+80,"hoy","today",HOY,TODAY
+81,"ayer","yesterday",AYER,YESTERDAY
+82,"mañana","tomorrow",MANANA,TOMORROW
+83,"siempre","always",SIEMPRE,ALWAYS
+84,"nunca","never",NUNCA,NEVER
+85,"también","also",TAMBIEN,ALSO
+86,"muy","very",MUY,VERY
+87,"más","more",MAS,MORE
+88,"menos","less",MENOS,LESS
+89,"todo","all",TODO,ALL
+90,"nada","nothing",NADA,NOTHING
+91,"algo","something",ALGO,SOMETHING
+92,"alguien","someone",ALGUIEN,SOMEONE
+93,"nadie","nobody",NADIE,NOBODY
+94,"quién","who",QUIEN,WHO
+95,"qué","what",QUE,WHAT
+96,"dónde","where",DONDE,WHERE
+97,"cuándo","when",CUANDO,WHEN
+98,"cómo","how",COMO,HOW
+99,"cuál","which",CUAL,WHICH
+100,"cero","zero",CERO,ZERO
+101,"cuatro","four",CUATRO,FOUR
+102,"cinco","five",CINCO,FIVE
+103,"seis","six",SEIS,SIX
+104,"siete","seven",SIETE,SEVEN
+105,"ocho","eight",OCHO,EIGHT
+106,"nueve","nine",NUEVE,NINE
+107,"diez","ten",DIEZ,TEN
+108,"once","eleven",ONCE,ELEVEN
+109,"doce","twelve",DOCE,TWELVE
+110,"trece","thirteen",TRECE,THIRTEEN
+111,"catorce","fourteen",CATORCE,FOURTEEN
+112,"quince","fifteen",QUINCE,FIFTEEN
+113,"dieciséis","sixteen",DIECISEIS,SIXTEEN
+114,"diecisiete","seventeen",DIECISIETE,SEVENTEEN
+115,"dieciocho","eighteen",DIECIOCHO,EIGHTEEN
+116,"diecinueve","nineteen",DIECINUEVE,NINETEEN
+117,"veinte","twenty",VEINTE,TWENTY
+118,"treinta","thirty",TREINTA,THIRTY
+119,"cuarenta","forty",CUARENTA,FORTY
+120,"cincuenta","fifty",CINCUENTA,FIFTY
+121,"cien","hundred",CIEN,HUNDRED
+122,"mil","thousand",MIL,THOUSAND
+123,"primero","first",PRIMERO,FIRST
+124,"segundo","second",SEGUNDO,SECOND
+125,"tercero","third",TERCERO,THIRD
+126,"cuarto","fourth",CUARTO,FOURTH
+127,"quinto","fifth",QUINTO,FIFTH
+128,"lunes","Monday",LUNES,MONDAY
+129,"martes","Tuesday",MARTES,TUESDAY
+130,"miércoles","Wednesday",MIERCOLES,WEDNESDAY
+131,"jueves","Thursday",JUEVES,THURSDAY
+132,"viernes","Friday",VIERNES,FRIDAY
+133,"sábado","Saturday",SABADO,SATURDAY
+134,"domingo","Sunday",DOMINGO,SUNDAY
+135,"enero","January",ENERO,JANUARY
+136,"febrero","February",FEBRERO,FEBRUARY
+137,"marzo","March",MARZO,MARCH
+138,"abril","April",ABRIL,APRIL
+139,"mayo","May",MAYO,MAY
+140,"junio","June",JUNIO,JUNE
+141,"julio","July",JULIO,JULY
+142,"agosto","August",AGOSTO,AUGUST
+143,"septiembre","September",SEPTIEMBRE,SEPTEMBER
+144,"octubre","October",OCTUBRE,OCTOBER
+145,"noviembre","November",NOVIEMBRE,NOVEMBER
+146,"diciembre","December",DICIEMBRE,DECEMBER
+147,"día","day",DIA,DAY
+148,"semana","week",SEMANA,WEEK
+149,"mes","month",MES,MONTH
+150,"año","year",ANO,YEAR
+151,"abuelo","grandfather",ABUELO,GRANDFATHER
+152,"abuela","grandmother",ABUELA,GRANDMOTHER
+153,"esposo","husband",ESPOSO,HUSBAND
+154,"esposa","wife",ESPOSA,WIFE
+155,"hijo","son",HIJO,SON
+156,"hija","daughter",HIJA,DAUGHTER
+157,"bebé","baby",BEBE,BABY
+158,"hombre","man",HOMBRE,MAN
+159,"mujer","woman",MUJER,WOMAN
+160,"persona","person",PERSONA,PERSON
+161,"maestro","male teacher",MAESTRO,MALE TEACHER
+162,"maestra","female teacher",MAESTRA,WOMAN TEACHER
+163,"estudiante","student",ESTUDIANTE,STUDENT
+164,"doctor","doctor",DOCTOR,DOCTOR
+165,"doctora","female doctor",DOCTORA,WOMAN DOCTOR
+166,"policía","police",POLICIA,POLICE
+167,"jefe","boss",JEFE,BOSS
+168,"vecino","male neighbor",VECINO,MALE NEIGHBOR
+169,"vecina","female neighbor",VECINA,WOMAN NEIGHBOR
+170,"nombre","name",NOMBRE,NAME
+171,"cabeza","head",CABEZA,HEAD
+172,"cara","face",CARA,FACE
+173,"ojo","eye",OJO,EYE
+174,"oreja","ear",OREJA,EAR
+175,"nariz","nose",NARIZ,NOSE
+176,"boca","mouth",BOCA,MOUTH
+177,"diente","tooth",DIENTE,TOOTH
+178,"lengua","tongue",LENGUA,TONGUE
+179,"cuello","neck",CUELLO,NECK
+180,"hombro","shoulder",HOMBRO,SHOULDER
+181,"brazo","arm",BRAZO,ARM
+182,"mano","hand",MANO,HAND
+183,"dedo","finger",DEDO,FINGER
+184,"pecho","chest",PECHO,CHEST
+185,"espalda","back",ESPALDA,BACK
+186,"pierna","leg",PIERNA,LEG
+187,"pie","foot",PIE,FOOT
+188,"corazón","heart",CORAZON,HEART
+189,"pelo","hair",PELO,HAIR
+190,"camisa","shirt",CAMISA,SHIRT
+191,"pantalón","pants",PANTALON,PANTS
+192,"vestido","dress",VESTIDO,DRESS
+193,"falda","skirt",FALDA,SKIRT
+194,"zapato","shoe",ZAPATO,SHOE
+195,"calcetín","sock",CALCETIN,SOCK
+196,"sombrero","hat",SOMBRERO,HAT
+197,"abrigo","coat",ABRIGO,COAT
+198,"chaqueta","jacket",CHAQUETA,JACKET
+199,"bolsillo","pocket",BOLSILLO,POCKET
+200,"reloj","watch",RELOJ,WATCH
+201,"cocina","kitchen",COCINA,KITCHEN
+202,"baño","bathroom",BANO,BATHROOM
+203,"dormitorio","bedroom",DORMITORIO,BEDROOM
+204,"habitación","room",HABITACION,ROOM
+205,"cama","bed",CAMA,BED
+206,"sofá","sofa",SOFA,SOFA
+207,"lámpara","lamp",LAMPARA,LAMP
+208,"techo","ceiling",TECHO,CEILING
+209,"pared","wall",PARED,WALL
+210,"piso","floor",PISO,FLOOR
+211,"llave","key",LLAVE,KEY
+212,"jardín","garden",JARDIN,GARDEN
+213,"garaje","garage",GARAJE,GARAGE
+214,"escalera","stairs",ESCALERA,STAIRS
+215,"plato","plate",PLATO,PLATE
+216,"taza","cup",TAZA,CUP
+217,"vaso","glass",VASO,GLASS
+218,"cuchara","spoon",CUCHARA,SPOON
+219,"tenedor","fork",TENEDOR,FORK
+220,"cuchillo","knife",CUCHILLO,KNIFE
+221,"servilleta","napkin",SERVILLETA,NAPKIN
+222,"botella","bottle",BOTELLA,BOTTLE
+223,"caja","box",CAJA,BOX
+224,"bolsa","bag",BOLSA,BAG
+225,"papel","paper",PAPEL,PAPER
+226,"lápiz","pencil",LAPIZ,PENCIL
+227,"pluma","pen",PLUMA,PEN
+228,"bolígrafo","ballpoint pen",BOLIGRAFO,BALLPOINT PEN
+229,"cuaderno","notebook",CUADERNO,NOTEBOOK
+230,"mochila","backpack",MOCHILA,BACKPACK
+231,"regla","ruler",REGLA,RULER
+232,"tijeras","scissors",TIJERAS,SCISSORS
+233,"pegamento","glue",PEGAMENTO,GLUE
+234,"pizarra","chalkboard",PIZARRA,CHALKBOARD
+235,"clase","class",CLASE,CLASS
+236,"tarea","homework",TAREA,HOMEWORK
+237,"pregunta","question",PREGUNTA,QUESTION
+238,"respuesta","answer",RESPUESTA,ANSWER
+239,"palabra","word",PALABRA,WORD
+240,"letra","letter",LETRA,LETTER
+241,"número","number",NUMERO,NUMBER
+242,"computadora","computer",COMPUTADORA,COMPUTER
+243,"teléfono","telephone",TELEFONO,TELEPHONE
+244,"foto","photo",FOTO,PHOTO
+245,"música","music",MUSICA,MUSIC
+246,"película","movie",PELICULA,MOVIE
+247,"juego","game",JUEGO,GAME
+248,"juguete","toy",JUGUETE,TOY
+249,"mapa","map",MAPA,MAP
+250,"dibujo","drawing",DIBUJO,DRAWING
+251,"arroz","rice",ARROZ,RICE
+252,"queso","cheese",QUESO,CHEESE
+253,"huevo","egg",HUEVO,EGG
+254,"carne","meat",CARNE,MEAT
+255,"pollo","chicken",POLLO,CHICKEN
+256,"pescado","fish",PESCADO,FISH
+257,"sopa","soup",SOPA,SOUP
+258,"ensalada","salad",ENSALADA,SALAD
+259,"papa","potato",PAPA,POTATO
+260,"tomate","tomato",TOMATE,TOMATO
+261,"cebolla","onion",CEBOLLA,ONION
+262,"zanahoria","carrot",ZANAHORIA,CARROT
+263,"frijol","bean",FRIJOL,BEAN
+264,"maíz","corn",MAIZ,CORN
+265,"naranja","orange",NARANJA,ORANGE
+266,"plátano","banana",PLATANO,BANANA
+267,"fresa","strawberry",FRESA,STRAWBERRY
+268,"uva","grape",UVA,GRAPE
+269,"limón","lemon",LIMON,LEMON
+270,"sandía","watermelon",SANDIA,WATERMELON
+271,"azúcar","sugar",AZUCAR,SUGAR
+272,"sal","salt",SAL,SALT
+273,"café","coffee",CAFE,COFFEE
+274,"té","tea",TE,TEA
+275,"jugo","juice",JUGO,JUICE
+276,"chocolate","chocolate",CHOCOLATE,CHOCOLATE
+277,"helado","ice cream",HELADO,ICE CREAM
+278,"pastel","cake",PASTEL,CAKE
+279,"galleta","cookie",GALLETA,COOKIE
+280,"desayuno","breakfast",DESAYUNO,BREAKFAST
+281,"almuerzo","lunch",ALMUERZO,LUNCH
+282,"cena","dinner",CENA,DINNER
+283,"hambre","hunger",HAMBRE,HUNGER
+284,"sed","thirst",SED,THIRST
+285,"cocinar","to cook",COCINAR,TO COOK
+286,"cortar","to cut",CORTAR,TO CUT
+287,"dulce","sweet",DULCE,SWEET
+288,"picante","spicy",PICANTE,SPICY
+289,"sabroso","tasty",SABROSO,TASTY
+290,"fruta","fruit",FRUTA,FRUIT
+291,"verdura","vegetable",VERDURA,VEGETABLE
+292,"bocadillo","snack",BOCADILLO,SNACK
+293,"mantequilla","butter",MANTEQUILLA,BUTTER
+294,"yogur","yogurt",YOGUR,YOGURT
+295,"cereal","cereal",CEREAL,CEREAL
+296,"harina","flour",HARINA,FLOUR
+297,"aceite","oil",ACEITE,OIL
+298,"ajo","garlic",AJO,GARLIC
+299,"pimienta","pepper",PIMIENTA,PEPPER
+300,"miel","honey",MIEL,HONEY
+301,"postre","dessert",POSTRE,DESSERT
+302,"caballo","horse",CABALLO,HORSE
+303,"vaca","cow",VACA,COW
+304,"cerdo","pig",CERDO,PIG
+305,"oveja","sheep",OVEJA,SHEEP
+306,"cabra","goat",CABRA,GOAT
+307,"conejo","rabbit",CONEJO,RABBIT
+308,"ratón","mouse",RATON,MOUSE
+309,"pez","fish",PEZ,FISH
+310,"tortuga","turtle",TORTUGA,TURTLE
+311,"serpiente","snake",SERPIENTE,SNAKE
+312,"rana","frog",RANA,FROG
+313,"mariposa","butterfly",MARIPOSA,BUTTERFLY
+314,"abeja","bee",ABEJA,BEE
+315,"mosca","fly",MOSCA,FLY
+316,"hormiga","ant",HORMIGA,ANT
+317,"león","lion",LEON,LION
+318,"tigre","tiger",TIGRE,TIGER
+319,"oso","bear",OSO,BEAR
+320,"mono","monkey",MONO,MONKEY
+321,"elefante","elephant",ELEFANTE,ELEPHANT
+322,"jirafa","giraffe",JIRAFA,GIRAFFE
+323,"árbol","tree",ARBOL,TREE
+324,"flor","flower",FLOR,FLOWER
+325,"pasto","grass",PASTO,GRASS
+326,"bosque","forest",BOSQUE,FOREST
+327,"montaña","mountain",MONTANA,MOUNTAIN
+328,"río","river",RIO,RIVER
+329,"lago","lake",LAGO,LAKE
+330,"mar","sea",MAR,SEA
+331,"playa","beach",PLAYA,BEACH
+332,"cielo","sky",CIELO,SKY
+333,"sol","sun",SOL,SUN
+334,"luna","moon",LUNA,MOON
+335,"estrella","star",ESTRELLA,STAR
+336,"nube","cloud",NUBE,CLOUD
+337,"lluvia","rain",LLUVIA,RAIN
+338,"nieve","snow",NIEVE,SNOW
+339,"viento","wind",VIENTO,WIND
+340,"tormenta","storm",TORMENTA,STORM
+341,"clima","weather",CLIMA,WEATHER
+342,"primavera","spring",PRIMAVERA,SPRING
+343,"verano","summer",VERANO,SUMMER
+344,"otoño","fall",OTONO,FALL
+345,"invierno","winter",INVIERNO,WINTER
+346,"tierra","earth",TIERRA,EARTH
+347,"fuego","fire",FUEGO,FIRE
+348,"aire","air",AIRE,AIR
+349,"piedra","stone",PIEDRA,STONE
+350,"arena","sand",ARENA,SAND
+351,"isla","island",ISLA,ISLAND
+352,"calle","street",CALLE,STREET
+353,"camino","road",CAMINO,ROAD
+354,"ciudad","city",CIUDAD,CITY
+355,"pueblo","town",PUEBLO,TOWN
+356,"tienda","store",TIENDA,STORE
+357,"mercado","market",MERCADO,MARKET
+358,"restaurante","restaurant",RESTAURANTE,RESTAURANT
+359,"hospital","hospital",HOSPITAL,HOSPITAL
+360,"banco","bank",BANCO,BANK
+361,"parque","park",PARQUE,PARK
+362,"iglesia","church",IGLESIA,CHURCH
+363,"museo","museum",MUSEO,MUSEUM
+364,"aeropuerto","airport",AEROPUERTO,AIRPORT
+365,"estación","station",ESTACION,STATION
+366,"hotel","hotel",HOTEL,HOTEL
+367,"oficina","office",OFICINA,OFFICE
+368,"fábrica","factory",FABRICA,FACTORY
+369,"biblioteca","library",BIBLIOTECA,LIBRARY
+370,"correo","mail",CORREO,MAIL
+371,"coche","car",COCHE,CAR
+372,"autobús","bus",AUTOBUS,BUS
+373,"tren","train",TREN,TRAIN
+374,"avión","airplane",AVION,AIRPLANE
+375,"barco","boat",BARCO,BOAT
+376,"bicicleta","bicycle",BICICLETA,BICYCLE
+377,"viaje","trip",VIAJE,TRIP
+378,"boleto","ticket",BOLETO,TICKET
+379,"maleta","suitcase",MALETA,SUITCASE
+380,"dinero","money",DINERO,MONEY
+381,"precio","price",PRECIO,PRICE
+382,"dólar","dollar",DOLAR,DOLLAR
+383,"trabajo","work",TRABAJO,WORK
+384,"negocio","business",NEGOCIO,BUSINESS
+385,"país","country",PAIS,COUNTRY
+386,"mundo","world",MUNDO,WORLD
+387,"dirección","direction",DIRECCION,DIRECTION
+388,"izquierda","left",IZQUIERDA,LEFT
+389,"derecha","right",DERECHA,RIGHT
+390,"arriba","up",ARRIBA,UP
+391,"abajo","down",ABAJO,DOWN
+392,"cerca","near",CERCA,NEAR
+393,"lejos","far",LEJOS,FAR
+394,"dentro","inside",DENTRO,INSIDE
+395,"fuera","outside",FUERA,OUTSIDE
+396,"entrada","entrance",ENTRADA,ENTRANCE
+397,"salida","exit",SALIDA,EXIT
+398,"semáforo","traffic light",SEMAFORO,TRAFFIC LIGHT
+399,"puente","bridge",PUENTE,BRIDGE
+400,"carretera","highway",CARRETERA,HIGHWAY
+401,"conductor","driver",CONDUCTOR,DRIVER
+402,"vendedor","seller",VENDEDOR,SELLER
+403,"abrir","to open",ABRIR,TO OPEN
+404,"cerrar","to close",CERRAR,TO CLOSE
+405,"leer","to read",LEER,TO READ
+406,"escuchar","to listen",ESCUCHAR,TO LISTEN
+407,"mirar","to look",MIRAR,TO LOOK
+408,"pensar","to think",PENSAR,TO THINK
+409,"sentir","to feel",SENTIR,TO FEEL
+410,"esperar","to wait",ESPERAR,TO WAIT
+411,"buscar","to search",BUSCAR,TO SEARCH
+412,"encontrar","to find",ENCONTRAR,TO FIND
+413,"llamar","to call",LLAMAR,TO CALL
+414,"ayudar","to help",AYUDAR,TO HELP
+415,"trabajar","to work",TRABAJAR,TO WORK
+416,"vivir","to live",VIVIR,TO LIVE
+417,"dormir","to sleep",DORMIR,TO SLEEP
+418,"despertar","to wake up",DESPERTAR,TO WAKE UP
+419,"caminar","to walk",CAMINAR,TO WALK
+420,"correr","to run",CORRER,TO RUN
+421,"saltar","to jump",SALTAR,TO JUMP
+422,"jugar","to play",JUGAR,TO PLAY
+423,"nadar","to swim",NADAR,TO SWIM
+424,"bailar","to dance",BAILAR,TO DANCE
+425,"cantar","to sing",CANTAR,TO SING
+426,"reír","to laugh",REIR,TO LAUGH
+427,"llorar","to cry",LLORAR,TO CRY
+428,"comprar","to buy",COMPRAR,TO BUY
+429,"vender","to sell",VENDER,TO SELL
+430,"pagar","to pay",PAGAR,TO PAY
+431,"costar","to cost",COSTAR,TO COST
+432,"llevar","to carry",LLEVAR,TO CARRY
+433,"traer","to bring",TRAER,TO BRING
+434,"poner","to put",PONER,TO PUT
+435,"sacar","to take out",SACAR,TO TAKE OUT
+436,"entrar","to enter",ENTRAR,TO ENTER
+437,"salir","to leave",SALIR,TO LEAVE
+438,"subir","to go up",SUBIR,TO GO UP
+439,"bajar","to go down",BAJAR,TO GO DOWN
+440,"volver","to return",VOLVER,TO RETURN
+441,"llegar","to arrive",LLEGAR,TO ARRIVE
+442,"empezar","to start",EMPEZAR,TO START
+443,"terminar","to finish",TERMINAR,TO FINISH
+444,"usar","to use",USAR,TO USE
+445,"necesitar","to need",NECESITAR,TO NEED
+446,"gustar","to like",GUSTAR,TO LIKE
+447,"amar","to love",AMAR,TO LOVE
+448,"recordar","to remember",RECORDAR,TO REMEMBER
+449,"olvidar","to forget",OLVIDAR,TO FORGET
+450,"aprender","to learn",APRENDER,TO LEARN
+451,"enseñar","to teach",ENSENAR,TO TEACH
+452,"entender","to understand",ENTENDER,TO UNDERSTAND
+453,"preguntar","to ask",PREGUNTAR,TO ASK
+454,"responder","to answer",RESPONDER,TO ANSWER
+455,"cambiar","to change",CAMBIAR,TO CHANGE
+456,"elegir","to choose",ELEGIR,TO CHOOSE
+457,"intentar","to try",INTENTAR,TO TRY
+458,"ganar","to win",GANAR,TO WIN
+459,"perder","to lose",PERDER,TO LOSE
+460,"mandar","to send",MANDAR,TO SEND
+461,"recibir","to receive",RECIBIR,TO RECEIVE
+462,"enviar","to send away",ENVIAR,TO SEND
+463,"mostrar","to show",MOSTRAR,TO SHOW
+464,"seguir","to follow",SEGUIR,TO FOLLOW
+465,"parar","to stop",PARAR,TO STOP
+466,"mover","to move",MOVER,TO MOVE
+467,"tocar","to touch",TOCAR,TO TOUCH
+468,"limpiar","to clean",LIMPIAR,TO CLEAN
+469,"lavar","to wash",LAVAR,TO WASH
+470,"secar","to dry",SECAR,TO DRY
+471,"romper","to break",ROMPER,TO BREAK
+472,"arreglar","to fix",ARREGLAR,TO FIX
+473,"construir","to build",CONSTRUIR,TO BUILD
+474,"crear","to create",CREAR,TO CREATE
+475,"dibujar","to draw",DIBUJAR,TO DRAW
+476,"pintar","to paint",PINTAR,TO PAINT
+477,"pegar","to glue",PEGAR,TO GLUE
+478,"servir","to serve",SERVIR,TO SERVE
+479,"probar","to try taste",PROBAR,TO TASTE
+480,"viajar","to travel",VIAJAR,TO TRAVEL
+481,"conducir","to drive",CONDUCIR,TO DRIVE
+482,"volar","to fly",VOLAR,TO FLY
+483,"caer","to fall",CAER,TO FALL
+484,"quedar","to stay",QUEDAR,TO STAY
+485,"conocer","to meet",CONOCER,TO MEET
+486,"creer","to believe",CREER,TO BELIEVE
+487,"parecer","to seem",PARECER,TO SEEM
+488,"pasar","to pass",PASAR,TO PASS
+489,"ocurrir","to happen",OCURRIR,TO HAPPEN
+490,"permitir","to allow",PERMITIR,TO ALLOW
+491,"decidir","to decide",DECIDIR,TO DECIDE
+492,"preparar","to prepare",PREPARAR,TO PREPARE
+493,"cuidar","to care for",CUIDAR,TO CARE
+494,"ofrecer","to offer",OFRECER,TO OFFER
+495,"aceptar","to accept",ACEPTAR,TO ACCEPT
+496,"explicar","to explain",EXPLICAR,TO EXPLAIN
+497,"descubrir","to discover",DESCUBRIR,TO DISCOVER
+498,"imaginar","to imagine",IMAGINAR,TO IMAGINE
+499,"sonar","to sound",SONAR,TO SOUND
