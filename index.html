@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#050505">
   <title>Ms. Madrigral — Spanish 500</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=48">
 </head>
 <body>
   <main class="page-shell">
@@ -28,8 +28,8 @@
         </button>
       </div>
 
-      <footer class="statusbar">
-        <span id="prompt">CLICK OR FIRE OR SPACE</span>
+      <footer class="statusbar" aria-live="polite">
+        <span id="prompt">CLICK / TAP / SPACE TO START</span>
         <span id="progress" class="progress">0 / 500</span>
       </footer>
 
@@ -38,18 +38,18 @@
         <button id="muteButton" class="mini-button" type="button" aria-pressed="false">SOUND ON</button>
       </div>
 
-      <div id="startOverlay" class="start-overlay">
+      <div id="startOverlay" class="start-overlay" role="button" tabindex="0" aria-label="Start Ms. Madrigral Spanish class">
         <div class="start-panel">
           <div class="start-logo">MS. MADRIGRAL</div>
-          <p>Spanish 500</p>
-          <button id="startButton" class="start-button" type="button" disabled>LOADING...</button>
+          <p>SPANISH 500</p>
+          <button id="startButton" class="start-button" type="button">START CLASS</button>
           <small>CLICK / TAP / SPACE TO PLAY</small>
         </div>
       </div>
     </section>
-    <p class="help">Click the chalkboard or press <kbd>Space</kbd>: English → Spanish → next word. Press <kbd>R</kbd> to reshuffle.</p>
+    <p class="help">CLICK THE CHALKBOARD OR PRESS <kbd>SPACE</kbd>: ENGLISH → SPANISH → NEXT WORD. PRESS <kbd>R</kbd> TO RESHUFFLE.</p>
   </main>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=48"></script>
 </body>
 </html>
