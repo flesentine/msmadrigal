@@ -2,14 +2,14 @@
   'use strict';
 
   // Actual C64 901225-01 character ROM glyph bytes for screen codes 0-63.
-  // This is the range used by this game: A-Z, digits, space and punctuation.
+  // This game uses A-Z, digits, spaces, and basic punctuation from that range.
   const ROM_B64 = 'PGZubmBiPAAYPGZ+ZmZmAHxmZnxmZnwAPGZgYGBmPAB4bGZmZmx4AH5gYHhgYH4AfmBgeGBgYAA8ZmBuZmY8AGZmZn5mZmYAPBgYGBgYPAAeDAwMDGw4AGZseHB4bGYAYGBgYGBgfgBjd39rY2NjAGZ2fn5uZmYAPGZmZmZmPAB8ZmZ8YGBgADxmZmZmPA4AfGZmfHhsZgA8ZmA8BmY8AH4YGBgYGBgAZmZmZmZmPABmZmZmZjwYAGNjY2t/d2MAZmY8GDxmZgBmZmY8GBgYAH4GDBgwYH4APDAwMDAwPAAMEjB8MGL8ADwMDAwMDDwAABg8fhgYGBgAEDB/fzAQAAAAAAAAAAAAGBgYGAAAGABmZmYAAAAAAGZm/2b/ZmYAGD5gPAZ8GABiZgwYMGZGADxmPDhnZj8ABgwYAAAAAAAMGDAwMBgMADAYDAwMGDAAAGY8/zxmAAAAGBh+GBgAAAAAAAAAGBgwAAAAfgAAAAAAAAAAABgYAAADBgwYMGAAPGZudmZmPAAYGDgYGBh+ADxmBgwwYH4APGYGHAZmPAAGDh5mfwYGAH5gfAYGZjwAPGZgfGZmPAB+ZgwYGBgYADxmZjxmZjwAPGZmPgZmPAAAABgAABgAAAAAGAAAGBgwDhgwYDAYDgAAAH4AfgAAAHAYDAYMGHAAPGYGDBgAGAA=';
   const ROM = Uint8Array.from(atob(ROM_B64), c => c.charCodeAt(0));
 
   function screenCode(ch) {
     const c = ch.toUpperCase().charCodeAt(0);
-    if (c >= 65 && c <= 90) return c - 64; // A-Z -> screen codes 1-26
-    if (c >= 32 && c <= 63) return c;      // space, digits, punctuation
+    if (c >= 65 && c <= 90) return c - 64;
+    if (c >= 32 && c <= 63) return c;
     return 32;
   }
 
@@ -66,24 +66,46 @@
   bindBitmap(document.getElementById('prompt'), 'petscii-prompt', '#f2f2e8');
   bindBitmap(document.getElementById('progress'), 'petscii-progress', '#aaa9ca');
 
-  // Keep Ms. Madrigral's head/upper body steady while she walks.
-  // The old web animation alternated two complete-body images, which made
-  // her face appear to blink. Capture the standing frame and force it for
-  // both walk phases; the one-pixel bob keeps a little step motion.
-  const teacherSprite = document.getElementById('teacherSprite');
-  if (teacherSprite) {
-    requestAnimationFrame(() => {
-      const standingContent = getComputedStyle(teacherSprite).content;
-      if (standingContent && standingContent !== 'none' && standingContent !== 'normal') {
-        const style = document.createElement('style');
-        style.textContent = `
-          .teacher > #teacherSprite.frame-b {
-            content: ${standingContent} !important;
-            transform: translateY(1px);
-          }
-        `;
-        document.head.appendChild(style);
+  // The original web CSS had two complete teacher images for walking frames.
+  // Copy the standing image directly onto the alternate frame rule so the
+  // head/face can never blink while app.js toggles frame-b.
+  try {
+    let standingContent = null;
+    let alternateRule = null;
+    for (const sheet of Array.from(document.styleSheets)) {
+      let rules;
+      try { rules = sheet.cssRules; } catch (_) { continue; }
+      for (const rule of Array.from(rules || [])) {
+        if (rule.selectorText === '.teacher > #teacherSprite') {
+          standingContent = rule.style.content;
+        } else if (rule.selectorText === '.teacher > #teacherSprite.frame-b') {
+          alternateRule = rule;
+        }
       }
-    });
+    }
+    if (standingContent && alternateRule) {
+      alternateRule.style.setProperty('content', standingContent, 'important');
+      alternateRule.style.setProperty('transform', 'translateY(1px)', 'important');
+    }
+  } catch (error) {
+    console.warn('Could not lock teacher walk frame.', error);
+  }
+
+  // Some browsers were not reliably delivering the board's normal button
+  // click to app.js. Intercept real pointer clicks in capture phase and route
+  // them through the game's already-proven Space-key control path exactly once.
+  const board = document.getElementById('board');
+  if (board) {
+    board.addEventListener('click', event => {
+      if (event.detail <= 0) return; // keyboard-generated click: let app.js handle it
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      document.dispatchEvent(new KeyboardEvent('keydown', {
+        key: ' ',
+        code: 'Space',
+        bubbles: true,
+        cancelable: true,
+      }));
+    }, true);
   }
 })();
