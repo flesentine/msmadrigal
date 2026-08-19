@@ -8,8 +8,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Ms. Madrigral — Spanish 500</title>
-  <link rel="stylesheet" href="styles.css?v=55">
-  <link rel="stylesheet" href="petscii.css?v=55">
+  <link rel="stylesheet" href="styles.css?v=56">
+  <link rel="stylesheet" href="petscii.css?v=56">
 </head>
 <body>
   <main class="page-shell">
@@ -54,7 +54,103 @@
     <p class="help">CLICK THE CHALKBOARD OR PRESS <kbd>SPACE</kbd>: ENGLISH → SPANISH → NEXT WORD. PRESS <kbd>R</kbd> TO RESHUFFLE.</p>
   </main>
 
-  <script src="app.js?v=55"></script>
-  <script src="petscii.js?v=55"></script>
+  <script src="app.js?v=56"></script>
+  <script src="petscii.js?v=56"></script>
+  <script>
+  (() => {
+    'use strict';
+
+    const teacher = document.getElementById('teacher');
+    const sprite = document.getElementById('teacherSprite');
+    if (!teacher || !sprite) return;
+
+    function contentUrl(value) {
+      if (!value || value === 'none' || value === 'normal') return null;
+      const match = String(value).match(/^url\((['"]?)(.*)\1\)$/);
+      return match ? match[2] : null;
+    }
+
+    function originalWalkFrameUrl() {
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules;
+        try { rules = sheet.cssRules; } catch (_) { continue; }
+        for (const rule of Array.from(rules || [])) {
+          if (rule.selectorText === '.teacher > #teacherSprite.frame-b') {
+            return contentUrl(rule.style.content);
+          }
+        }
+      }
+      return null;
+    }
+
+    const walkUrl = originalWalkFrameUrl();
+    if (!walkUrl) {
+      console.warn('V56: alternate walking frame was not found; keeping stable V55 teacher.');
+      return;
+    }
+
+    teacher.querySelectorAll('.v56-leg-frame').forEach(el => el.remove());
+
+    const legs = document.createElement('img');
+    legs.className = 'v56-leg-frame';
+    legs.alt = '';
+    legs.setAttribute('aria-hidden', 'true');
+    legs.src = walkUrl;
+    teacher.insertBefore(legs, teacher.querySelector('.pointer') || null);
+
+    const style = document.createElement('style');
+    style.id = 'v56-leg-walk-style';
+    style.textContent = `
+      /* The complete V55 standing teacher always stays visible underneath. */
+      .teacher > #teacherSprite,
+      .teacher > #teacherSprite.frame-b {
+        opacity: 1 !important;
+        visibility: visible !important;
+        clip-path: none !important;
+      }
+
+      /* Only the bottom of the real second walk frame is overlaid. */
+      .teacher > .v56-leg-frame {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 76%;
+        height: auto;
+        z-index: 1;
+        opacity: 0;
+        visibility: visible;
+        clip-path: inset(64% 0 0 0);
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        pointer-events: none;
+      }
+
+      .teacher.walking > #teacherSprite.frame-b ~ .v56-leg-frame {
+        opacity: 1;
+      }
+
+      .teacher .pointer { z-index: 2; }
+
+      /* Slightly quicker walk, ending a little closer to the board. */
+      .teacher.walking {
+        animation: walk-in-v56 1.18s steps(16, end) forwards !important;
+      }
+      .teacher.arrived { transform: translateX(12%) !important; }
+      @keyframes walk-in-v56 {
+        from { transform: translateX(-125%); }
+        to { transform: translateX(12%); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Never leave frame B visible after the walking class is removed.
+    const sync = () => {
+      if (!teacher.classList.contains('walking')) legs.style.opacity = '0';
+      else legs.style.removeProperty('opacity');
+    };
+    new MutationObserver(sync).observe(teacher, { attributes: true, attributeFilter: ['class'] });
+    sync();
+  })();
+  </script>
 </body>
 </html>
