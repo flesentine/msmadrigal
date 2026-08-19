@@ -68,27 +68,138 @@
   bindBitmap(document.getElementById('muteButton'), 'petscii-mini', '#c6c5dd');
 
   // ------------------------------------------------------------------
-  // Stable teacher rendering.
-  // Do NOT replace, clip, hide, or re-source the teacher image in JavaScript.
-  // The previous lower-body overlay experiments could destroy the sprite.
-  // Instead, read the original standing CSS frame once and force frame-b to
-  // use that exact same image. The teacher still walks across the room, but
-  // her complete body remains intact and steady for this stable build.
+  // Original-teacher leg animation.
+  // Keep the complete standing teacher permanently visible. Capture the two
+  // ORIGINAL CSS teacher frames before overriding anything, then show only
+  // the bottom 40 pixels of those frames in a small masked viewport. The
+  // upper body/head/pointer never swap, so only the skirt hem/legs/feet move.
   // ------------------------------------------------------------------
+  function contentUrl(value) {
+    if (!value || value === 'none' || value === 'normal') return null;
+    const match = String(value).match(/^url\((['"]?)(.*)\1\)$/);
+    return match ? match[2] : null;
+  }
+
+  function waitForImage(img) {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve(true);
+    return new Promise(resolve => {
+      img.addEventListener('load', () => resolve(true), { once: true });
+      img.addEventListener('error', () => resolve(false), { once: true });
+    });
+  }
+
+  const teacher = document.getElementById('teacher');
   const teacherSprite = document.getElementById('teacherSprite');
-  if (teacherSprite) {
+
+  if (teacher && teacherSprite) {
     requestAnimationFrame(() => {
       try {
         teacherSprite.classList.remove('frame-b');
         const standingContent = getComputedStyle(teacherSprite).content;
-        if (standingContent && standingContent !== 'none' && standingContent !== 'normal') {
-          const style = document.createElement('style');
-          style.id = 'stable-teacher-frame-lock';
-          style.textContent = `.teacher > #teacherSprite.frame-b { content: ${standingContent} !important; }`;
-          document.head.appendChild(style);
+        const standingUrl = contentUrl(standingContent);
+
+        teacherSprite.classList.add('frame-b');
+        const walkingContent = getComputedStyle(teacherSprite).content;
+        const walkingUrl = contentUrl(walkingContent);
+        teacherSprite.classList.remove('frame-b');
+
+        if (!standingUrl) return;
+
+        // The complete visible teacher is always frame A.
+        const lock = document.createElement('style');
+        lock.id = 'stable-teacher-frame-lock';
+        lock.textContent = `
+          .teacher > #teacherSprite,
+          .teacher > #teacherSprite.frame-b {
+            content: ${standingContent} !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            clip-path: none !important;
+            z-index: 1;
+          }
+        `;
+        document.head.appendChild(lock);
+
+        if (!walkingUrl || walkingUrl === standingUrl) {
+          console.warn('Original alternate teacher frame unavailable; keeping stable teacher.');
+          return;
         }
+
+        const frameA = document.createElement('img');
+        const frameB = document.createElement('img');
+        frameA.alt = '';
+        frameB.alt = '';
+        frameA.setAttribute('aria-hidden', 'true');
+        frameB.setAttribute('aria-hidden', 'true');
+        frameA.src = standingUrl;
+        frameB.src = walkingUrl;
+
+        Promise.all([waitForImage(frameA), waitForImage(frameB)]).then(([aReady, bReady]) => {
+          if (!aReady || !bReady) {
+            console.warn('Could not preload original teacher walk frames.');
+            return;
+          }
+
+          teacher.querySelectorAll('.teacher-leg-viewport').forEach(el => el.remove());
+
+          const viewport = document.createElement('div');
+          viewport.className = 'teacher-leg-viewport';
+          viewport.setAttribute('aria-hidden', 'true');
+          frameA.className = 'teacher-leg-source teacher-leg-a';
+          frameB.className = 'teacher-leg-source teacher-leg-b';
+          viewport.append(frameA, frameB);
+          teacher.insertBefore(viewport, teacher.querySelector('.pointer') || null);
+
+          const style = document.createElement('style');
+          style.id = 'teacher-leg-animation-style';
+          style.textContent = `
+            .teacher > .teacher-leg-viewport {
+              position: absolute;
+              left: 0;
+              bottom: 0;
+              width: 76%;
+              aspect-ratio: 12 / 5;
+              overflow: hidden;
+              background: #050505;
+              z-index: 2;
+              pointer-events: none;
+            }
+            .teacher > .teacher-leg-viewport > .teacher-leg-source {
+              position: absolute;
+              left: 0;
+              bottom: 0;
+              width: 100%;
+              height: auto;
+              max-width: none;
+              image-rendering: pixelated;
+              image-rendering: crisp-edges;
+              pointer-events: none;
+            }
+            .teacher > .teacher-leg-viewport > .teacher-leg-a { opacity: 1; }
+            .teacher > .teacher-leg-viewport > .teacher-leg-b { opacity: 0; }
+            .teacher .pointer { z-index: 3; }
+          `;
+          document.head.appendChild(style);
+
+          const syncLegs = () => {
+            const useB = teacher.classList.contains('walking')
+              && teacherSprite.classList.contains('frame-b');
+            frameA.style.opacity = useB ? '0' : '1';
+            frameB.style.opacity = useB ? '1' : '0';
+          };
+
+          new MutationObserver(syncLegs).observe(teacherSprite, {
+            attributes: true,
+            attributeFilter: ['class'],
+          });
+          new MutationObserver(syncLegs).observe(teacher, {
+            attributes: true,
+            attributeFilter: ['class'],
+          });
+          syncLegs();
+        });
       } catch (error) {
-        console.warn('Could not lock teacher to standing frame.', error);
+        console.warn('Could not prepare original teacher leg animation.', error);
       }
     });
   }
