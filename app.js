@@ -24,8 +24,6 @@
   let spanishVoice = null;
   let loadError = null;
 
-  // Prefer the same deliberately crunchy 4-bit-style samples as the C64
-  // build. Browser speech remains only as a fallback.
   let c64AudioIndex = null;
   let audioContext = null;
   const packPromises = new Map();
@@ -109,7 +107,7 @@
       ? `${entry.es}. Click for next word.`
       : `${entry.en}. Click to reveal Spanish.`);
     progressEl.textContent = `${deckPos + 1} / ${deck.length}`;
-    promptEl.textContent = spanishSide ? 'CLICK FOR NEXT WORD' : 'CLICK TO REVEAL SPANISH';
+    promptEl.textContent = spanishSide ? 'CLICK: NEXT WORD' : 'CLICK: REVEAL SPANISH';
   }
 
   async function ensureAudioContext() {
@@ -291,12 +289,10 @@
 
       if (loadError || vocab.length !== 500) {
         startButton.textContent = 'LOAD FAILED - REFRESH';
-        promptEl.textContent = 'COULD NOT LOAD VOCABULARY';
+        promptEl.textContent = 'LOAD FAILED';
         return;
       }
 
-      // This runs from a click/tap/keypress, so Web Audio may be unlocked.
-      // Load the intro and first random word while Ms. Madrigral walks in.
       await ensureAudioContext();
 
       started = true;
@@ -337,7 +333,6 @@
     }
   }
 
-  // Clicking never waits for sample playback.
   function advance() {
     if (!started || !deck.length || starting) return;
 
@@ -374,7 +369,6 @@
       if (vocab.length !== 500) throw new Error(`Expected 500 vocabulary entries, got ${vocab.length}.`);
       c64AudioIndex = audioIndex;
 
-      // Fallback only; the normal path is the C64-style sample packs.
       chooseSpanishVoice();
       if (window.speechSynthesis && typeof speechSynthesis.addEventListener === 'function') {
         speechSynthesis.addEventListener('voiceschanged', chooseSpanishVoice, { once: true });
@@ -383,14 +377,14 @@
       startButton.disabled = false;
       startButton.textContent = 'START CLASS';
       promptEl.textContent = c64AudioIndex
-        ? 'C64 VOICE READY - CLICK / TAP / SPACE'
-        : 'CLICK / TAP / SPACE TO START';
+        ? 'C64 VOICE READY - CLICK / TAP'
+        : 'CLICK / TAP TO START';
     } catch (error) {
       loadError = error;
       console.error(error);
       startButton.disabled = false;
-      startButton.textContent = 'LOAD FAILED - REFRESH';
-      promptEl.textContent = 'COULD NOT LOAD VOCABULARY';
+      startButton.textContent = 'LOAD FAILED';
+      promptEl.textContent = 'LOAD FAILED';
     }
   }
 
