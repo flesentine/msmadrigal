@@ -8,8 +8,53 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Ms. Madrigral — Spanish 500</title>
-  <link rel="stylesheet" href="styles.css?v=56">
-  <link rel="stylesheet" href="petscii.css?v=56">
+  <link rel="stylesheet" href="styles.css?v=57">
+  <link rel="stylesheet" href="petscii.css?v=57">
+  <style id="split-teacher-v57">
+    .teacher { overflow: visible; }
+    .teacher > #teacherSprite { display:none !important; }
+
+    .teacher > .teacher-upper,
+    .teacher > .teacher-legs {
+      position:absolute;
+      left:-8%;
+      bottom:-6%;
+      width:92%;
+      height:auto;
+      image-rendering:pixelated;
+      image-rendering:crisp-edges;
+      pointer-events:none;
+    }
+
+    .teacher > .teacher-legs { z-index:1; }
+    .teacher > .teacher-upper { z-index:2; }
+
+    .teacher > .teacher-legs-a { opacity:1; }
+    .teacher > .teacher-legs-b { opacity:0; }
+
+    .teacher.walking > #teacherSprite.frame-b ~ .teacher-legs-a { opacity:0; }
+    .teacher.walking > #teacherSprite.frame-b ~ .teacher-legs-b { opacity:1; }
+
+    .teacher:not(.walking) > .teacher-legs-a { opacity:1; }
+    .teacher:not(.walking) > .teacher-legs-b { opacity:0; }
+
+    .teacher .pointer {
+      left:69%;
+      top:34%;
+      width:72%;
+      z-index:3;
+    }
+
+    .teacher.walking {
+      animation:walk-in-v57 1.18s steps(16,end) forwards !important;
+    }
+    .teacher.arrived { transform:translateX(12%) !important; }
+
+    @keyframes walk-in-v57 {
+      from { transform:translateX(-125%); }
+      to { transform:translateX(12%); }
+    }
+  </style>
 </head>
 <body>
   <main class="page-shell">
@@ -24,133 +69,6 @@
       <div class="scene">
         <div id="teacher" class="teacher" aria-hidden="true">
           <img id="teacherSprite" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="">
-          <img class="pointer" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="">
-        </div>
-
-        <button id="board" class="board" type="button" aria-label="Vocabulary card. Click to flip or advance.">
-          <span id="word" class="word" aria-live="polite"></span>
-        </button>
-      </div>
-
-      <footer class="statusbar" aria-live="polite">
-        <span id="prompt">CLICK / TAP / SPACE TO START</span>
-        <span id="progress" class="progress">0 / 500</span>
-      </footer>
-
-      <div class="controls" aria-label="Game controls">
-        <button id="shuffleButton" class="mini-button" type="button">RESHUFFLE</button>
-        <button id="muteButton" class="mini-button" type="button" aria-pressed="false">SOUND ON</button>
-      </div>
-
-      <div id="startOverlay" class="start-overlay" role="button" tabindex="0" aria-label="Start Ms. Madrigral Spanish class">
-        <div class="start-panel">
-          <div id="startLogo" class="start-logo">MS. MADRIGRAL</div>
-          <div id="startSubtitle" class="start-subtitle">SPANISH 500</div>
-          <button id="startButton" class="start-button" type="button">START CLASS</button>
-          <div id="startHint" class="start-hint">C64 VOICE - CLICK / TAP / SPACE TO PLAY</div>
-        </div>
-      </div>
-    </section>
-    <p class="help">CLICK THE CHALKBOARD OR PRESS <kbd>SPACE</kbd>: ENGLISH → SPANISH → NEXT WORD. PRESS <kbd>R</kbd> TO RESHUFFLE.</p>
-  </main>
-
-  <script src="app.js?v=56"></script>
-  <script src="petscii.js?v=56"></script>
-  <script>
-  (() => {
-    'use strict';
-
-    const teacher = document.getElementById('teacher');
-    const sprite = document.getElementById('teacherSprite');
-    if (!teacher || !sprite) return;
-
-    function contentUrl(value) {
-      if (!value || value === 'none' || value === 'normal') return null;
-      const match = String(value).match(/^url\((['"]?)(.*)\1\)$/);
-      return match ? match[2] : null;
-    }
-
-    function originalWalkFrameUrl() {
-      for (const sheet of Array.from(document.styleSheets)) {
-        let rules;
-        try { rules = sheet.cssRules; } catch (_) { continue; }
-        for (const rule of Array.from(rules || [])) {
-          if (rule.selectorText === '.teacher > #teacherSprite.frame-b') {
-            return contentUrl(rule.style.content);
-          }
-        }
-      }
-      return null;
-    }
-
-    const walkUrl = originalWalkFrameUrl();
-    if (!walkUrl) {
-      console.warn('V56: alternate walking frame was not found; keeping stable V55 teacher.');
-      return;
-    }
-
-    teacher.querySelectorAll('.v56-leg-frame').forEach(el => el.remove());
-
-    const legs = document.createElement('img');
-    legs.className = 'v56-leg-frame';
-    legs.alt = '';
-    legs.setAttribute('aria-hidden', 'true');
-    legs.src = walkUrl;
-    teacher.insertBefore(legs, teacher.querySelector('.pointer') || null);
-
-    const style = document.createElement('style');
-    style.id = 'v56-leg-walk-style';
-    style.textContent = `
-      /* The complete V55 standing teacher always stays visible underneath. */
-      .teacher > #teacherSprite,
-      .teacher > #teacherSprite.frame-b {
-        opacity: 1 !important;
-        visibility: visible !important;
-        clip-path: none !important;
-      }
-
-      /* Only the bottom of the real second walk frame is overlaid. */
-      .teacher > .v56-leg-frame {
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        width: 76%;
-        height: auto;
-        z-index: 1;
-        opacity: 0;
-        visibility: visible;
-        clip-path: inset(64% 0 0 0);
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
-        pointer-events: none;
-      }
-
-      .teacher.walking > #teacherSprite.frame-b ~ .v56-leg-frame {
-        opacity: 1;
-      }
-
-      .teacher .pointer { z-index: 2; }
-
-      /* Slightly quicker walk, ending a little closer to the board. */
-      .teacher.walking {
-        animation: walk-in-v56 1.18s steps(16, end) forwards !important;
-      }
-      .teacher.arrived { transform: translateX(12%) !important; }
-      @keyframes walk-in-v56 {
-        from { transform: translateX(-125%); }
-        to { transform: translateX(12%); }
-      }
-    `;
-    document.head.appendChild(style);
-
-    // Never leave frame B visible after the walking class is removed.
-    const sync = () => {
-      if (!teacher.classList.contains('walking')) legs.style.opacity = '0';
-      else legs.style.removeProperty('opacity');
-    };
-    new MutationObserver(sync).observe(teacher, { attributes: true, attributeFilter: ['class'] });
-    sync();
-  })();
-  </script>
-</body>
-</html>
+          <img class="teacher-legs teacher-legs-a" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA3OCIgc2hhcGUtcmVuZGVyaW5nPSJjcmlzcEVkZ2VzIj48cGF0aCBmaWxsPSIjMTMxNjY2IiBkPSJNMzMgMjd2MWgtMXpNMzIgMjhoMXYxaC0xek0zMSAyOWgydjFoLTJ6TTMwIDMwaDN2MWgtM3pNMjkgMzFoNHYxaC00ek0yOCAzMmg2djFoLTZ6TTI3IDMzaDh2MWgtOHpNMjYgMzRoMTB2MWgtMTB6TTI1IDM1aDEydjFoLTEyek0yNCAzNmgxNHYxaC0xNHpNMjMgMzdoMTZ2MWgtMTZ6TTIyIDM4aDE4djFoLTE4ek0yMSAzOWgyMHYxaC0yMHpNMjAgNDBoMjJ2MWgtMjJ6TTE5IDQxaDI0djFoLTI0ek0xOCA0MmgxMHYxaC0xMHpNMzQgNDJoMTB2MWgtMTB6TTE3IDQzaDEwdjFoLTEwek0zNSA0M2gxMHYxaC0xMHpNMTYgNDRoMTB2MWgtMTB6TTM2IDQ0aDEwdjFoLTEwek0xNSA0NWgxMHYxaC0xMHpNMzcgNDVoMTB2MWgtMTB6TTE0IDQ2aDEwdjFoLTEwek0zOCA0NmgxMHYxaC0xMHpNMTMgNDdoMTB2MWgtMTB6TTM5IDQ3aDEwdjFoLTEwek0xMiA0OGgxMHYxaC0xMHpNNDAgNDhoMTB2MWgtMTB6TTExIDQ5aDEwdjFoLTEwek00MSA0OWgxMHYxaC0xMHpNMjQgNTBoMTZ2MWgtMTZ6TTIzIDUxaDE4djFoLTE4ek0yMiA1MmgxOHYxaC0xOHpNMjEgNTNoMTh2MWgtMTh6TTIwIDU0aDE5djFoLTE5ek0xOSA1NWgxOXYxaC0xOXpNMTggNTZoMTl2MWgtMTl6TTE3IDU3aDE5djFoLTE5ek0xNiA1OGgxOXYxaC0xOXpNMTUgNTloMTl2MWgtMTl6TTE0IDYwaDE5djFoLTE5ek0xMyA2MWgxOXYxaC0xOXpNMTIgNjJoMTl2MWgtMTl6TTExIDYzaDE5djFoLTE5ek0xMCA2NGgxOXYxaC0xOXpNOSA2NWgxOXYxaC0xOXpNOCA2NmgxOXYxaC0xOXpNNyA2N2gxOXYxaC0xOXpNNiA2OGgxOXYxaC0xOXpNNSA2OWgxOXYxaC0xOXpNNCA3MGgxOXYxaC0xOXpNMTAuNSA3MWgxMnYxaC0xMnpNMTAuNSA3MmgxMnYxaC0xMnpNMTAuNSA3M2gxMnYxaC0xMnpNMTAuNSA3NGgxMnYxaC0xMnpNMTAuNSA3NWgxMnYxaC0xMnpNMTAuNSA3NmgxMnYxaC0xMnpNMTAuNSA3N2gxMnYxaC0xMnoiLz48cGF0aCBmaWxsPSIjODU4YmU2IiBkPSJNMjEgNDJoNnYxaC02ek0yMCA0M2g2djFoLTZ6TTE5IDQ0aDd2MWgtN3pNMTggNDVoN3YxaC03ek0xNyA0Nmg3djFoLTd6TTE2IDQ3aDd2MWgtN3pNMTUgNDhoN3YxaC03ek0xNCA0OWg3djFoLTd6TTEzIDUwaDd2MWgtN3pNMTIgNTFoN3YxaC03ek0xMSA1Mmg3djFoLTd6TTEwIDUzaDd2MWgtN3pNOSA1NGg3djFoLTd6TTggNTVoN3YxaC03ek03IDU2aDd2MWgtN3pNNiA1N2g3djFoLTd6TTUgNThoN3YxaC03ek00IDU5aDd2MWgtN3pNMyA2MGg3djFoLTd6TTIgNjFoN3YxaC03ek0xIDYyaDd2MWgtN3oiLz48cGF0aCBmaWxsPSIjZmZiMTZiIiBkPSJNNCA2M2g1djFoLTV6TTI2IDYzaDR2MWgtNHpNMyA2NGg1djFoLTV6TTI1IDY0aDV2MWgtNXpNMiA2NWg1djFoLTV6TTI0IDY1aDZ2MWgtNnpNMSA2Nmg1djFoLTV6TTIzIDY2aDd2MWgtN3pNMCA2N2g1djFoLTV6TTIyIDY3aDh2MWgtOHpNMCA2OGg1djFoLTV6TTIxIDY4aDl2MWgtOXpNMCA2OWg1djFoLTV6TTIwIDY5aDEwdjFoLTEwek0wIDcwaDV2MWgtNXpNMTkgNzBoMTF2MWgtMTF6TTAgNzFoNXYxaC01ek0xOCA3MWgxMnYxaC0xMnpNMCA3Mmg1djFoLTV6TTE3IDcyaDEzdjFoLTEzek0wIDczaDV2MWgtNXpNMTYgNzNoMTR2MWgtMTR6TTAgNzRoNXYxaC01ek0xNSA3NGgxNXYxaC0xNXpNMCA3NWg1djFoLTV6TTE0IDc1aDE2djFoLTE2ek0wIDc2aDV2MWgtNXpNMTMgNzZoMTd2MWgtMTd6TTAgNzdoNXYxaC01ek0xMiA3N2gxOHYxaC0xOHoiLz48cGF0aCBmaWxsPSIjMGUxMjUwIiBkPSJNMjUgNzNoNXYxaC01ek0yNCA3NGg2djFoLTZ6TTIzIDc1aDd2MWgtN3pNMjIgNzZoOHYxaC04ek0yMSA3N2g5djFoLTl6Ii8+PC9zdmc+" alt="">
+          <img class="teacher-legs teacher-legs-b" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA3OCIgc2hhcGUtcmVuZGVyaW5nPSJjcmlzcEVkZ2VzIj48cGF0aCBmaWxsPSIjMTMxNjY2IiBkPSJNMzEgMjN2MWgtMXpNMzAgMjRoMnYxaC0yek0yOSAyNWg0djFoLTR6TTI4IDI2aDZ2MWgtNnpNMjcgMjdoOHYxaC04ek0yNiAyOGgxMHYxaC0xMHpNMjUgMjloMTJ2MWgtMTJ6TTI0IDMwaDE0djFoLTE0ek0yMyAzMWgxNnYxaC0xNnpNMjIgMzJoMTh2MWgtMTh6TTIxIDMzaDIwdjFoLTIwek0yMCAzNGgyMnYxaC0yMnpNMTkgMzVoMjR2MWgtMjR6TTE4IDM2aDI2djFoLTI2ek0xNyAzN2gyOHYxaC0yOHpNMTYgMzhoMzB2MWgtMzB6TTE1IDM5aDEzdjFoLTEzek0zNCAzOWgxM3YxaC0xM3pNMTQgNDBoMTN2MWgtMTN6TTM1IDQwaDEzdjFoLTEzek0xMyA0MWgxM3YxaC0xM3pNMzYgNDFoMTN2MWgtMTN6TTEyIDQyaDEzdjFoLTEzek0zNyA0MmgxM3YxaC0xM3pNMTEgNDNoMTN2MWgtMTN6TTM4IDQzaDEzdjFoLTEzek0xMCA0NGgxM3YxaC0xM3pNMzkgNDRoMTN2MWgtMTN6TTkgNDVoMTN2MWgtMTN6TTQwIDQ1aDEzdjFoLTEzek04IDQ2aDEzdjFoLTEzek00MSA0NmgxM3YxaC0xM3pNNyA0N2gxM3YxaC0xM3pNNDIgNDdoMTN2MWgtMTN6TTYgNDhoMTN2MWgtMTN6TTQzIDQ4aDEzdjFoLTEzek01IDQ5aDEzdjFoLTEzek00NCA0OWgxM3YxaC0xM3pNMTkgNTBoMjZ2MWgtMjZ6TTE4IDUxaDI4djFoLTI4ek0xNyA1MmgzMHYxaC0zMHpNMTYgNTNoMzJ2MWgtMzJ6TTE1IDU0aDM0djFoLTM0ek0xNCA1NWgzNnYxaC0zNnpNMTMgNTZoMzh2MWgtMzh6TTEyIDU3aDQwdjFoLTQwek0xMSA1OGg0MnYxaC00MnpNMTAgNTloNDR2MWgtNDR6TTkgNjBoNDZ2MWgtNDZ6TTggNjFoNDh2MWgtNDh6TTcgNjJoNTB2MWgtNTB6TTYgNjNoNTJ2MWgtNTJ6TTUgNjRoNTR2MWgtNTR6TTQgNjVoNTZ2MWgtNTZ6TTMgNjZoNTh2MWgtNTh6TTIgNjdoNjB2MWgtNjB6TTEgNjhoNjJ2MWgtNjJ6TTAgNjloNjR2MWgtNjR6TTAgNzBoNjR2MWgtNjR6TTAgNzFoNjR2MWgtNjR6TTAgNzJoNjR2MWgtNjR6Ii8+PHBhdGggZmlsbD0iIzg1OGJlNiIgZD0iTTE4IDM5aDEwdjFoLTEwek0xNyA0MGgxMHYxaC0xMHpNMTYgNDFoMTB2MWgtMTB6TTE1IDQyaDEwdjFoLTEwek0xNCA0M2gxMHYxaC0xMHpNMTMgNDRoMTB2MWgtMTB6TTEyIDQ1aDEwdjFoLTEwek0xMSA0NmgxMHYxaC0xMHpNMTAgNDdoMTB2MWgtMTB6TTkgNDhoMTB2MWgtMTB6TTggNDloMTB2MWgtMTB6TTcgNTBoMTB2MWgtMTB6TTYgNTFoMTB2MWgtMTB6TTUgNTJoMTB2MWgtMTB6TTQgNTNoMTB2MWgtMTB6TTMgNTRoMTB2MWgtMTB6TTIgNTVoMTB2MWgtMTB6TTEgNTZoMTB2MWgtMTB6TTAgNTdoMTB2MWgtMTB6Ii8+PHBhdGggZmlsbD0iI2ZmYjE2YiIgZD0iTTEgNjNoNXYxaC01ek01OCA2M2g1djFoLTV6TTAgNjRoNXYxaC01ek01NyA2NGg1djFoLTV6TTAgNjVoNXYxaC01ek01NiA2NWg1djFoLTV6TTAgNjZoNXYxaC01ek01NSA2Nmg1djFoLTV6TTAgNjdoNXYxaC01ek01NCA2N2g1djFoLTV6TTAgNjhoNXYxaC01ek01MyA2OGg1djFoLTV6TTAgNjloNXYxaC01ek01MiA2OWg1djFoLTV6TTAgNzBoNXYxaC01ek01MSA3MGg1djFoLTV6TTAgNzFoNXYxaC01ek01MCA3MWg1djFoLTV6TTAgNzJoNXYxaC01ek00OSA3Mmg1djFoLTV6Ii8+PHBhdGggZmlsbD0iIzBlMTI1MCIgZD0iTTAgNzNoNXYxaC01ek00OCA3M2g1djFoLTV6TTAgNzRoNXYxaC01ek00NyA3NGg1djFoLTV6TTAgNzVoNXYxaC01ek00NiA3NWg1djFoLTV6TTAgNzZoNXYxaC01ek00NSA3Nmg1djFoLTV6TTAgNzdoNXYxaC01ek00NCA3N2g1djFoLTV6Ii8+PC9zdmc+" alt="">
+          <img class="teacher-upper" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA3OCIgc2hhcGUtcmVuZGVyaW5nPSJjcmlzcEVkZ2VzIj48cGF0aCBmaWxsPSIjNzYxZDIxIiBkPSJNMjMgNmgzdjFoLTN6TTIxIDdoN3YxaC03ek0xOSA4aDEwdjFoLTEwek0xOCA5aDEydjFoLTEyek0xNyAxMGgxNHYxaC0xNHpNMTYgMTFoMTV2MWgtMTV6TTE1IDEyaDE2djFoLTE2ek0xNCAxM2gxNnYxaC0xNnpNMTMgMTRoMTZ2MWgtMTZ6TTEyIDE1aDE2djFoLTE2ek0xMSAxNmgxNnYxaC0xNnpNMTAgMTdoMTZ2MWgtMTZ6TTkgMThoMTZ2MWgtMTZ6TTggMTloMTZ2MWgtMTZ6TTcgMjBoMTZ2MWgtMTZ6TTYgMjFoMTZ2MWgtMTZ6TTUgMjJoMTZ2MWgtMTZ6TTQgMjNoMTZ2MWgtMTZ6TTMgMjRoMTZ2MWgtMTZ6TTIgMjVoMTZ2MWgtMTZ6TTEgMjZoMTZ2MWgtMTZ6TTAgMjdoMTZ2MWgtMTZ6TTAgMjhoMTZ2MWgtMTZ6TTAgMjloMTZ2MWgtMTZ6TTAgMzBoMTZ2MWgtMTZ6TTAgMzFoMTZ2MWgtMTZ6TTAgMzJoMTZ2MWgtMTZ6TTAgMzNoMTZ2MWgtMTZ6TTAgMzRoMTZ2MWgtMTZ6TTAgMzVoMTZ2MWgtMTZ6TTAgMzZoMTZ2MWgtMTZ6TTAgMzdoMTZ2MWgtMTZ6TTAgMzhoMTZ2MWgtMTZ6TTAgMzloMTZ2MWgtMTZ6TTAgNDBoMTZ2MWgtMTZ6TTAgNDFoMTZ2MWgtMTZ6TTAgNDJoMTZ2MWgtMTZ6TTAgNDNoMTZ2MWgtMTZ6TTAgNDRoMTZ2MWgtMTZ6TTAgNDVoMTZ2MWgtMTZ6TTAgNDZoMTZ2MWgtMTZ6TTAgNDdoMTZ2MWgtMTZ6TTAgNDhoMTZ2MWgtMTZ6TTAgNDloMTZ2MWgtMTZ6TTAgNTBoMTZ2MWgtMTZ6TTAgNTFoMTZ2MWgtMTZ6TTAgNTJoMTZ2MWgtMTZ6TTAgNTNoMTZ2MWgtMTZ6TTAgNTRoMTZ2MWgtMTZ6TTAgNTVoMTZ2MWgtMTZ6TTAgNTZoMTZ2MWgtMTZ6TTAgNTdoMTZ2MWgtMTZ6TTAgNThoMTZ2MWgtMTZ6TTAgNTloMTZ2MWgtMTZ6TTAgNjBoMTZ2MWgtMTZ6TTAgNjFoMTZ2MWgtMTZ6TTAgNjJoMTZ2MWgtMTZ6TTAgNjNoMTZ2MWgtMTZ6TTAgNjRoMTZ2MWgtMTZ6TTAgNjVoMTZ2MWgtMTZ6TTAgNjZoMTZ2MWgtMTZ6TTAgNjdoMTZ2MWgtMTZ6TTAgNjhoMTZ2MWgtMTZ6TTAgNjloMTZ2MWgtMTZ6TTAgNzBoMTZ2MWgtMTZ6TTAgNzFoMTZ2MWgtMTZ6TTAgNzJoMTZ2MWgtMTZ6TTAgNzNoMTZ2MWgtMTZ6TTAgNzRoMTZ2MWgtMTZ6TTAgNzVoMTZ2MWgtMTZ6TTAgNzZoMTZ2MWgtMTZ6TTAgNzd0NmgxNnYxaC0xNnoiLz48cGF0aCBmaWxsPSIjZmZiMTZiIiBkPSJNMjQgN2gzdjFoLTN6TTIyIDhoNnYxaC02ek0yMCA5aDh2MWgtOHpNMTkgMTBoOHYxaC04ek0xOCAxMWg4djFoLTh6TTE3IDEyaDh2MWgtOHpNMTYgMTNoOHYxaC04ek0xNSAxNGg4djFoLTh6TTE0IDE1aDh2MWgtOHpNMTMgMTZoOHYxaC04ek0xMiAxN2g4djFoLTh6TTExIDE4aDh2MWgtOHpNMTAgMTloOHYxaC04ek05IDIwaDh2MWgtOHpNOCAyMWg4djFoLTh6TTcgMjJoOHYxaC04ek02IDIzaDh2MWgtOHpNNSA24h+ (truncated)
