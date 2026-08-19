@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 96" shape-rendering="crispEdges">
+  <g>
+    <!-- lower skirt -->
+    <rect x="21" y="58" width="25" height="6" fill="#131666"/>
+    <rect x="19" y="64" width="29" height="6" fill="#131666"/>
+    <rect x="17" y="70" width="33" height="6" fill="#131666"/>
+    <rect x="15" y="76" width="37" height="5" fill="#131666"/>
+    <rect x="20" y="64" width="4" height="13" fill="#858be6"/>
+    <rect x="42" y="64" width="4" height="13" fill="#858be6"/>
+    <!-- left leg forward -->
+    <rect x="19" y="80" width="6" height="8" fill="#f1a261"/>
+    <rect x="15" y="87" width="11" height="4" fill="#0e1250"/>
+    <rect x="14" y="90" width="12" height="3" fill="#0e1250"/>
+    <!-- right leg back -->
+    <rect x="39" y="80" width="5" height="7" fill="#f1a261"/>
+    <rect x="39" y="86" width="10" height="4" fill="#0e1250"/>
+    <rect x="42" y="89" width="8" height="3" fill="#0e1250"/>
+  </g>
+</svg>
