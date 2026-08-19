@@ -93,39 +93,21 @@
 .board .petscii-bitmap,
 .board .word { pointer-events: none !important; }
 
-/* ------------------------------------------------------------------
-   Safe walk animation.
-   The base teacher is ALWAYS the complete standing frame. Never clip it.
-   Frame B is a lower-body overlay only. Its black backing covers the base
-   feet before drawing the alternate feet, so it is a true A/B replacement
-   rather than a blink-to-empty or ghosted double image.
-   ------------------------------------------------------------------ */
-.teacher > #teacherSprite,
-.teacher > #teacherSprite.frame-b {
+/*
+  Stable teacher build: do not clip, hide, replace, or layer the character.
+  styles.css owns the original complete teacher sprite. petscii.js only locks
+  the alternate frame to that same standing image so the walk is intact and
+  non-blinking while the character moves across the room.
+*/
+.teacher > #teacherSprite {
   clip-path: none !important;
-  content: normal !important;
-  transform: none !important;
   opacity: 1 !important;
   visibility: visible !important;
 }
 
+.teacher > .teacher-feet,
 .teacher > .teacher-walk-overlay {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 76%;
-  height: auto;
-  clip-path: inset(55% 0 0 0);
-  background: #050505;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  pointer-events: none;
-  opacity: 0;
-  visibility: visible;
-}
-
-.teacher > #teacherSprite.frame-b ~ .teacher-walk-overlay {
-  opacity: 1;
+  display: none !important;
 }
 
 @media (max-width: 700px) {
