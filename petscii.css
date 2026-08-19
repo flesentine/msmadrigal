@@ -127,3 +127,112 @@
   .petscii-start-small { height: 7px; max-width: 98%; }
   #startButton { min-height: 50px; flex-basis: 50px; }
 }
+
+/* V65: aggressive landscape fit. This deliberately uses !important so it
+   wins over the older inline V64 landscape experiment in index.html. */
+@media (orientation: landscape) and (max-height: 1000px) {
+  html, body {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    overflow: hidden !important;
+    background: #050505 !important;
+  }
+
+  body {
+    display: block !important;
+    padding: 0 !important;
+  }
+
+  .page-shell {
+    width: 100vw !important;
+    max-width: none !important;
+    height: 100svh !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+  }
+
+  .game {
+    width: 100vw !important;
+    height: 100svh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .help { display: none !important; }
+
+  .masthead {
+    top: 1.5% !important;
+    left: 24% !important;
+    right: 24% !important;
+  }
+
+  .petscii-title { height: 14px !important; }
+  .petscii-subtitle {
+    height: 10px !important;
+    margin-top: 3px !important;
+  }
+
+  .controls {
+    top: max(5px, env(safe-area-inset-top)) !important;
+    right: max(8px, env(safe-area-inset-right)) !important;
+    gap: 5px !important;
+  }
+
+  .mini-button {
+    min-height: 32px !important;
+    padding: 0 8px !important;
+  }
+
+  .petscii-mini { height: 7px !important; }
+
+  .scene {
+    top: 8% !important;
+    bottom: 3.5% !important;
+    left: 1.5% !important;
+    right: 1.5% !important;
+  }
+
+  .board {
+    top: 10% !important;
+    right: 1% !important;
+    width: 62% !important;
+    height: 78% !important;
+    padding: 3% 4% !important;
+  }
+
+  .teacher {
+    left: 3.5% !important;
+    top: 10% !important;
+    width: 29% !important;
+    height: 88% !important;
+  }
+
+  .statusbar {
+    left: 7% !important;
+    right: 7% !important;
+    bottom: calc(1% + env(safe-area-inset-bottom)) !important;
+  }
+
+  .petscii-word { height: 18px !important; }
+  .petscii-prompt {
+    height: 7px !important;
+    max-width: 78vw !important;
+  }
+  .petscii-progress { height: 7px !important; }
+
+  .start-panel {
+    width: min(68%, 520px) !important;
+    min-height: min(255px, 68dvh) !important;
+    padding: 16px 22px !important;
+    gap: 11px !important;
+  }
+
+  #startButton {
+    min-height: 42px !important;
+    flex-basis: 42px !important;
+  }
+}
