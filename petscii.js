@@ -68,50 +68,29 @@
   bindBitmap(document.getElementById('muteButton'), 'petscii-mini', '#c6c5dd');
 
   // ------------------------------------------------------------------
-  // Safe walking animation.
-  // The FULL standing teacher always remains visible. We never clip, hide,
-  // or replace it. The alternate walk frame is drawn only over the lower
-  // portion, with a black backing that cleanly replaces frame A's feet.
-  // If this overlay ever fails to load, the standing teacher still remains
-  // completely intact.
+  // Stable teacher rendering.
+  // Do NOT replace, clip, hide, or re-source the teacher image in JavaScript.
+  // The previous lower-body overlay experiments could destroy the sprite.
+  // Instead, read the original standing CSS frame once and force frame-b to
+  // use that exact same image. The teacher still walks across the room, but
+  // her complete body remains intact and steady for this stable build.
   // ------------------------------------------------------------------
-  function contentUrl(value) {
-    if (!value || value === 'none' || value === 'normal') return null;
-    const match = String(value).match(/^url\((['"]?)(.*)\1\)$/);
-    return match ? match[2] : null;
-  }
-
   const teacherSprite = document.getElementById('teacherSprite');
-  if (teacherSprite && teacherSprite.parentElement) {
-    try {
-      teacherSprite.classList.remove('frame-b');
-      const standingUrl = contentUrl(getComputedStyle(teacherSprite).content);
-      teacherSprite.classList.add('frame-b');
-      const walkingUrl = contentUrl(getComputedStyle(teacherSprite).content);
-      teacherSprite.classList.remove('frame-b');
-
-      teacherSprite.parentElement.querySelectorAll('.teacher-feet, .teacher-walk-overlay').forEach(el => el.remove());
-      teacherSprite.classList.remove('upper-body-only');
-
-      if (standingUrl) {
-        teacherSprite.src = standingUrl;
-        teacherSprite.style.setProperty('content', 'normal', 'important');
-        teacherSprite.style.removeProperty('clip-path');
-        teacherSprite.style.removeProperty('transform');
+  if (teacherSprite) {
+    requestAnimationFrame(() => {
+      try {
+        teacherSprite.classList.remove('frame-b');
+        const standingContent = getComputedStyle(teacherSprite).content;
+        if (standingContent && standingContent !== 'none' && standingContent !== 'normal') {
+          const style = document.createElement('style');
+          style.id = 'stable-teacher-frame-lock';
+          style.textContent = `.teacher > #teacherSprite.frame-b { content: ${standingContent} !important; }`;
+          document.head.appendChild(style);
+        }
+      } catch (error) {
+        console.warn('Could not lock teacher to standing frame.', error);
       }
-
-      if (walkingUrl) {
-        const overlay = document.createElement('img');
-        overlay.alt = '';
-        overlay.setAttribute('aria-hidden', 'true');
-        overlay.className = 'teacher-walk-overlay';
-        overlay.src = walkingUrl;
-        const pointer = teacherSprite.parentElement.querySelector('.pointer');
-        teacherSprite.parentElement.insertBefore(overlay, pointer || null);
-      }
-    } catch (error) {
-      console.warn('Could not prepare lower-body walk overlay.', error);
-    }
+    });
   }
 
   // Reliable chalkboard input: use the physical green-board rectangle,
