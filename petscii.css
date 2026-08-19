@@ -37,21 +37,10 @@
   align-items: center;
 }
 
-/* Main screen: close to the small text size of the C64 binary. */
-.petscii-title {
-  height: 16px;
-  margin: 0 auto;
-}
+.petscii-title { height: 16px; margin: 0 auto; }
+.petscii-subtitle { height: 12px; margin: 5px auto 0; }
 
-.petscii-subtitle {
-  height: 12px;
-  margin: 5px auto 0;
-}
-
-.board {
-  padding: 6% 5%;
-}
-
+.board { padding: 6% 5%; }
 .word {
   width: 100%;
   height: 100%;
@@ -61,45 +50,15 @@
   overflow: hidden;
   pointer-events: none;
 }
+.petscii-word { height: 16px; max-width: 90%; object-fit: contain; }
 
-.petscii-word {
-  height: 16px;
-  max-width: 90%;
-  object-fit: contain;
-}
+.statusbar { gap: 1.1rem; }
+#prompt { display: flex; justify-content: center; align-items: center; }
+.petscii-prompt { height: 8px; max-width: min(78vw, 650px); object-fit: contain; }
+.progress { display: flex; justify-content: flex-end; align-items: center; }
+.petscii-progress { height: 8px; }
 
-.statusbar {
-  gap: 1.1rem;
-}
-
-#prompt {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.petscii-prompt {
-  height: 8px;
-  max-width: min(78vw, 650px);
-  object-fit: contain;
-}
-
-.progress {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.petscii-progress {
-  height: 8px;
-}
-
-/* ------------------------------------------------------------------
-   Start screen.
-   PETSCII canvases do not create normal font line boxes, so every row gets
-   a real fixed layout slot. This prevents the title/button/hint collapsing
-   into each other at any viewport size.
-   ------------------------------------------------------------------ */
+/* Fixed PETSCII start-screen rows. */
 .start-panel {
   width: min(82%, 560px) !important;
   min-height: 340px;
@@ -111,28 +70,10 @@
   gap: 20px;
   overflow: hidden;
 }
-
-.start-panel > * {
-  flex: 0 0 auto;
-  margin: 0 !important;
-}
-
-.start-logo {
-  width: 100%;
-  min-height: 24px;
-}
-
-.start-subtitle {
-  width: 100%;
-  min-height: 16px;
-}
-
-.start-hint {
-  width: 100%;
-  min-height: 12px;
-  color: #aaa9ca;
-}
-
+.start-panel > * { flex: 0 0 auto; margin: 0 !important; }
+.start-logo { width: 100%; min-height: 24px; }
+.start-subtitle { width: 100%; min-height: 16px; }
+.start-hint { width: 100%; min-height: 12px; color: #aaa9ca; }
 #startButton {
   width: min(100%, 330px);
   min-width: 0 !important;
@@ -141,81 +82,50 @@
   margin: 8px 0 !important;
   flex: 0 0 56px;
 }
+.petscii-start-logo { height: 20px; max-width: 94%; object-fit: contain; }
+.petscii-start-subtitle { height: 12px; max-width: 88%; object-fit: contain; }
+.petscii-start-button { height: 10px; max-width: 88%; object-fit: contain; }
+.petscii-start-small { height: 8px; max-width: 96%; object-fit: contain; }
+.petscii-mini { height: 8px; max-width: 100%; object-fit: contain; }
 
-.petscii-start-logo {
-  height: 20px;
-  max-width: 94%;
-  object-fit: contain;
-}
-
-.petscii-start-subtitle {
-  height: 12px;
-  max-width: 88%;
-  object-fit: contain;
-}
-
-.petscii-start-button {
-  height: 10px;
-  max-width: 88%;
-  object-fit: contain;
-}
-
-.petscii-start-small {
-  height: 8px;
-  max-width: 96%;
-  object-fit: contain;
-}
-
-.petscii-mini {
-  height: 8px;
-  max-width: 100%;
-  object-fit: contain;
-}
-
-/* Nothing drawn inside the board may intercept a pointer. */
 .board,
-.board * {
-  touch-action: manipulation;
-}
+.board * { touch-action: manipulation; }
 .board .petscii-bitmap,
-.board .word {
-  pointer-events: none !important;
-}
+.board .word { pointer-events: none !important; }
 
 /* ------------------------------------------------------------------
-   Feet-only animation. The full standing frame supplies the upper body.
-   Two separate full-frame images are clipped to their lower 45% and swap
-   underneath it. The face/head/arm therefore never change while walking.
+   Safe walk animation.
+   The base teacher is ALWAYS the complete standing frame. Never clip it.
+   Frame B is a lower-body overlay only. Its black backing covers the base
+   feet before drawing the alternate feet, so it is a true A/B replacement
+   rather than a blink-to-empty or ghosted double image.
    ------------------------------------------------------------------ */
-.teacher > #teacherSprite.upper-body-only,
-.teacher > #teacherSprite.upper-body-only.frame-b {
-  clip-path: inset(0 0 45% 0);
+.teacher > #teacherSprite,
+.teacher > #teacherSprite.frame-b {
+  clip-path: none !important;
   content: normal !important;
   transform: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-.teacher > .teacher-feet {
+.teacher > .teacher-walk-overlay {
   position: absolute;
   left: 0;
   bottom: 0;
   width: 76%;
   height: auto;
   clip-path: inset(55% 0 0 0);
+  background: #050505;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   pointer-events: none;
+  opacity: 0;
+  visibility: visible;
 }
 
-.teacher > .teacher-feet-b {
-  display: none;
-}
-
-.teacher > #teacherSprite.frame-b ~ .teacher-feet-a {
-  display: none;
-}
-
-.teacher > #teacherSprite.frame-b ~ .teacher-feet-b {
-  display: block;
+.teacher > #teacherSprite.frame-b ~ .teacher-walk-overlay {
+  opacity: 1;
 }
 
 @media (max-width: 700px) {
@@ -223,14 +133,12 @@
   .petscii-subtitle { height: 11px; }
   .petscii-word { height: 14px; max-width: 92%; }
   .petscii-prompt { height: 8px; max-width: 88vw; }
-
   .start-panel {
     width: min(88%, 560px) !important;
     min-height: 290px;
     padding: 28px 22px !important;
     gap: 16px;
   }
-
   .petscii-start-logo { height: 16px; }
   .petscii-start-subtitle { height: 10px; }
   .petscii-start-button { height: 9px; }
