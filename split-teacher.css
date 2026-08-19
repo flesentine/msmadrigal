@@ -1,0 +1,74 @@
+/* V58 true split-sprite teacher.  The hidden legacy sprite remains only as the
+   existing frame clock used by app.js; the visible upper body never changes. */
+.teacher {
+  overflow: visible;
+}
+
+.teacher > #teacherSprite {
+  display: none !important;
+}
+
+.teacher > .teacher-upper,
+.teacher > .teacher-legs {
+  position: absolute;
+  left: -7%;
+  bottom: -5%;
+  width: 94%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+}
+
+.teacher > .teacher-legs {
+  z-index: 1;
+}
+
+.teacher > .teacher-upper {
+  z-index: 2;
+}
+
+.teacher > .teacher-legs-a {
+  opacity: 1;
+}
+
+.teacher > .teacher-legs-b {
+  opacity: 0;
+}
+
+/* app.js already toggles frame-b every 115ms while walking. */
+.teacher.walking > #teacherSprite.frame-b ~ .teacher-legs-a {
+  opacity: 0;
+}
+
+.teacher.walking > #teacherSprite.frame-b ~ .teacher-legs-b {
+  opacity: 1;
+}
+
+.teacher:not(.walking) > .teacher-legs-a {
+  opacity: 1;
+}
+
+.teacher:not(.walking) > .teacher-legs-b {
+  opacity: 0;
+}
+
+.teacher .pointer {
+  z-index: 3;
+  left: 55%;
+  top: 35%;
+  width: 78%;
+}
+
+.teacher.walking {
+  animation: walk-in-v58 1.18s steps(16, end) forwards !important;
+}
+
+.teacher.arrived {
+  transform: translateX(10%) !important;
+}
+
+@keyframes walk-in-v58 {
+  from { transform: translateX(-125%); }
+  to { transform: translateX(10%); }
+}
