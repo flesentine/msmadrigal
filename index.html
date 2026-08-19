@@ -8,13 +8,11 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Ms. Madrigral — Spanish 500</title>
-  <link rel="stylesheet" href="styles.css?v=66">
-  <link rel="stylesheet" href="petscii.css?v=66">
+  <link rel="stylesheet" href="styles.css?v=67">
+  <link rel="stylesheet" href="petscii.css?v=67">
   <style>
-    /* V62: hide the older experimental leg viewport completely. */
+    /* Explicit original-teacher lower-body frames. */
     .teacher-leg-viewport { display: none !important; }
-
-    /* Full-size overlays align pixel-for-pixel with the original 96x168 teacher. */
     .teacher > .v62-leg-frame {
       position: absolute;
       left: 0;
@@ -28,14 +26,8 @@
     }
     .teacher > .v62-leg-a { opacity: 1; }
     .teacher > .v62-leg-b { opacity: 0; }
-
-    /* Make the leg change obvious while she crosses the room. */
-    .teacher.walking > .v62-leg-a {
-      animation: v62-leg-a 230ms steps(1, end) infinite;
-    }
-    .teacher.walking > .v62-leg-b {
-      animation: v62-leg-b 230ms steps(1, end) infinite;
-    }
+    .teacher.walking > .v62-leg-a { animation: v62-leg-a 230ms steps(1, end) infinite; }
+    .teacher.walking > .v62-leg-b { animation: v62-leg-b 230ms steps(1, end) infinite; }
     @keyframes v62-leg-a {
       0%, 49% { opacity: 1; }
       50%, 100% { opacity: 0; }
@@ -46,7 +38,7 @@
     }
     .teacher .pointer { z-index: 3; }
 
-    /* V63 mobile layout: preserve the C64 scene, but use the phone's full screen. */
+    /* Portrait phones use the full viewport; PETSCII sizing stays in petscii.css. */
     @media (max-width: 700px) {
       html, body {
         width: 100%;
@@ -54,14 +46,8 @@
         overflow-x: hidden;
         background: #050505;
       }
-      body {
-        display: block;
-        padding: 0;
-      }
-      .page-shell {
-        width: 100%;
-        margin: 0;
-      }
+      body { display: block; padding: 0; }
+      .page-shell { width: 100%; margin: 0; }
       .game {
         width: 100%;
         min-height: 0;
@@ -99,9 +85,7 @@
         min-height: 560px;
         aspect-ratio: auto;
       }
-      .masthead {
-        top: calc(env(safe-area-inset-top) + 56px);
-      }
+      .masthead { top: calc(env(safe-area-inset-top) + 56px); }
       .scene {
         top: 18%;
         bottom: 13%;
@@ -121,20 +105,8 @@
         width: 42%;
         height: 66%;
       }
-      .statusbar {
-        bottom: calc(4.5% + env(safe-area-inset-bottom));
-      }
-      .progress {
-        display: flex;
-      }
-      .petscii-word {
-        height: 18px !important;
-        max-width: 92% !important;
-      }
-      .petscii-prompt {
-        height: 8px !important;
-        max-width: 82vw !important;
-      }
+      .statusbar { bottom: calc(4.5% + env(safe-area-inset-bottom)); }
+      .progress { display: flex; }
       .start-panel {
         width: min(90%, 420px) !important;
         min-height: min(360px, 62svh) !important;
@@ -142,15 +114,11 @@
         padding: 28px 18px !important;
         gap: 18px !important;
       }
-      #startButton {
-        width: min(100%, 300px) !important;
-      }
+      #startButton { width: min(100%, 300px) !important; }
     }
 
     @media (max-width: 430px) and (orientation: portrait) {
-      .masthead {
-        top: calc(env(safe-area-inset-top) + 52px);
-      }
+      .masthead { top: calc(env(safe-area-inset-top) + 52px); }
       .scene {
         top: 17%;
         bottom: 12%;
@@ -182,96 +150,6 @@
         left: 4%;
         right: 4%;
         bottom: calc(3.5% + env(safe-area-inset-bottom));
-      }
-      .petscii-title { height: 13px !important; }
-      .petscii-subtitle { height: 10px !important; }
-      .petscii-word { height: 17px !important; }
-      .petscii-prompt { height: 7px !important; max-width: 90vw !important; }
-      .petscii-mini { height: 7px !important; }
-    }
-
-    /* V64: shallow landscape screens use nearly the whole viewport. */
-    @media (orientation: landscape) and (max-height: 850px) {
-      html, body {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #050505;
-      }
-      body {
-        display: block;
-        padding: 0;
-      }
-      .page-shell {
-        width: 100%;
-        height: 100svh;
-        height: 100dvh;
-        margin: 0;
-      }
-      .game {
-        width: 100%;
-        height: 100svh;
-        height: 100dvh;
-        min-height: 0;
-        aspect-ratio: auto;
-        border: 0;
-        box-shadow: none;
-      }
-      .help { display: none; }
-
-      .masthead { top: 2.5%; }
-      .petscii-title { height: 14px !important; }
-      .petscii-subtitle { height: 10px !important; margin-top: 3px !important; }
-
-      .scene {
-        top: 11%;
-        bottom: 6%;
-        left: 2%;
-        right: 2%;
-      }
-      .board {
-        top: 3%;
-        right: 0;
-        width: 61%;
-        height: 75%;
-        padding: 3% 4%;
-      }
-      .teacher {
-        left: 4%;
-        top: 1%;
-        width: 27%;
-        height: 96%;
-      }
-
-      .controls {
-        top: max(5px, env(safe-area-inset-top));
-        right: max(7px, env(safe-area-inset-right));
-        gap: 5px;
-      }
-      .mini-button {
-        min-height: 32px;
-        padding: 0 8px;
-      }
-      .petscii-mini { height: 7px !important; }
-
-      .statusbar {
-        left: 8%;
-        right: 8%;
-        bottom: calc(1.5% + env(safe-area-inset-bottom));
-      }
-      .petscii-word { height: 17px !important; }
-      .petscii-prompt { height: 7px !important; max-width: 76vw !important; }
-      .petscii-progress { height: 7px !important; }
-
-      .start-panel {
-        width: min(70%, 520px) !important;
-        min-height: min(270px, 72dvh) !important;
-        padding: 18px 24px !important;
-        gap: 12px !important;
-      }
-      #startButton {
-        min-height: 44px !important;
-        flex-basis: 44px !important;
       }
     }
   </style>
@@ -321,7 +199,7 @@
     <p class="help">CLICK THE CHALKBOARD OR PRESS <kbd>SPACE</kbd>: ENGLISH → SPANISH → NEXT WORD. PRESS <kbd>R</kbd> TO RESHUFFLE.</p>
   </main>
 
-  <script src="app.js?v=66"></script>
-  <script src="petscii.js?v=66"></script>
+  <script src="app.js?v=67"></script>
+  <script src="petscii.js?v=67"></script>
 </body>
 </html>
