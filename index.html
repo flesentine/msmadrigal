@@ -8,8 +8,44 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Ms. Madrigral — Spanish 500</title>
-  <link rel="stylesheet" href="styles.css?v=61">
-  <link rel="stylesheet" href="petscii.css?v=61">
+  <link rel="stylesheet" href="styles.css?v=62">
+  <link rel="stylesheet" href="petscii.css?v=62">
+  <style>
+    /* V62: hide the older experimental leg viewport completely. */
+    .teacher-leg-viewport { display: none !important; }
+
+    /* Full-size overlays align pixel-for-pixel with the original 96x168 teacher. */
+    .teacher > .v62-leg-frame {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 76%;
+      height: auto;
+      z-index: 2;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      pointer-events: none;
+    }
+    .teacher > .v62-leg-a { opacity: 1; }
+    .teacher > .v62-leg-b { opacity: 0; }
+
+    /* Make the leg change obvious while she crosses the room. */
+    .teacher.walking > .v62-leg-a {
+      animation: v62-leg-a 230ms steps(1, end) infinite;
+    }
+    .teacher.walking > .v62-leg-b {
+      animation: v62-leg-b 230ms steps(1, end) infinite;
+    }
+    @keyframes v62-leg-a {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    @keyframes v62-leg-b {
+      0%, 49% { opacity: 0; }
+      50%, 100% { opacity: 1; }
+    }
+    .teacher .pointer { z-index: 3; }
+  </style>
 </head>
 <body>
   <main class="page-shell">
@@ -24,6 +60,8 @@
       <div class="scene">
         <div id="teacher" class="teacher" aria-hidden="true">
           <img id="teacherSprite" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="">
+          <img class="v62-leg-frame v62-leg-a" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACoCAYAAAAfI+vhAAAAuUlEQVR42u3YQQ5AMBAFUEQd1aF6VBvWbKopWry3kxAj38yIrgMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4jz6EsOZcsMzz7niKMev8Uqn7ldb7tME7KAAB8OIdUDqj79Z6vTrACBIAFY1fm/lX74i7n1cHGEECoOUdkDtDW98Jx/pq7zgdYAQJgIqS/4JSM772d7QOQAACAAAA4LQNXMQljnXhiZMAAAAASUVORK5CYII=" alt="">
+          <img class="v62-leg-frame v62-leg-b" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACoCAYAAAAfI+vhAAAA70lEQVR42u3XQRKCMAwAQHSmPpVH8VQuevZUoLUmZffGDI6QpAlZFgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAID7eJRS3md+sK/r1/Vr207d36r2f63PO9pTDUqABLS0gN4tpqfo7efSDDgS9CgvmuE5L7Wg0YN31uCbAZkTEPkUZKn+LntAtJf7996hBd3tMzRT64lW/U5A1j3gSrX9uppqS1fU2eUEzPoZOnI2ZK3+5hMQIQmZg980A3oFIPKSlGIG1AIeqVVNmQACJMApAAAAOO4Dwr9faiabr18AAAAASUVORK5CYII=" alt="">
           <img class="pointer" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="">
         </div>
 
@@ -54,7 +92,7 @@
     <p class="help">CLICK THE CHALKBOARD OR PRESS <kbd>SPACE</kbd>: ENGLISH → SPANISH → NEXT WORD. PRESS <kbd>R</kbd> TO RESHUFFLE.</p>
   </main>
 
-  <script src="app.js?v=61"></script>
-  <script src="petscii.js?v=61"></script>
+  <script src="app.js?v=62"></script>
+  <script src="petscii.js?v=62"></script>
 </body>
 </html>
