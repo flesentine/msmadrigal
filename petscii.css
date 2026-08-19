@@ -128,8 +128,7 @@
   #startButton { min-height: 50px; flex-basis: 50px; }
 }
 
-/* V65: aggressive landscape fit. This deliberately uses !important so it
-   wins over the older inline V64 landscape experiment in index.html. */
+/* V65: aggressive landscape fit. */
 @media (orientation: landscape) and (max-height: 1000px) {
   html, body {
     width: 100% !important;
@@ -234,5 +233,153 @@
   #startButton {
     min-height: 42px !important;
     flex-basis: 42px !important;
+  }
+}
+
+/* V66: real C64 text-mode discipline.
+   Every text element uses the same 8x8 character-cell scale within a layout. */
+.game .petscii-title,
+.game .petscii-subtitle,
+.game .petscii-word,
+.game .petscii-prompt,
+.game .petscii-progress,
+.game .petscii-mini,
+.start-panel .petscii-start-logo,
+.start-panel .petscii-start-subtitle,
+.start-panel .petscii-start-button,
+.start-panel .petscii-start-small {
+  height: 12px !important;
+}
+
+.game .petscii-subtitle { margin-top: 4px !important; }
+
+/* Normal desktop: go back to the framed 4:3 C64 presentation, just a bit
+   smaller than before. Moving Ms. Madrigral right leaves roughly one text
+   pixel-cell of air between the pointer tip and chalkboard. */
+@media (min-width: 1101px) {
+  html, body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: auto !important;
+    background: #0a0a0f !important;
+  }
+
+  body {
+    display: grid !important;
+    place-items: center !important;
+    padding: 18px !important;
+  }
+
+  .page-shell {
+    width: min(92vw, 940px) !important;
+    max-width: none !important;
+    height: auto !important;
+    margin: 0 !important;
+  }
+
+  .game {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 420px !important;
+    aspect-ratio: 4 / 3 !important;
+    border: 2px solid #171722 !important;
+    box-shadow: 0 20px 70px #000, inset 0 0 70px rgba(40, 30, 100, .12) !important;
+  }
+
+  .help { display: block !important; }
+
+  .masthead {
+    top: 8.5% !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  .scene {
+    top: 23% !important;
+    right: 7% !important;
+    bottom: 18% !important;
+    left: 7% !important;
+  }
+
+  .board {
+    top: 13% !important;
+    right: 0 !important;
+    width: 55% !important;
+    height: 61% !important;
+    padding: 6% 5% !important;
+  }
+
+  .teacher {
+    left: 16.5% !important;
+    top: 5% !important;
+    width: 22% !important;
+    height: 76% !important;
+  }
+
+  .controls {
+    top: 2% !important;
+    right: 2% !important;
+    gap: 8px !important;
+  }
+
+  .mini-button {
+    min-height: 0 !important;
+    padding: 7px 9px !important;
+  }
+
+  .statusbar {
+    left: 12% !important;
+    right: 12% !important;
+    bottom: 7.5% !important;
+  }
+
+  .start-panel {
+    width: min(82%, 560px) !important;
+    min-height: 340px !important;
+    padding: 38px 34px !important;
+    gap: 20px !important;
+  }
+
+  #startButton {
+    min-height: 56px !important;
+    flex-basis: 56px !important;
+  }
+}
+
+/* Portrait phones still use one consistent character size: one C64 cell is
+   scaled to 8 CSS pixels. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .game .petscii-title,
+  .game .petscii-subtitle,
+  .game .petscii-word,
+  .game .petscii-prompt,
+  .game .petscii-progress,
+  .game .petscii-mini,
+  .start-panel .petscii-start-logo,
+  .start-panel .petscii-start-subtitle,
+  .start-panel .petscii-start-button,
+  .start-panel .petscii-start-small {
+    height: 8px !important;
+  }
+}
+
+/* Landscape phone/tablet only. Do not let this fullscreen layout hijack a
+   normal desktop browser window. Keep a small air gap from pointer to board. */
+@media (orientation: landscape) and (max-width: 1100px) and (max-height: 850px) {
+  .teacher {
+    left: 0 !important;
+  }
+
+  .game .petscii-title,
+  .game .petscii-subtitle,
+  .game .petscii-word,
+  .game .petscii-prompt,
+  .game .petscii-progress,
+  .game .petscii-mini,
+  .start-panel .petscii-start-logo,
+  .start-panel .petscii-start-subtitle,
+  .start-panel .petscii-start-button,
+  .start-panel .petscii-start-small {
+    height: 10px !important;
   }
 }
