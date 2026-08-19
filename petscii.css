@@ -1,5 +1,5 @@
 /* Actual C64 bitmap character-ROM text.
-   Main game copy is deliberately kept close to native C64 character sizing. */
+   All visible copy is rendered from the same 8x8 C64 character cells. */
 
 .title,
 .subtitle,
@@ -37,9 +37,6 @@
   align-items: center;
 }
 
-.petscii-title { height: 16px; margin: 0 auto; }
-.petscii-subtitle { height: 12px; margin: 5px auto 0; }
-
 .board { padding: 6% 5%; }
 .word {
   width: 100%;
@@ -50,13 +47,33 @@
   overflow: hidden;
   pointer-events: none;
 }
-.petscii-word { height: 16px; max-width: 90%; object-fit: contain; }
 
 .statusbar { gap: 1.1rem; }
 #prompt { display: flex; justify-content: center; align-items: center; }
-.petscii-prompt { height: 8px; max-width: min(78vw, 650px); object-fit: contain; }
 .progress { display: flex; justify-content: flex-end; align-items: center; }
-.petscii-progress { height: 8px; }
+
+/* One C64 character-cell scale per responsive mode. Desktop starts at 12px. */
+.game .petscii-title,
+.game .petscii-subtitle,
+.game .petscii-word,
+.game .petscii-prompt,
+.game .petscii-progress,
+.game .petscii-mini,
+.start-panel .petscii-start-logo,
+.start-panel .petscii-start-subtitle,
+.start-panel .petscii-start-button,
+.start-panel .petscii-start-small {
+  height: 12px !important;
+  object-fit: contain;
+}
+
+.game .petscii-title,
+.game .petscii-subtitle { margin-left: auto; margin-right: auto; }
+.game .petscii-subtitle { margin-top: 4px !important; }
+.game .petscii-word { max-width: 92%; }
+.game .petscii-prompt { max-width: min(82vw, 700px); }
+.game .petscii-progress { max-width: 100%; }
+.game .petscii-mini { max-width: 100%; }
 
 /* Fixed PETSCII start-screen rows. */
 .start-panel {
@@ -82,54 +99,34 @@
   margin: 8px 0 !important;
   flex: 0 0 56px;
 }
-.petscii-start-logo { height: 20px; max-width: 94%; object-fit: contain; }
-.petscii-start-subtitle { height: 12px; max-width: 88%; object-fit: contain; }
-.petscii-start-button { height: 10px; max-width: 88%; object-fit: contain; }
-.petscii-start-small { height: 8px; max-width: 96%; object-fit: contain; }
-.petscii-mini { height: 8px; max-width: 100%; object-fit: contain; }
 
 .board,
 .board * { touch-action: manipulation; }
 .board .petscii-bitmap,
 .board .word { pointer-events: none !important; }
 
-/*
-  Stable teacher build: do not clip, hide, replace, or layer the character.
-  styles.css owns the original complete teacher sprite. petscii.js only locks
-  the alternate frame to that same standing image so the walk is intact and
-  non-blinking while the character moves across the room.
-*/
+/* Keep the original complete teacher stable. */
 .teacher > #teacherSprite {
   clip-path: none !important;
   opacity: 1 !important;
   visibility: visible !important;
 }
-
 .teacher > .teacher-feet,
-.teacher > .teacher-walk-overlay {
-  display: none !important;
-}
+.teacher > .teacher-walk-overlay { display: none !important; }
 
+/* Phone portrait layout support. Text is enlarged below as one unified scale. */
 @media (max-width: 700px) {
-  .petscii-title { height: 14px; }
-  .petscii-subtitle { height: 11px; }
-  .petscii-word { height: 14px; max-width: 92%; }
-  .petscii-prompt { height: 8px; max-width: 88vw; }
   .start-panel {
     width: min(88%, 560px) !important;
     min-height: 290px;
     padding: 28px 22px !important;
     gap: 16px;
   }
-  .petscii-start-logo { height: 16px; }
-  .petscii-start-subtitle { height: 10px; }
-  .petscii-start-button { height: 9px; }
-  .petscii-start-small { height: 7px; max-width: 98%; }
   #startButton { min-height: 50px; flex-basis: 50px; }
 }
 
-/* V65: aggressive landscape fit. */
-@media (orientation: landscape) and (max-height: 1000px) {
+/* Landscape phone/tablet: use the full screen, but only below desktop width. */
+@media (orientation: landscape) and (max-width: 1100px) and (max-height: 850px) {
   html, body {
     width: 100% !important;
     height: 100% !important;
@@ -137,12 +134,7 @@
     overflow: hidden !important;
     background: #050505 !important;
   }
-
-  body {
-    display: block !important;
-    padding: 0 !important;
-  }
-
+  body { display: block !important; padding: 0 !important; }
   .page-shell {
     width: 100vw !important;
     max-width: none !important;
@@ -150,7 +142,6 @@
     height: 100dvh !important;
     margin: 0 !important;
   }
-
   .game {
     width: 100vw !important;
     height: 100svh !important;
@@ -160,41 +151,27 @@
     border: 0 !important;
     box-shadow: none !important;
   }
-
   .help { display: none !important; }
-
   .masthead {
     top: 1.5% !important;
     left: 24% !important;
     right: 24% !important;
   }
-
-  .petscii-title { height: 14px !important; }
-  .petscii-subtitle {
-    height: 10px !important;
-    margin-top: 3px !important;
-  }
-
   .controls {
     top: max(5px, env(safe-area-inset-top)) !important;
     right: max(8px, env(safe-area-inset-right)) !important;
     gap: 5px !important;
   }
-
   .mini-button {
-    min-height: 32px !important;
-    padding: 0 8px !important;
+    min-height: 34px !important;
+    padding: 0 9px !important;
   }
-
-  .petscii-mini { height: 7px !important; }
-
   .scene {
     top: 8% !important;
     bottom: 3.5% !important;
     left: 1.5% !important;
     right: 1.5% !important;
   }
-
   .board {
     top: 10% !important;
     right: 1% !important;
@@ -202,60 +179,31 @@
     height: 78% !important;
     padding: 3% 4% !important;
   }
-
   .teacher {
-    left: 3.5% !important;
+    left: 0 !important;
     top: 10% !important;
     width: 29% !important;
     height: 88% !important;
   }
-
   .statusbar {
     left: 7% !important;
     right: 7% !important;
     bottom: calc(1% + env(safe-area-inset-bottom)) !important;
   }
-
-  .petscii-word { height: 18px !important; }
-  .petscii-prompt {
-    height: 7px !important;
-    max-width: 78vw !important;
-  }
-  .petscii-progress { height: 7px !important; }
-
   .start-panel {
     width: min(68%, 520px) !important;
     min-height: min(255px, 68dvh) !important;
     padding: 16px 22px !important;
     gap: 11px !important;
   }
-
   #startButton {
-    min-height: 42px !important;
-    flex-basis: 42px !important;
+    min-height: 44px !important;
+    flex-basis: 44px !important;
   }
 }
 
-/* V66: real C64 text-mode discipline.
-   Every text element uses the same 8x8 character-cell scale within a layout. */
-.game .petscii-title,
-.game .petscii-subtitle,
-.game .petscii-word,
-.game .petscii-prompt,
-.game .petscii-progress,
-.game .petscii-mini,
-.start-panel .petscii-start-logo,
-.start-panel .petscii-start-subtitle,
-.start-panel .petscii-start-button,
-.start-panel .petscii-start-small {
-  height: 12px !important;
-}
-
-.game .petscii-subtitle { margin-top: 4px !important; }
-
-/* Normal desktop: go back to the framed 4:3 C64 presentation, just a bit
-   smaller than before. Moving Ms. Madrigral right leaves roughly one text
-   pixel-cell of air between the pointer tip and chalkboard. */
+/* Normal desktop: framed 4:3 C64 presentation, slightly zoomed out.
+   Teacher position preserves a few pixels of air between pointer and board. */
 @media (min-width: 1101px) {
   html, body {
     height: auto !important;
@@ -263,20 +211,17 @@
     overflow: auto !important;
     background: #0a0a0f !important;
   }
-
   body {
     display: grid !important;
     place-items: center !important;
     padding: 18px !important;
   }
-
   .page-shell {
     width: min(92vw, 940px) !important;
     max-width: none !important;
     height: auto !important;
     margin: 0 !important;
   }
-
   .game {
     width: 100% !important;
     height: auto !important;
@@ -285,22 +230,18 @@
     border: 2px solid #171722 !important;
     box-shadow: 0 20px 70px #000, inset 0 0 70px rgba(40, 30, 100, .12) !important;
   }
-
   .help { display: block !important; }
-
   .masthead {
     top: 8.5% !important;
     left: 0 !important;
     right: 0 !important;
   }
-
   .scene {
     top: 23% !important;
     right: 7% !important;
     bottom: 18% !important;
     left: 7% !important;
   }
-
   .board {
     top: 13% !important;
     right: 0 !important;
@@ -308,46 +249,55 @@
     height: 61% !important;
     padding: 6% 5% !important;
   }
-
   .teacher {
     left: 16.5% !important;
     top: 5% !important;
     width: 22% !important;
     height: 76% !important;
   }
-
   .controls {
     top: 2% !important;
     right: 2% !important;
     gap: 8px !important;
   }
-
   .mini-button {
     min-height: 0 !important;
     padding: 7px 9px !important;
   }
-
   .statusbar {
     left: 12% !important;
     right: 12% !important;
     bottom: 7.5% !important;
   }
-
   .start-panel {
     width: min(82%, 560px) !important;
     min-height: 340px !important;
     padding: 38px 34px !important;
     gap: 20px !important;
   }
-
   #startButton {
     min-height: 56px !important;
     flex-basis: 56px !important;
   }
 }
 
-/* Portrait phones still use one consistent character size: one C64 cell is
-   scaled to 8 CSS pixels. */
+/* V67 responsive C64 text scale.
+   Every text element stays the SAME size within each mode, just like C64 text mode. */
+@media (max-width: 1100px) {
+  .game .petscii-title,
+  .game .petscii-subtitle,
+  .game .petscii-word,
+  .game .petscii-prompt,
+  .game .petscii-progress,
+  .game .petscii-mini,
+  .start-panel .petscii-start-logo,
+  .start-panel .petscii-start-subtitle,
+  .start-panel .petscii-start-button,
+  .start-panel .petscii-start-small {
+    height: 13px !important;
+  }
+}
+
 @media (max-width: 700px) and (orientation: portrait) {
   .game .petscii-title,
   .game .petscii-subtitle,
@@ -359,27 +309,9 @@
   .start-panel .petscii-start-subtitle,
   .start-panel .petscii-start-button,
   .start-panel .petscii-start-small {
-    height: 8px !important;
-  }
-}
-
-/* Landscape phone/tablet only. Do not let this fullscreen layout hijack a
-   normal desktop browser window. Keep a small air gap from pointer to board. */
-@media (orientation: landscape) and (max-width: 1100px) and (max-height: 850px) {
-  .teacher {
-    left: 0 !important;
+    height: 14px !important;
   }
 
-  .game .petscii-title,
-  .game .petscii-subtitle,
-  .game .petscii-word,
-  .game .petscii-prompt,
-  .game .petscii-progress,
-  .game .petscii-mini,
-  .start-panel .petscii-start-logo,
-  .start-panel .petscii-start-subtitle,
-  .start-panel .petscii-start-button,
-  .start-panel .petscii-start-small {
-    height: 10px !important;
-  }
+  .game .petscii-prompt { max-width: 92vw !important; }
+  .game .petscii-word { max-width: 94% !important; }
 }
