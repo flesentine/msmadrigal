@@ -68,16 +68,37 @@
   bindBitmap(document.getElementById('muteButton'), 'petscii-mini', '#c6c5dd');
 
   // ------------------------------------------------------------------
-  // Original-teacher leg animation.
-  // Keep the complete standing teacher permanently visible. Capture the two
-  // ORIGINAL CSS teacher frames before overriding anything, then show only
-  // the bottom 40 pixels of those frames in a small masked viewport. The
-  // upper body/head/pointer never swap, so only the skirt hem/legs/feet move.
+  // V61 original-teacher leg animation.
+  // Read the two original CSS sprite frames directly from styles.css. Keep
+  // the complete standing teacher visible underneath, then repaint a larger
+  // lower-body window with frame A / frame B on a fixed CSS cadence while
+  // she is walking. Head, hair, torso, arm and pointer never change.
   // ------------------------------------------------------------------
   function contentUrl(value) {
     if (!value || value === 'none' || value === 'normal') return null;
     const match = String(value).match(/^url\((['"]?)(.*)\1\)$/);
     return match ? match[2] : null;
+  }
+
+  function ruleContent(selector) {
+    function scan(rules) {
+      for (const rule of Array.from(rules || [])) {
+        if (rule.selectorText === selector) return rule.style?.content || null;
+        if (rule.cssRules) {
+          const nested = scan(rule.cssRules);
+          if (nested) return nested;
+        }
+      }
+      return null;
+    }
+
+    for (const sheet of Array.from(document.styleSheets)) {
+      try {
+        const found = scan(sheet.cssRules);
+        if (found) return found;
+      } catch (_) {}
+    }
+    return null;
   }
 
   function waitForImage(img) {
@@ -94,18 +115,14 @@
   if (teacher && teacherSprite) {
     requestAnimationFrame(() => {
       try {
-        teacherSprite.classList.remove('frame-b');
-        const standingContent = getComputedStyle(teacherSprite).content;
+        const standingContent = ruleContent('.teacher > #teacherSprite');
+        const walkingContent = ruleContent('.teacher > #teacherSprite.frame-b');
         const standingUrl = contentUrl(standingContent);
-
-        teacherSprite.classList.add('frame-b');
-        const walkingContent = getComputedStyle(teacherSprite).content;
         const walkingUrl = contentUrl(walkingContent);
-        teacherSprite.classList.remove('frame-b');
 
-        if (!standingUrl) return;
+        if (!standingContent || !standingUrl) return;
 
-        // The complete visible teacher is always frame A.
+        // Keep the original complete teacher permanently on frame A.
         const lock = document.createElement('style');
         lock.id = 'stable-teacher-frame-lock';
         lock.textContent = `
@@ -121,7 +138,7 @@
         document.head.appendChild(lock);
 
         if (!walkingUrl || walkingUrl === standingUrl) {
-          console.warn('Original alternate teacher frame unavailable; keeping stable teacher.');
+          console.warn('V61: original alternate teacher frame unavailable.');
           return;
         }
 
@@ -136,11 +153,12 @@
 
         Promise.all([waitForImage(frameA), waitForImage(frameB)]).then(([aReady, bReady]) => {
           if (!aReady || !bReady) {
-            console.warn('Could not preload original teacher walk frames.');
+            console.warn('V61: original teacher walk frames could not be loaded.');
             return;
           }
 
           teacher.querySelectorAll('.teacher-leg-viewport').forEach(el => el.remove());
+          document.getElementById('teacher-leg-animation-style')?.remove();
 
           const viewport = document.createElement('div');
           viewport.className = 'teacher-leg-viewport';
@@ -158,7 +176,7 @@
               left: 0;
               bottom: 0;
               width: 76%;
-              aspect-ratio: 12 / 5;
+              aspect-ratio: 4 / 3;
               overflow: hidden;
               background: #050505;
               z-index: 2;
@@ -177,29 +195,29 @@
             }
             .teacher > .teacher-leg-viewport > .teacher-leg-a { opacity: 1; }
             .teacher > .teacher-leg-viewport > .teacher-leg-b { opacity: 0; }
+
+            .teacher.walking > .teacher-leg-viewport > .teacher-leg-a {
+              animation: v61-leg-a .34s steps(1, end) infinite;
+            }
+            .teacher.walking > .teacher-leg-viewport > .teacher-leg-b {
+              animation: v61-leg-b .34s steps(1, end) infinite;
+            }
+
+            @keyframes v61-leg-a {
+              0%, 49.99% { opacity: 1; }
+              50%, 100% { opacity: 0; }
+            }
+            @keyframes v61-leg-b {
+              0%, 49.99% { opacity: 0; }
+              50%, 100% { opacity: 1; }
+            }
+
             .teacher .pointer { z-index: 3; }
           `;
           document.head.appendChild(style);
-
-          const syncLegs = () => {
-            const useB = teacher.classList.contains('walking')
-              && teacherSprite.classList.contains('frame-b');
-            frameA.style.opacity = useB ? '0' : '1';
-            frameB.style.opacity = useB ? '1' : '0';
-          };
-
-          new MutationObserver(syncLegs).observe(teacherSprite, {
-            attributes: true,
-            attributeFilter: ['class'],
-          });
-          new MutationObserver(syncLegs).observe(teacher, {
-            attributes: true,
-            attributeFilter: ['class'],
-          });
-          syncLegs();
         });
       } catch (error) {
-        console.warn('Could not prepare original teacher leg animation.', error);
+        console.warn('V61: could not prepare original teacher leg animation.', error);
       }
     });
   }
