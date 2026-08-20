@@ -5,9 +5,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 APP_NAME="Ms. Madrigral"
+BUNDLE_ID="com.flesentine.msmadrigal"
 WORKSPACE="ios/App/App.xcworkspace"
 SCHEME="App"
 ARCHIVE_PATH="build/MsMadrigral.xcarchive"
+PUBLIC_INDEX="ios/App/App/public/index.html"
 
 say() { printf '\n==> %s\n' "$*"; }
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
@@ -23,6 +25,19 @@ need_xcode() {
 
 ensure_homebrew() {
   command -v brew >/dev/null 2>&1 || fail "Homebrew is required for automated dependency setup. Install it from brew.sh, then rerun."
+}
+
+verify_native_bundle() {
+  [[ -f www/index.html ]] || fail "www/index.html was not generated."
+  grep -q 'name="ios-native-build" content="74"' www/index.html || fail "Generated www bundle is not native build 74."
+  grep -q 'style="display:none!important" aria-hidden="true">500 WORD VOCABULARY' www/index.html || fail "Native subtitle hide was not applied."
+  grep -q 'class="controls" style="display:none!important"' www/index.html || fail "Native controls hide was not applied."
+
+  [[ -f "$PUBLIC_INDEX" ]] || fail "$PUBLIC_INDEX was not copied by Capacitor."
+  grep -q 'name="ios-native-build" content="74"' "$PUBLIC_INDEX" || fail "Xcode public bundle is stale; expected native build 74."
+  grep -q 'class="controls" style="display:none!important"' "$PUBLIC_INDEX" || fail "Xcode public bundle still has visible controls."
+
+  say "Native bundle verification: OK (build 74)"
 }
 
 bootstrap() {
@@ -65,11 +80,20 @@ prepare() {
   mkdir -p ios/App/App
   cp ios-config/PrivacyInfo.xcprivacy ios/App/App/PrivacyInfo.xcprivacy
 
+  verify_native_bundle
   say "iOS project prepared"
+}
+
+refresh_simulator() {
+  if command -v xcrun >/dev/null 2>&1 && xcrun simctl list devices booted 2>/dev/null | grep -q '(Booted)'; then
+    say "Removing any stale simulator install"
+    xcrun simctl uninstall booted "$BUNDLE_ID" >/dev/null 2>&1 || true
+  fi
 }
 
 open_xcode() {
   prepare
+  refresh_simulator
   say "Opening Xcode"
   npx cap open ios
 }
@@ -94,6 +118,7 @@ check() {
     say "Checking Xcode project"
     xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -showBuildSettings >/dev/null
     printf 'Xcode workspace: OK\n'
+    verify_native_bundle || true
   else
     printf 'iOS native project: not generated yet (run npm run ios:setup)\n'
   fi
@@ -138,17 +163,10 @@ Ms. Madrigral iOS automation
 Usage:
   bash tools/ios.sh bootstrap   Install dependencies + create/sync iOS project
   bash tools/ios.sh prepare     Rebuild offline bundle + sync Capacitor
-  bash tools/ios.sh open        Prepare + open Xcode
+  bash tools/ios.sh open        Prepare, clear stale simulator app, open Xcode
   bash tools/ios.sh check       Verify toolchain and release prerequisites
   bash tools/ios.sh archive     Prepare + create signed Release archive
   bash tools/ios.sh clean       Remove generated www/ and build/ output
-
-What still requires Apple/Xcode setup:
-  - Apple Developer account/team selection
-  - signing certificates/profiles
-  - final app icon
-  - App Store Connect record/screenshots
-  - final TestFlight/App Review submission
 EOF
 }
 
