@@ -24,11 +24,11 @@ FILES = [
 
 
 def make_ios_bundle_self_contained() -> None:
-    """Apply native-only packaging changes to the iOS web bundle.
+    """Apply native-only packaging changes to the generated iOS web bundle.
 
-    The public website stays untouched. The generated www/ copy is explicitly
-    marked as ios-native so safe-area CSS and the simplified iOS controls are
-    guaranteed to apply even before/without Capacitor's JS bridge detection.
+    The public website stays untouched. The generated www/ copy gets an
+    unconditional native stylesheet, so the iOS layout does not depend on the
+    Capacitor JS bridge or runtime class detection.
     """
     styles_path = OUT / "styles.css"
     styles = styles_path.read_text(encoding="utf-8")
@@ -48,23 +48,86 @@ def make_ios_bundle_self_contained() -> None:
     index_path = OUT / "index.html"
     index = index_path.read_text(encoding="utf-8")
 
-    # Do this in the generated native bundle only. This guarantees that rules
-    # such as html.ios-native .controls { display:none } and safe-area offsets
-    # work on every iPhone, including Dynamic Island devices.
+    # Mark the native bundle for any native-aware JS/CSS that wants it.
     index = index.replace(
         '<html lang="en">',
         '<html lang="en" class="ios-native">',
         1,
     )
 
-    native_meta = (
-        '  <meta name="format-detection" content="telephone=no">\n'
-        '  <meta name="color-scheme" content="dark">\n'
-    )
+    # This stylesheet lives ONLY in www/index.html. Therefore these rules are
+    # unconditionally native and cannot be undone by runtime detection.
+    native_head = '''  <meta name="format-detection" content="telephone=no">
+  <meta name="color-scheme" content="dark">
+  <style id="ios-native-packaged-layout">
+    .subtitle,
+    .controls {
+      display: none !important;
+    }
+
+    .masthead {
+      left: calc(4% + env(safe-area-inset-left)) !important;
+      right: calc(4% + env(safe-area-inset-right)) !important;
+    }
+
+    .statusbar {
+      left: calc(5% + env(safe-area-inset-left)) !important;
+      right: calc(5% + env(safe-area-inset-right)) !important;
+      bottom: max(2%, env(safe-area-inset-bottom)) !important;
+    }
+
+    @media (orientation: landscape) and (max-width: 1100px) and (max-height: 850px) {
+      .masthead {
+        top: max(2.5%, env(safe-area-inset-top)) !important;
+        left: calc(18% + env(safe-area-inset-left)) !important;
+        right: calc(18% + env(safe-area-inset-right)) !important;
+      }
+
+      .scene {
+        top: 8% !important;
+        bottom: 4.5% !important;
+        left: calc(1.5% + env(safe-area-inset-left)) !important;
+        right: calc(1.5% + env(safe-area-inset-right)) !important;
+      }
+
+      .board {
+        right: 0 !important;
+        width: 61% !important;
+      }
+
+      .teacher {
+        left: 0 !important;
+      }
+
+      .statusbar {
+        left: calc(5% + env(safe-area-inset-left)) !important;
+        right: calc(5% + env(safe-area-inset-right)) !important;
+        bottom: max(1.8%, env(safe-area-inset-bottom)) !important;
+      }
+    }
+
+    @media (max-width: 700px) and (orientation: portrait) {
+      .masthead {
+        top: calc(env(safe-area-inset-top) + 18px) !important;
+      }
+    }
+
+    @media (max-width: 430px) and (orientation: portrait) {
+      .masthead {
+        top: calc(env(safe-area-inset-top) + 16px) !important;
+      }
+    }
+  </style>
+'''
+
     index = index.replace(
         '  <meta name="theme-color" content="#050505">\n',
-        '  <meta name="theme-color" content="#050505">\n' + native_meta,
+        '  <meta name="theme-color" content="#050505">\n' + native_head,
+        1,
     )
+
+    # Force WKWebView to request the new JS after native-layout changes.
+    index = index.replace('app.js?v=72', 'app.js?v=73')
     index_path.write_text(index, encoding="utf-8")
 
 
