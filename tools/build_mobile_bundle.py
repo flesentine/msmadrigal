@@ -64,7 +64,7 @@ def make_ios_bundle_self_contained() -> None:
 
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
-  <meta name="ios-native-build" content="77">
+  <meta name="ios-native-build" content="78">
   <style id="ios-native-packaged-layout">
     html.ios-native .subtitle,
     html.ios-native .controls { display: none !important; }
@@ -146,13 +146,18 @@ def make_ios_bundle_self_contained() -> None:
         top: calc(env(safe-area-inset-top) + 18px) !important;
       }
 
-      /* In portrait the teacher sits below the board. Pivot the stick around
-         the visible hand end so its tip lands inside the left-middle board
-         instead of skimming the lower edge. */
+      /* The board normally sits above the teacher stacking context. In portrait
+         raise the teacher only for layering so the pointer can visibly cross
+         the green frame instead of disappearing behind it. */
+      html.ios-native .teacher {
+        z-index: 9 !important;
+      }
+
       html.ios-native .teacher .pointer {
         left: 53% !important;
         top: 37% !important;
         width: 82% !important;
+        z-index: 10 !important;
         transform-origin: 0 93% !important;
         transform: rotate(-28deg) !important;
       }
@@ -170,15 +175,15 @@ def make_ios_bundle_self_contained() -> None:
     # it can replay the existing teacher animation without changing game state.
     index = index.replace(
         '</body>',
-        '  <script src="ios-focus.js?v=77"></script>\n</body>',
+        '  <script src="ios-focus.js?v=78"></script>\n</body>',
         1,
     )
 
     # Bust native WKWebView caches after this packaging change.
-    index = index.replace('styles.css?v=72', 'styles.css?v=77')
-    index = index.replace('petscii.css?v=72', 'petscii.css?v=77')
-    index = index.replace('app.js?v=72', 'app.js?v=77')
-    index = index.replace('petscii.js?v=72', 'petscii.js?v=77')
+    index = index.replace('styles.css?v=72', 'styles.css?v=78')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=78')
+    index = index.replace('app.js?v=72', 'app.js?v=78')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=78')
     index_path.write_text(index, encoding="utf-8")
 
 
