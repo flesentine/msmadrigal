@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const isIOSNative = Boolean(
+  const isIOSNative = document.documentElement.classList.contains('ios-native') || Boolean(
     window.Capacitor?.isNativePlatform?.() &&
     window.Capacitor?.getPlatform?.() === 'ios'
   );
