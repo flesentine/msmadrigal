@@ -1,27 +1,51 @@
 # iOS / App Store release checklist
 
-The iOS build uses Capacitor and bundles the full vocabulary app locally rather than loading the GitHub Pages site in a remote web view. This is important for offline use and for App Store review quality.
+The iOS build uses Capacitor and bundles the full vocabulary app locally rather than loading the GitHub Pages site in a remote web view.
 
-## One-time Mac setup
+## Automated Mac workflow
 
-1. Install Xcode 26 or later from Apple.
-2. Install Homebrew if needed.
-3. Install Node.js 22+.
-4. Install the retro speech generator:
+Install Xcode once, launch it once, and install Homebrew. After that, nearly all local setup is automated.
 
-   ```bash
-   brew install espeak-ng
-   ```
+From the repository root:
 
-5. From the repository root:
+```bash
+npm run ios:bootstrap
+```
 
-   ```bash
-   npm install
-   npm run ios:add
-   npm run ios:open
-   ```
+That command:
 
-After the first `ios:add`, use `npm run ios:open` for later web updates. It rebuilds the local `www` bundle, regenerates all 500 pronunciation samples, syncs them into the native project, and opens Xcode.
+- verifies macOS and Xcode
+- installs Node.js and `espeak-ng` with Homebrew if needed
+- installs npm dependencies
+- rebuilds the offline `www` bundle
+- regenerates all 500 pronunciation samples
+- creates the Capacitor iOS project on first run
+- syncs later web changes into the native project
+- copies the privacy manifest into the native App folder
+
+Useful commands:
+
+```bash
+npm run ios:check     # inspect local toolchain/readiness
+npm run ios:setup     # rebuild + sync without opening Xcode
+npm run ios:open      # rebuild + sync + open Xcode
+npm run ios:archive   # rebuild + create Release .xcarchive
+npm run ios:clean     # remove generated web/build output
+```
+
+## What cannot be safely automated without Apple credentials
+
+These still require a one-time Apple/Xcode setup:
+
+- choose your Apple Developer Team under Signing & Capabilities
+- allow Xcode to create/manage signing certificates and provisioning profiles
+- add the final app icon
+- confirm `PrivacyInfo.xcprivacy` is included in the App target Resources
+- create the App Store Connect app record
+- supply screenshots and final store metadata
+- validate/TestFlight/upload using your Apple account
+
+Once signing is configured, `npm run ios:archive` will create `build/MsMadrigral.xcarchive` automatically.
 
 ## Xcode settings
 
@@ -31,14 +55,11 @@ After the first `ios:add`, use `npm run ios:open` for later web updates. It rebu
 - Build: `1`
 - Device family: iPhone and iPad
 - Orientation: portrait and landscape
-- Deployment target: use Capacitor's supported default unless a specific older-iOS requirement is needed.
-- Signing: select the Apple Developer team.
-
-Add `ios-config/PrivacyInfo.xcprivacy` to the App target's resources in Xcode. If native plugins are added later, update the manifest to match their data use and required-reason APIs.
+- Signing: select the Apple Developer team and use automatic signing unless there is a reason not to.
 
 ## App icon and launch appearance
 
-A final 1024x1024 App Store icon still needs to be supplied before archive/upload. Keep it simple, readable at small sizes, and do not include transparency.
+A final 1024x1024 App Store icon still needs to be supplied before archive/upload. It should not contain transparency.
 
 Use the app's dark CRT background as the launch-screen background so the transition into the game is not a white flash.
 
@@ -80,11 +101,12 @@ Re-check these answers if analytics, ads, sign-in, cloud sync, crash-reporting S
 
 ## Before upload
 
-- Test on at least one real iPhone and one iPad size in Simulator.
-- Confirm both portrait and landscape layouts.
+- Run `npm run ios:check`.
+- Test on a real iPhone and at least one iPad Simulator size.
+- Confirm portrait and landscape layouts.
 - Confirm all 500 words load and pronunciation plays with Airplane Mode on.
 - Confirm Sound Off remains silent.
 - Confirm no external network request is required during normal play.
 - Add final app icon.
-- Archive using a current Xcode 26 release and iOS 26 SDK or later.
-- Upload to App Store Connect, then run a TestFlight build before submitting for review.
+- Run `npm run ios:archive` after signing is configured.
+- Validate/upload from Xcode Organizer and run a TestFlight build before App Review.
