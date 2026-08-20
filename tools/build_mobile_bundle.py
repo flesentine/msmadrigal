@@ -17,6 +17,7 @@ FILES = [
     "app.js",
     "petscii.css",
     "petscii.js",
+    "ios-focus.js",
     "vocab.csv",
     "privacy.html",
     "support.html",
@@ -63,7 +64,7 @@ def make_ios_bundle_self_contained() -> None:
 
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
-  <meta name="ios-native-build" content="76">
+  <meta name="ios-native-build" content="77">
   <style id="ios-native-packaged-layout">
     html.ios-native .subtitle,
     html.ios-native .controls { display: none !important; }
@@ -165,11 +166,19 @@ def make_ios_bundle_self_contained() -> None:
         1,
     )
 
+    # Native-only focus/resume behavior. Load after the normal game scripts so
+    # it can replay the existing teacher animation without changing game state.
+    index = index.replace(
+        '</body>',
+        '  <script src="ios-focus.js?v=77"></script>\n</body>',
+        1,
+    )
+
     # Bust native WKWebView caches after this packaging change.
-    index = index.replace('styles.css?v=72', 'styles.css?v=76')
-    index = index.replace('petscii.css?v=72', 'petscii.css?v=76')
-    index = index.replace('app.js?v=72', 'app.js?v=76')
-    index = index.replace('petscii.js?v=72', 'petscii.js?v=76')
+    index = index.replace('styles.css?v=72', 'styles.css?v=77')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=77')
+    index = index.replace('app.js?v=72', 'app.js?v=77')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=77')
     index_path.write_text(index, encoding="utf-8")
 
 
