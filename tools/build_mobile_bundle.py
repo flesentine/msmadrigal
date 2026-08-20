@@ -27,8 +27,8 @@ def make_ios_bundle_self_contained() -> None:
     """Apply native-only changes directly to the generated iOS bundle.
 
     Keep the public website untouched. For iOS, hide the subtitle/controls with
-    inline styles (so runtime detection cannot undo them) and add fixed safe
-    gutters for modern iPhone landscape screens with Dynamic Island/notches.
+    inline styles and use higher-specificity safe-area rules so the packaged
+    app stays clear of Dynamic Island/notches in both orientations.
     """
     styles_path = OUT / "styles.css"
     styles = styles_path.read_text(encoding="utf-8")
@@ -63,56 +63,92 @@ def make_ios_bundle_self_contained() -> None:
 
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
-  <meta name="ios-native-build" content="75">
+  <meta name="ios-native-build" content="76">
   <style id="ios-native-packaged-layout">
-    .subtitle, .controls { display: none !important; }
+    html.ios-native .subtitle,
+    html.ios-native .controls { display: none !important; }
 
-    .masthead {
+    html.ios-native .masthead {
       left: max(24px, env(safe-area-inset-left)) !important;
       right: max(24px, env(safe-area-inset-right)) !important;
     }
 
-    .statusbar {
+    html.ios-native .statusbar {
       left: max(28px, env(safe-area-inset-left)) !important;
       right: max(28px, env(safe-area-inset-right)) !important;
       bottom: max(14px, env(safe-area-inset-bottom)) !important;
     }
 
     @media (orientation: landscape) and (max-width: 1100px) and (max-height: 850px) {
-      .masthead {
+      html.ios-native .masthead {
         top: 10px !important;
-        left: 92px !important;
-        right: 92px !important;
+        left: max(92px, env(safe-area-inset-left)) !important;
+        right: max(92px, env(safe-area-inset-right)) !important;
       }
 
-      .scene {
+      html.ios-native .scene {
         top: 8% !important;
-        bottom: 5% !important;
-        left: max(58px, env(safe-area-inset-left)) !important;
-        right: max(58px, env(safe-area-inset-right)) !important;
-      }
-
-      .board {
-        right: 0 !important;
-        width: 59% !important;
-      }
-
-      .teacher { left: 0 !important; }
-
-      .statusbar {
+        bottom: 6% !important;
         left: max(64px, env(safe-area-inset-left)) !important;
         right: max(64px, env(safe-area-inset-right)) !important;
+      }
+
+      html.ios-native .board {
+        top: 11% !important;
+        right: 0 !important;
+        width: 58% !important;
+        height: 72% !important;
+      }
+
+      html.ios-native .teacher {
+        left: 0 !important;
+        top: 10% !important;
+        width: 28% !important;
+        height: 86% !important;
+      }
+
+      /* Keep the prompt and counter in separate layout columns so long mobile
+         copy can never collide with the progress counter. */
+      html.ios-native .statusbar {
+        left: max(72px, env(safe-area-inset-left)) !important;
+        right: max(72px, env(safe-area-inset-right)) !important;
         bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        align-items: center !important;
+        justify-content: stretch !important;
+        gap: 18px !important;
+      }
+
+      html.ios-native #prompt {
+        min-width: 0 !important;
+        justify-content: center !important;
+      }
+
+      html.ios-native .progress {
+        position: static !important;
+        justify-content: flex-end !important;
+      }
+
+      html.ios-native .game .petscii-prompt,
+      html.ios-native .game .petscii-progress {
+        height: 18px !important;
+      }
+
+      html.ios-native .game .petscii-prompt {
+        max-width: 100% !important;
       }
     }
 
     @media (max-width: 700px) and (orientation: portrait) {
-      .masthead { top: calc(env(safe-area-inset-top) + 18px) !important; }
+      html.ios-native .masthead {
+        top: calc(env(safe-area-inset-top) + 18px) !important;
+      }
 
       /* In portrait the teacher sits below the board. Pivot the stick around
          the visible hand end so its tip lands inside the left-middle board
          instead of skimming the lower edge. */
-      .teacher .pointer {
+      html.ios-native .teacher .pointer {
         left: 53% !important;
         top: 37% !important;
         width: 82% !important;
@@ -130,10 +166,10 @@ def make_ios_bundle_self_contained() -> None:
     )
 
     # Bust native WKWebView caches after this packaging change.
-    index = index.replace('styles.css?v=72', 'styles.css?v=75')
-    index = index.replace('petscii.css?v=72', 'petscii.css?v=75')
-    index = index.replace('app.js?v=72', 'app.js?v=75')
-    index = index.replace('petscii.js?v=72', 'petscii.js?v=75')
+    index = index.replace('styles.css?v=72', 'styles.css?v=76')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=76')
+    index = index.replace('app.js?v=72', 'app.js?v=76')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=76')
     index_path.write_text(index, encoding="utf-8")
 
 
