@@ -107,7 +107,7 @@
       ? `${entry.es}. Click for next word.`
       : `${entry.en}. Click to reveal Spanish.`);
     progressEl.textContent = `${deckPos + 1} / ${deck.length}`;
-    promptEl.textContent = spanishSide ? 'CLICK: NEXT WORD' : 'CLICK: REVEAL SPANISH';
+    promptEl.textContent = spanishSide ? '' : 'CLICK: REVEAL SPANISH';
   }
 
   async function ensureAudioContext() {
