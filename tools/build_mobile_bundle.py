@@ -24,15 +24,17 @@ FILES = [
 
 
 def make_ios_bundle_self_contained() -> None:
-    """Remove the optional remote web font from the native app bundle.
+    """Apply native-only packaging changes to the iOS web bundle.
 
-    Visible game text is rendered from the embedded C64 character ROM, so the
-    external CSS font is unnecessary in the native build. Removing it makes
-    normal gameplay independent of network access.
+    The public website stays untouched. The generated www/ copy is explicitly
+    marked as ios-native so safe-area CSS and the simplified iOS controls are
+    guaranteed to apply even before/without Capacitor's JS bridge detection.
     """
     styles_path = OUT / "styles.css"
     styles = styles_path.read_text(encoding="utf-8")
 
+    # Visible game copy is rendered from the embedded C64 character ROM, so the
+    # optional remote web font is unnecessary in the native/offline bundle.
     root_pos = styles.find(":root")
     if root_pos > 0:
         styles = styles[root_pos:]
@@ -45,12 +47,24 @@ def make_ios_bundle_self_contained() -> None:
 
     index_path = OUT / "index.html"
     index = index_path.read_text(encoding="utf-8")
+
+    # Do this in the generated native bundle only. This guarantees that rules
+    # such as html.ios-native .controls { display:none } and safe-area offsets
+    # work on every iPhone, including Dynamic Island devices.
+    index = index.replace(
+        '<html lang="en">',
+        '<html lang="en" class="ios-native">',
+        1,
+    )
+
     native_meta = (
         '  <meta name="format-detection" content="telephone=no">\n'
         '  <meta name="color-scheme" content="dark">\n'
     )
-    index = index.replace('  <meta name="theme-color" content="#050505">\n',
-                          '  <meta name="theme-color" content="#050505">\n' + native_meta)
+    index = index.replace(
+        '  <meta name="theme-color" content="#050505">\n',
+        '  <meta name="theme-color" content="#050505">\n' + native_meta,
+    )
     index_path.write_text(index, encoding="utf-8")
 
 
