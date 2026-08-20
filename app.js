@@ -38,6 +38,20 @@
   let speechSerial = 0;
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const mobileInputQuery = window.matchMedia('(pointer: coarse), (max-width: 700px)');
+
+  function usesTouchPrompt() {
+    return isIOSNative || mobileInputQuery.matches ||
+      (navigator.maxTouchPoints > 0 && window.innerWidth <= 1100);
+  }
+
+  function revealPromptText() {
+    return usesTouchPrompt() ? 'TOUCH TO REVEAL SPANISH' : 'CLICK TO REVEAL SPANISH';
+  }
+
+  function interactionVerb() {
+    return usesTouchPrompt() ? 'Touch' : 'Click';
+  }
 
   function parseCsvLine(line) {
     const cells = [];
@@ -107,13 +121,14 @@
     const entry = vocab[currentId()];
     if (!entry) return;
 
+    const verb = interactionVerb();
     wordEl.textContent = spanishSide ? entry.displayEs : entry.displayEn;
     wordEl.classList.toggle('spanish', spanishSide);
     board.setAttribute('aria-label', spanishSide
-      ? `${entry.es}. Click for next word.`
-      : `${entry.en}. Click to reveal Spanish.`);
+      ? `${entry.es}. ${verb} for next word.`
+      : `${entry.en}. ${verb} to reveal Spanish.`);
     progressEl.textContent = `${deckPos + 1} / ${deck.length}`;
-    promptEl.textContent = spanishSide ? '' : 'CLICK: REVEAL SPANISH';
+    promptEl.textContent = spanishSide ? '' : revealPromptText();
   }
 
   async function ensureAudioContext() {
@@ -327,7 +342,7 @@
       teacher.classList.add('arrived');
 
       promptEl.textContent = 'HOLA...';
-      await playC64Track('intro', 'Hola, soy la señorita Madrigral.', {
+      await playC64Track('intro', 'Hola, soy Ms. Madrigral.', {
         rate: 0.76,
         pitch: 1.04,
         wait: true,
@@ -382,9 +397,10 @@
 
       startButton.disabled = false;
       startButton.textContent = 'START CLASS';
+      const startVerb = usesTouchPrompt() ? 'TOUCH' : 'CLICK / SPACE';
       promptEl.textContent = c64AudioIndex
-        ? 'C64 VOICE READY - CLICK / TAP'
-        : 'CLICK / TAP TO START';
+        ? `C64 VOICE READY - ${startVerb}`
+        : `${startVerb} TO START`;
     } catch (error) {
       loadError = error;
       console.error(error);
@@ -445,6 +461,10 @@
     if (event.target.closest('.controls, .board, .start-overlay')) return;
     if (!started) void startClass();
     else advance();
+  });
+
+  window.addEventListener('resize', () => {
+    if (started && !starting && !spanishSide) renderWord();
   });
 
   const loadPromise = loadGame();
