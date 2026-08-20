@@ -1,6 +1,12 @@
 (() => {
   'use strict';
 
+  const isIOSNative = Boolean(
+    window.Capacitor?.isNativePlatform?.() &&
+    window.Capacitor?.getPlatform?.() === 'ios'
+  );
+  document.documentElement.classList.toggle('ios-native', isIOSNative);
+
   const game = document.getElementById('game');
   const board = document.getElementById('board');
   const wordEl = document.getElementById('word');
