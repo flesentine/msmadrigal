@@ -63,7 +63,7 @@ def make_ios_bundle_self_contained() -> None:
 
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
-  <meta name="ios-native-build" content="74">
+  <meta name="ios-native-build" content="75">
   <style id="ios-native-packaged-layout">
     .subtitle, .controls { display: none !important; }
 
@@ -108,6 +108,17 @@ def make_ios_bundle_self_contained() -> None:
 
     @media (max-width: 700px) and (orientation: portrait) {
       .masthead { top: calc(env(safe-area-inset-top) + 18px) !important; }
+
+      /* In portrait the teacher sits below the board. Pivot the stick around
+         the visible hand end so its tip lands inside the left-middle board
+         instead of skimming the lower edge. */
+      .teacher .pointer {
+        left: 53% !important;
+        top: 37% !important;
+        width: 82% !important;
+        transform-origin: 0 93% !important;
+        transform: rotate(-28deg) !important;
+      }
     }
   </style>
 '''
@@ -119,10 +130,10 @@ def make_ios_bundle_self_contained() -> None:
     )
 
     # Bust native WKWebView caches after this packaging change.
-    index = index.replace('styles.css?v=72', 'styles.css?v=74')
-    index = index.replace('petscii.css?v=72', 'petscii.css?v=74')
-    index = index.replace('app.js?v=72', 'app.js?v=74')
-    index = index.replace('petscii.js?v=72', 'petscii.js?v=74')
+    index = index.replace('styles.css?v=72', 'styles.css?v=75')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=75')
+    index = index.replace('app.js?v=72', 'app.js?v=75')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=75')
     index_path.write_text(index, encoding="utf-8")
 
 
