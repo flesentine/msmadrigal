@@ -5,9 +5,14 @@
   "description": "Ms. Madrigral Spanish 500 — retro C64-style Spanish vocabulary trainer",
   "scripts": {
     "build:ios-web": "python3 tools/build_mobile_bundle.py",
-    "ios:add": "npm run build:ios-web && npx cap add ios",
-    "ios:sync": "npm run build:ios-web && npx cap sync ios",
-    "ios:open": "npm run ios:sync && npx cap open ios"
+    "ios:bootstrap": "bash tools/ios.sh bootstrap",
+    "ios:setup": "bash tools/ios.sh prepare",
+    "ios:check": "bash tools/ios.sh check",
+    "ios:open": "bash tools/ios.sh open",
+    "ios:archive": "bash tools/ios.sh archive",
+    "ios:clean": "bash tools/ios.sh clean",
+    "ios:add": "npm run ios:setup",
+    "ios:sync": "npm run ios:setup"
   },
   "dependencies": {
     "@capacitor/core": "8.5.0",
