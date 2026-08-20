@@ -29,15 +29,17 @@ ensure_homebrew() {
 
 verify_native_bundle() {
   [[ -f www/index.html ]] || fail "www/index.html was not generated."
-  grep -q 'name="ios-native-build" content="74"' www/index.html || fail "Generated www bundle is not native build 74."
+  grep -q 'name="ios-native-build" content="75"' www/index.html || fail "Generated www bundle is not native build 75."
   grep -q 'style="display:none!important" aria-hidden="true">500 WORD VOCABULARY' www/index.html || fail "Native subtitle hide was not applied."
   grep -q 'class="controls" style="display:none!important"' www/index.html || fail "Native controls hide was not applied."
+  grep -q 'transform: rotate(-28deg) !important;' www/index.html || fail "Native portrait pointer adjustment was not applied."
 
   [[ -f "$PUBLIC_INDEX" ]] || fail "$PUBLIC_INDEX was not copied by Capacitor."
-  grep -q 'name="ios-native-build" content="74"' "$PUBLIC_INDEX" || fail "Xcode public bundle is stale; expected native build 74."
+  grep -q 'name="ios-native-build" content="75"' "$PUBLIC_INDEX" || fail "Xcode public bundle is stale; expected native build 75."
   grep -q 'class="controls" style="display:none!important"' "$PUBLIC_INDEX" || fail "Xcode public bundle still has visible controls."
+  grep -q 'transform: rotate(-28deg) !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing portrait pointer adjustment."
 
-  say "Native bundle verification: OK (build 74)"
+  say "Native bundle verification: OK (build 75)"
 }
 
 bootstrap() {
