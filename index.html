@@ -8,8 +8,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Ms. Madrigral — Spanish 500</title>
-  <link rel="stylesheet" href="styles.css?v=69">
-  <link rel="stylesheet" href="petscii.css?v=69">
+  <link rel="stylesheet" href="styles.css?v=70">
+  <link rel="stylesheet" href="petscii.css?v=70">
   <style>
     /* Explicit original-teacher lower-body frames. */
     .teacher-leg-viewport { display: none !important; }
@@ -38,6 +38,103 @@
     }
     .teacher .pointer { z-index: 3; }
 
+    /* V70 CRT model.
+       This stays DOM-native so input, responsive layout and PETSCII remain sharp
+       underneath the simulated phosphor/glass instead of rasterizing the app. */
+    .game {
+      border-radius: 16px / 12px;
+      background: #020303;
+    }
+
+    /* Slight analog softness, bloom and tiny RGB registration error. */
+    .game > .masthead,
+    .game > .scene,
+    .game > .statusbar,
+    .game > .controls,
+    .game > .start-overlay {
+      filter:
+        saturate(1.08)
+        contrast(1.07)
+        brightness(1.015)
+        blur(.16px)
+        drop-shadow(.45px 0 rgba(255,55,40,.10))
+        drop-shadow(-.45px 0 rgba(55,90,255,.09));
+    }
+
+    /* Scanline + phosphor triad. The 3px raster pitch is close to a 320-wide
+       C64 image expanded to the current game size, while the 3px RGB mask is
+       intentionally faint enough to avoid modern-display moire. */
+    .scanlines {
+      position: absolute;
+      inset: 0;
+      z-index: 60 !important;
+      pointer-events: none;
+      opacity: .92 !important;
+      mix-blend-mode: normal !important;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(0,0,0,.20) 0,
+          rgba(0,0,0,.20) 1px,
+          rgba(255,255,255,.018) 1px,
+          rgba(255,255,255,.018) 2px,
+          transparent 2px,
+          transparent 3px
+        ),
+        repeating-linear-gradient(
+          to right,
+          rgba(255,50,50,.032) 0,
+          rgba(255,50,50,.032) 1px,
+          rgba(65,255,95,.022) 1px,
+          rgba(65,255,95,.022) 2px,
+          rgba(70,90,255,.032) 2px,
+          rgba(70,90,255,.032) 3px
+        );
+      animation: crt-phosphor-flicker 7s steps(1, end) infinite;
+    }
+
+    /* Curved glass highlight. */
+    .game::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 58;
+      pointer-events: none;
+      border-radius: inherit;
+      background:
+        radial-gradient(ellipse at 48% 42%, transparent 0 53%, rgba(0,0,0,.08) 72%, rgba(0,0,0,.34) 100%),
+        linear-gradient(118deg, rgba(255,255,255,.045) 0%, rgba(255,255,255,.012) 18%, transparent 34% 100%);
+      box-shadow:
+        inset 0 0 14px rgba(255,255,255,.035),
+        inset 0 0 70px rgba(0,0,0,.32);
+    }
+
+    /* CRT edge falloff is stronger than a flat-panel vignette, but kept away
+       from the central vocabulary area. */
+    .game::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 59 !important;
+      pointer-events: none;
+      border-radius: inherit;
+      background: radial-gradient(ellipse at center, transparent 0 59%, rgba(0,0,0,.05) 73%, rgba(0,0,0,.28) 100%);
+      box-shadow:
+        inset 0 0 34px rgba(0,0,0,.20),
+        inset 0 0 95px rgba(0,0,0,.25);
+    }
+
+    @keyframes crt-phosphor-flicker {
+      0%, 16%, 35%, 64%, 100% { opacity: .92; }
+      17% { opacity: .905; }
+      36% { opacity: .928; }
+      65% { opacity: .912; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scanlines { animation: none !important; }
+    }
+
     /* Portrait phones use the full viewport; PETSCII sizing stays in petscii.css. */
     @media (max-width: 700px) {
       html, body {
@@ -53,6 +150,7 @@
         min-height: 0;
         border: 0;
         box-shadow: none;
+        border-radius: 0;
       }
       .help { display: none; }
       .controls {
@@ -199,7 +297,7 @@
     <p class="help">CLICK THE CHALKBOARD OR PRESS <kbd>SPACE</kbd>: ENGLISH → SPANISH → NEXT WORD. PRESS <kbd>R</kbd> TO RESHUFFLE.</p>
   </main>
 
-  <script src="app.js?v=69"></script>
-  <script src="petscii.js?v=69"></script>
+  <script src="app.js?v=70"></script>
+  <script src="petscii.js?v=70"></script>
 </body>
 </html>
