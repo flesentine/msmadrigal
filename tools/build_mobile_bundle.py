@@ -23,6 +23,37 @@ FILES = [
 ]
 
 
+def make_ios_bundle_self_contained() -> None:
+    """Remove the optional remote web font from the native app bundle.
+
+    Visible game text is rendered from the embedded C64 character ROM, so the
+    external CSS font is unnecessary in the native build. Removing it makes
+    normal gameplay independent of network access.
+    """
+    styles_path = OUT / "styles.css"
+    styles = styles_path.read_text(encoding="utf-8")
+
+    root_pos = styles.find(":root")
+    if root_pos > 0:
+        styles = styles[root_pos:]
+
+    styles = styles.replace(
+        '--petscii: "C64 Pro Mono", "Courier New", Courier, monospace;',
+        '--petscii: ui-monospace, Menlo, Monaco, "Courier New", Courier, monospace;',
+    )
+    styles_path.write_text(styles, encoding="utf-8")
+
+    index_path = OUT / "index.html"
+    index = index_path.read_text(encoding="utf-8")
+    native_meta = (
+        '  <meta name="format-detection" content="telephone=no">\n'
+        '  <meta name="color-scheme" content="dark">\n'
+    )
+    index = index.replace('  <meta name="theme-color" content="#050505">\n',
+                          '  <meta name="theme-color" content="#050505">\n' + native_meta)
+    index_path.write_text(index, encoding="utf-8")
+
+
 def main() -> int:
     espeak = shutil.which("espeak-ng")
     if not espeak:
@@ -40,6 +71,8 @@ def main() -> int:
     assets = ROOT / "assets"
     if assets.exists():
         shutil.copytree(assets, OUT / "assets")
+
+    make_ios_bundle_self_contained()
 
     subprocess.run(
         [
