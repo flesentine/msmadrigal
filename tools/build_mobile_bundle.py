@@ -24,17 +24,15 @@ FILES = [
 
 
 def make_ios_bundle_self_contained() -> None:
-    """Apply native-only packaging changes to the generated iOS web bundle.
+    """Apply native-only changes directly to the generated iOS bundle.
 
-    The public website stays untouched. The generated www/ copy gets an
-    unconditional native stylesheet, so the iOS layout does not depend on the
-    Capacitor JS bridge or runtime class detection.
+    Keep the public website untouched. For iOS, hide the subtitle/controls with
+    inline styles (so runtime detection cannot undo them) and add fixed safe
+    gutters for modern iPhone landscape screens with Dynamic Island/notches.
     """
     styles_path = OUT / "styles.css"
     styles = styles_path.read_text(encoding="utf-8")
 
-    # Visible game copy is rendered from the embedded C64 character ROM, so the
-    # optional remote web font is unnecessary in the native/offline bundle.
     root_pos = styles.find(":root")
     if root_pos > 0:
         styles = styles[root_pos:]
@@ -48,74 +46,68 @@ def make_ios_bundle_self_contained() -> None:
     index_path = OUT / "index.html"
     index = index_path.read_text(encoding="utf-8")
 
-    # Mark the native bundle for any native-aware JS/CSS that wants it.
+    index = index.replace('<html lang="en">', '<html lang="en" class="ios-native">', 1)
+
+    # Hard-hide these in the native bundle itself. They remain in the DOM so
+    # app.js can keep its existing event listeners without null checks.
     index = index.replace(
-        '<html lang="en">',
-        '<html lang="en" class="ios-native">',
+        '<div class="subtitle">500 WORD VOCABULARY</div>',
+        '<div class="subtitle" style="display:none!important" aria-hidden="true">500 WORD VOCABULARY</div>',
+        1,
+    )
+    index = index.replace(
+        '<div class="controls" aria-label="Game controls">',
+        '<div class="controls" style="display:none!important" aria-hidden="true" aria-label="Game controls">',
         1,
     )
 
-    # This stylesheet lives ONLY in www/index.html. Therefore these rules are
-    # unconditionally native and cannot be undone by runtime detection.
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
+  <meta name="ios-native-build" content="74">
   <style id="ios-native-packaged-layout">
-    .subtitle,
-    .controls {
-      display: none !important;
-    }
+    .subtitle, .controls { display: none !important; }
 
     .masthead {
-      left: calc(4% + env(safe-area-inset-left)) !important;
-      right: calc(4% + env(safe-area-inset-right)) !important;
+      left: max(24px, env(safe-area-inset-left)) !important;
+      right: max(24px, env(safe-area-inset-right)) !important;
     }
 
     .statusbar {
-      left: calc(5% + env(safe-area-inset-left)) !important;
-      right: calc(5% + env(safe-area-inset-right)) !important;
-      bottom: max(2%, env(safe-area-inset-bottom)) !important;
+      left: max(28px, env(safe-area-inset-left)) !important;
+      right: max(28px, env(safe-area-inset-right)) !important;
+      bottom: max(14px, env(safe-area-inset-bottom)) !important;
     }
 
     @media (orientation: landscape) and (max-width: 1100px) and (max-height: 850px) {
       .masthead {
-        top: max(2.5%, env(safe-area-inset-top)) !important;
-        left: calc(18% + env(safe-area-inset-left)) !important;
-        right: calc(18% + env(safe-area-inset-right)) !important;
+        top: 10px !important;
+        left: 92px !important;
+        right: 92px !important;
       }
 
       .scene {
         top: 8% !important;
-        bottom: 4.5% !important;
-        left: calc(1.5% + env(safe-area-inset-left)) !important;
-        right: calc(1.5% + env(safe-area-inset-right)) !important;
+        bottom: 5% !important;
+        left: max(58px, env(safe-area-inset-left)) !important;
+        right: max(58px, env(safe-area-inset-right)) !important;
       }
 
       .board {
         right: 0 !important;
-        width: 61% !important;
+        width: 59% !important;
       }
 
-      .teacher {
-        left: 0 !important;
-      }
+      .teacher { left: 0 !important; }
 
       .statusbar {
-        left: calc(5% + env(safe-area-inset-left)) !important;
-        right: calc(5% + env(safe-area-inset-right)) !important;
-        bottom: max(1.8%, env(safe-area-inset-bottom)) !important;
+        left: max(64px, env(safe-area-inset-left)) !important;
+        right: max(64px, env(safe-area-inset-right)) !important;
+        bottom: max(12px, env(safe-area-inset-bottom)) !important;
       }
     }
 
     @media (max-width: 700px) and (orientation: portrait) {
-      .masthead {
-        top: calc(env(safe-area-inset-top) + 18px) !important;
-      }
-    }
-
-    @media (max-width: 430px) and (orientation: portrait) {
-      .masthead {
-        top: calc(env(safe-area-inset-top) + 16px) !important;
-      }
+      .masthead { top: calc(env(safe-area-inset-top) + 18px) !important; }
     }
   </style>
 '''
@@ -126,8 +118,11 @@ def make_ios_bundle_self_contained() -> None:
         1,
     )
 
-    # Force WKWebView to request the new JS after native-layout changes.
-    index = index.replace('app.js?v=72', 'app.js?v=73')
+    # Bust native WKWebView caches after this packaging change.
+    index = index.replace('styles.css?v=72', 'styles.css?v=74')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=74')
+    index = index.replace('app.js?v=72', 'app.js?v=74')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=74')
     index_path.write_text(index, encoding="utf-8")
 
 
