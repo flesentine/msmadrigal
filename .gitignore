@@ -1,5 +1,12 @@
 node_modules/
 www/
+build/
 .DS_Store
-*.xcuserstate
+
+# Xcode / iOS generated output
+ios/App/Pods/
+ios/App/DerivedData/
+*.xcarchive
+*.ipa
 xcuserdata/
+*.xcuserstate
