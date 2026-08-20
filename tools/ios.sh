@@ -10,6 +10,7 @@ WORKSPACE="ios/App/App.xcworkspace"
 SCHEME="App"
 ARCHIVE_PATH="build/MsMadrigral.xcarchive"
 PUBLIC_INDEX="ios/App/App/public/index.html"
+PUBLIC_APP="ios/App/App/public/app.js"
 
 say() { printf '\n==> %s\n' "$*"; }
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
@@ -29,17 +30,23 @@ ensure_homebrew() {
 
 verify_native_bundle() {
   [[ -f www/index.html ]] || fail "www/index.html was not generated."
-  grep -q 'name="ios-native-build" content="75"' www/index.html || fail "Generated www bundle is not native build 75."
+  grep -q 'name="ios-native-build" content="76"' www/index.html || fail "Generated www bundle is not native build 76."
   grep -q 'style="display:none!important" aria-hidden="true">500 WORD VOCABULARY' www/index.html || fail "Native subtitle hide was not applied."
   grep -q 'class="controls" style="display:none!important"' www/index.html || fail "Native controls hide was not applied."
   grep -q 'transform: rotate(-28deg) !important;' www/index.html || fail "Native portrait pointer adjustment was not applied."
+  grep -q 'grid-template-columns: minmax(0, 1fr) auto !important;' www/index.html || fail "Native landscape status layout was not applied."
+  grep -q 'TOUCH TO REVEAL SPANISH' www/app.js || fail "Mobile touch prompt was not packaged."
+  grep -q 'Hola, soy Ms. Madrigral.' www/app.js || fail "Updated Ms. Madrigral intro fallback was not packaged."
 
   [[ -f "$PUBLIC_INDEX" ]] || fail "$PUBLIC_INDEX was not copied by Capacitor."
-  grep -q 'name="ios-native-build" content="75"' "$PUBLIC_INDEX" || fail "Xcode public bundle is stale; expected native build 75."
+  [[ -f "$PUBLIC_APP" ]] || fail "$PUBLIC_APP was not copied by Capacitor."
+  grep -q 'name="ios-native-build" content="76"' "$PUBLIC_INDEX" || fail "Xcode public bundle is stale; expected native build 76."
   grep -q 'class="controls" style="display:none!important"' "$PUBLIC_INDEX" || fail "Xcode public bundle still has visible controls."
   grep -q 'transform: rotate(-28deg) !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing portrait pointer adjustment."
+  grep -q 'grid-template-columns: minmax(0, 1fr) auto !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing landscape status layout."
+  grep -q 'TOUCH TO REVEAL SPANISH' "$PUBLIC_APP" || fail "Xcode public bundle is missing mobile touch prompt."
 
-  say "Native bundle verification: OK (build 75)"
+  say "Native bundle verification: OK (build 76)"
 }
 
 bootstrap() {
