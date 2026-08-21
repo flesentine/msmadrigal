@@ -1,15 +1,66 @@
 (() => {
   'use strict';
 
-  // Actual C64 901225-01 character ROM glyph bytes for screen codes 0-63.
-  const ROM_B64 = 'PGZubmBiPAAYPGZ+ZmZmAHxmZnxmZnwAPGZgYGBmPAB4bGZmZmx4AH5gYHhgYH4AfmBgeGBgYAA8ZmBuZmY8AGZmZn5mZmYAPBgYGBgYPAAeDAwMDGw4AGZseHB4bGYAYGBgYGBgfgBjd39rY2NjAGZ2fn5uZmYAPGZmZmZmPAB8ZmZ8YGBgADxmZmZmPA4AfGZmfHhsZgA8ZmA8BmY8AH4YGBgYGBgAZmZmZmZmPABmZmZmZjwYAGNjY2t/d2MAZmY8GDxmZgBmZmY8GBgYAH4GDBgwYH4APDAwMDAwPAAMEjB8MGL8ADwMDAwMDDwAABg8fhgYGBgAEDB/fzAQAAAAAAAAAAAAGBgYGAAAGABmZmYAAAAAAGZm/2b/ZmYAGD5gPAZ8GABiZgwYMGZGADxmPDhnZj8ABgwYAAAAAAAMGDAwMBgMADAYDAwMGDAAAGY8/zxmAAAAGBh+GBgAAAAAAAAAGBgwAAAAfgAAAAAAAAAAABgYAAADBgwYMGAAPGZudmZmPAAYGDgYGBh+ADxmBgwwYH4APGYGHAZmPAAGDh5mfwYGAH5gfAYGZjwAPGZgfGZmPAB+ZgwYGBgYADxmZjxmZjwAPGZmPgZmPAAAABgAABgAAAAAGAAAGBgwDhgwYDAYDgAAAH4AfgAAAHAYDAYMGHAAPGYGDBgAGAA=';
-  const ROM = Uint8Array.from(atob(ROM_B64), c => c.charCodeAt(0));
+  // Original 5x7 retro glyphs drawn into 8x8 character cells. This keeps the
+  // chunky home-computer look without embedding a third-party character ROM.
+  const GLYPHS = {
+    ' ': ['00000','00000','00000','00000','00000','00000','00000'],
+    'A': ['01110','10001','10001','11111','10001','10001','10001'],
+    'B': ['11110','10001','10001','11110','10001','10001','11110'],
+    'C': ['01111','10000','10000','10000','10000','10000','01111'],
+    'D': ['11110','10001','10001','10001','10001','10001','11110'],
+    'E': ['11111','10000','10000','11110','10000','10000','11111'],
+    'F': ['11111','10000','10000','11110','10000','10000','10000'],
+    'G': ['01111','10000','10000','10111','10001','10001','01111'],
+    'H': ['10001','10001','10001','11111','10001','10001','10001'],
+    'I': ['11111','00100','00100','00100','00100','00100','11111'],
+    'J': ['00111','00010','00010','00010','10010','10010','01100'],
+    'K': ['10001','10010','10100','11000','10100','10010','10001'],
+    'L': ['10000','10000','10000','10000','10000','10000','11111'],
+    'M': ['10001','11011','10101','10101','10001','10001','10001'],
+    'N': ['10001','11001','10101','10011','10001','10001','10001'],
+    'O': ['01110','10001','10001','10001','10001','10001','01110'],
+    'P': ['11110','10001','10001','11110','10000','10000','10000'],
+    'Q': ['01110','10001','10001','10001','10101','10010','01101'],
+    'R': ['11110','10001','10001','11110','10100','10010','10001'],
+    'S': ['01111','10000','10000','01110','00001','00001','11110'],
+    'T': ['11111','00100','00100','00100','00100','00100','00100'],
+    'U': ['10001','10001','10001','10001','10001','10001','01110'],
+    'V': ['10001','10001','10001','10001','10001','01010','00100'],
+    'W': ['10001','10001','10001','10101','10101','10101','01010'],
+    'X': ['10001','10001','01010','00100','01010','10001','10001'],
+    'Y': ['10001','10001','01010','00100','00100','00100','00100'],
+    'Z': ['11111','00001','00010','00100','01000','10000','11111'],
+    '0': ['01110','10001','10011','10101','11001','10001','01110'],
+    '1': ['00100','01100','00100','00100','00100','00100','01110'],
+    '2': ['01110','10001','00001','00010','00100','01000','11111'],
+    '3': ['11110','00001','00001','01110','00001','00001','11110'],
+    '4': ['00010','00110','01010','10010','11111','00010','00010'],
+    '5': ['11111','10000','10000','11110','00001','00001','11110'],
+    '6': ['01110','10000','10000','11110','10001','10001','01110'],
+    '7': ['11111','00001','00010','00100','01000','01000','01000'],
+    '8': ['01110','10001','10001','01110','10001','10001','01110'],
+    '9': ['01110','10001','10001','01111','00001','00001','01110'],
+    '.': ['00000','00000','00000','00000','00000','00110','00110'],
+    ',': ['00000','00000','00000','00000','00110','00110','00100'],
+    ':': ['00000','00110','00110','00000','00110','00110','00000'],
+    ';': ['00000','00110','00110','00000','00110','00110','00100'],
+    '!': ['00100','00100','00100','00100','00100','00000','00100'],
+    '?': ['01110','10001','00001','00010','00100','00000','00100'],
+    '-': ['00000','00000','00000','11111','00000','00000','00000'],
+    '+': ['00000','00100','00100','11111','00100','00100','00000'],
+    '=': ['00000','11111','00000','11111','00000','00000','00000'],
+    '/': ['00001','00010','00010','00100','01000','01000','10000'],
+    '*': ['00000','10101','01110','11111','01110','10101','00000'],
+    '"': ['01010','01010','01010','00000','00000','00000','00000'],
+    "'": ['00100','00100','01000','00000','00000','00000','00000'],
+    '(': ['00010','00100','01000','01000','01000','00100','00010'],
+    ')': ['01000','00100','00010','00010','00010','00100','01000'],
+    '@': ['01110','10001','10111','10101','10111','10000','01111'],
+  };
 
-  function screenCode(ch) {
-    const c = ch.toUpperCase().charCodeAt(0);
-    if (c >= 65 && c <= 90) return c - 64;
-    if (c >= 32 && c <= 63) return c;
-    return 32;
+  function glyphFor(ch) {
+    return GLYPHS[String(ch || ' ').toUpperCase()] || GLYPHS['?'];
   }
 
   function makeBitmap(text, className, color) {
@@ -24,12 +75,11 @@
     ctx.fillStyle = color;
 
     for (let i = 0; i < clean.length; i++) {
-      const code = screenCode(clean[i]);
-      const base = code * 8;
-      for (let y = 0; y < 8; y++) {
-        const row = ROM[base + y] || 0;
-        for (let x = 0; x < 8; x++) {
-          if (row & (0x80 >> x)) ctx.fillRect(i * 8 + x, y, 1, 1);
+      const rows = glyphFor(clean[i]);
+      for (let y = 0; y < 7; y++) {
+        const row = rows[y];
+        for (let x = 0; x < 5; x++) {
+          if (row[x] === '1') ctx.fillRect(i * 8 + x + 1, y, 1, 1);
         }
       }
     }
@@ -67,13 +117,7 @@
   bindBitmap(document.getElementById('shuffleButton'), 'petscii-mini', '#c6c5dd');
   bindBitmap(document.getElementById('muteButton'), 'petscii-mini', '#c6c5dd');
 
-  // ------------------------------------------------------------------
-  // V61 original-teacher leg animation.
-  // Read the two original CSS sprite frames directly from styles.css. Keep
-  // the complete standing teacher visible underneath, then repaint a larger
-  // lower-body window with frame A / frame B on a fixed CSS cadence while
-  // she is walking. Head, hair, torso, arm and pointer never change.
-  // ------------------------------------------------------------------
+  // Original-teacher leg animation.
   function contentUrl(value) {
     if (!value || value === 'none' || value === 'normal') return null;
     const match = String(value).match(/^url\((['"]?)(.*)\1\)$/);
@@ -122,7 +166,6 @@
 
         if (!standingContent || !standingUrl) return;
 
-        // Keep the original complete teacher permanently on frame A.
         const lock = document.createElement('style');
         lock.id = 'stable-teacher-frame-lock';
         lock.textContent = `
@@ -138,7 +181,7 @@
         document.head.appendChild(lock);
 
         if (!walkingUrl || walkingUrl === standingUrl) {
-          console.warn('V61: original alternate teacher frame unavailable.');
+          console.warn('Original alternate teacher frame unavailable.');
           return;
         }
 
@@ -153,7 +196,7 @@
 
         Promise.all([waitForImage(frameA), waitForImage(frameB)]).then(([aReady, bReady]) => {
           if (!aReady || !bReady) {
-            console.warn('V61: original teacher walk frames could not be loaded.');
+            console.warn('Original teacher walk frames could not be loaded.');
             return;
           }
 
@@ -217,13 +260,13 @@
           document.head.appendChild(style);
         });
       } catch (error) {
-        console.warn('V61: could not prepare original teacher leg animation.', error);
+        console.warn('Could not prepare original teacher leg animation.', error);
       }
     });
   }
 
   // Reliable chalkboard input: use the physical green-board rectangle,
-  // regardless of which DOM element Chrome reports as the event target.
+  // regardless of which DOM element reports as the event target.
   const board = document.getElementById('board');
   let lastBoardPointerAdvance = -Infinity;
 
