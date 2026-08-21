@@ -58,6 +58,7 @@
     ')': ['01000','00100','00010','00010','00010','00100','01000'],
     '@': ['01110','10001','10111','10101','10111','10000','01111'],
   };
+  window.MADRIGRAL_RETRO_GLYPHS = GLYPHS;
 
   function glyphFor(ch) {
     return GLYPHS[String(ch || ' ').toUpperCase()] || GLYPHS['?'];
