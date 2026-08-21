@@ -3,6 +3,15 @@
 
   if (!document.documentElement.classList.contains('ios-native')) return;
 
+  // Keep the native top strip dedicated to controls. The public web build
+  // still shows the Ms. Madrigral masthead, while iOS gets more room around
+  // Privacy / Reshuffle / Sound and avoids overlap on narrow devices.
+  const masthead = document.querySelector('.masthead');
+  if (masthead) {
+    masthead.setAttribute('aria-hidden', 'true');
+    masthead.style.setProperty('display', 'none', 'important');
+  }
+
   // The source controls are intentionally hidden by the native packaging
   // markup during initial paint. Restore them at runtime so the App Store
   // build exposes the same Reshuffle and Sound controls described in support
