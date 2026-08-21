@@ -39,7 +39,7 @@ def main() -> int:
     require(focus, "reducedMotionQuery.matches", "resume motion bypass")
     require(info, "masthead.style.setProperty('display', 'none', 'important')", "native masthead removal")
     require(info, "touch-action: manipulation !important", "double-tap zoom suppression")
-    require(info, "top: 33% !important", "landscape pointer position")
+    require(info, "top: 29% !important", "landscape pointer position")
     require(info, "openButton.textContent = 'privacy'", "subtle Privacy label")
     require(info, "min-height: 44px !important", "Privacy touch target")
     require(info, "background: transparent !important", "Privacy transparent styling")
