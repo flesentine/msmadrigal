@@ -73,6 +73,53 @@ check_store_icon() {
   printf 'App Store icon: OK (1024x1024, opaque)\n'
 }
 
+verify_archive() {
+  [[ -d "$ARCHIVE_PATH" ]] || fail "Archive not found at $ARCHIVE_PATH"
+
+  local app_path
+  app_path="$(find "$ARCHIVE_PATH/Products/Applications" -maxdepth 1 -type d -name '*.app' -print -quit 2>/dev/null || true)"
+  [[ -n "$app_path" ]] || fail "No .app product found inside $ARCHIVE_PATH"
+  [[ -f "$app_path/Info.plist" ]] || fail "Archived app is missing Info.plist"
+  [[ -f "$app_path/PrivacyInfo.xcprivacy" ]] || fail "Archived app is missing PrivacyInfo.xcprivacy at the app bundle root"
+
+  python3 - "$app_path/Info.plist" "$app_path/PrivacyInfo.xcprivacy" <<'PY'
+import plistlib
+import sys
+from pathlib import Path
+
+info_path = Path(sys.argv[1])
+privacy_path = Path(sys.argv[2])
+
+with info_path.open('rb') as f:
+    info = plistlib.load(f)
+
+expected_info = {
+    'CFBundleIdentifier': 'com.flesentine.msmadrigal',
+    'CFBundleShortVersionString': '1.0',
+    'CFBundleVersion': '1',
+    'ITSAppUsesNonExemptEncryption': False,
+}
+for key, value in expected_info.items():
+    if info.get(key) != value:
+        raise SystemExit(f'Archived Info.plist has unexpected {key}: {info.get(key)!r}')
+
+with privacy_path.open('rb') as f:
+    privacy = plistlib.load(f)
+
+expected_privacy = {
+    'NSPrivacyTracking': False,
+    'NSPrivacyTrackingDomains': [],
+    'NSPrivacyCollectedDataTypes': [],
+    'NSPrivacyAccessedAPITypes': [],
+}
+for key, value in expected_privacy.items():
+    if privacy.get(key) != value:
+        raise SystemExit(f'Archived PrivacyInfo.xcprivacy has unexpected {key}: {privacy.get(key)!r}')
+PY
+
+  printf 'Archived app compliance: OK (bundle/version/build/export/privacy manifest)\n'
+}
+
 prepare_release() {
   bash tools/ios.sh prepare
   bash tools/configure_ios_project.sh
@@ -113,6 +160,7 @@ archive_release() {
     -archivePath "$ARCHIVE_PATH" \
     -xcconfig "$XCCONFIG" \
     clean archive
+  verify_archive
   say "Archive complete"
   printf '%s\n' "$ARCHIVE_PATH"
   printf 'Open Xcode Organizer to validate and upload to TestFlight.\n'
