@@ -22,16 +22,38 @@ That command:
 - creates the Capacitor iOS project on first run
 - syncs later web changes into the native project
 - copies the privacy manifest into the native App folder
+- applies the version-controlled App Store release configuration
 
 Useful commands:
 
 ```bash
-npm run ios:check     # inspect local toolchain/readiness
-npm run ios:setup     # rebuild + sync without opening Xcode
-npm run ios:open      # rebuild + sync + open Xcode
-npm run ios:archive   # rebuild + create Release .xcarchive
+npm run ios:check     # inspect local toolchain/readiness + release settings
+npm run ios:setup     # rebuild + sync + apply release settings
+npm run ios:open      # rebuild + sync + apply settings + open Xcode
+npm run ios:archive   # rebuild + create Release .xcarchive with store settings
 npm run ios:clean     # remove generated web/build output
 ```
+
+## Reproducible release configuration
+
+The generated Capacitor Xcode project does not need to be committed in order for the release-critical settings to be reviewable and repeatable. They are stored in version control at:
+
+- `ios-config/AppStore.xcconfig`
+- `tools/configure_ios_project.sh`
+- `tools/ios_store.sh`
+
+Every `ios:setup`, `ios:open`, and `ios:archive` run applies/verifies:
+
+- Bundle identifier: `com.flesentine.msmadrigal`
+- Display name: `Ms. Madrigral`
+- Version: `1.0`
+- Build: `1`
+- Device family: iPhone and iPad
+- iPhone orientations: portrait + both landscape orientations
+- iPad orientations: portrait, upside-down portrait + both landscape orientations
+- Signing style: automatic
+
+The Apple Developer Team remains intentionally unset in source control because it belongs to the developer account/signing environment.
 
 ## What cannot be safely automated without Apple credentials
 
@@ -46,16 +68,6 @@ These still require a one-time Apple/Xcode setup:
 - validate/TestFlight/upload using your Apple account
 
 Once signing is configured, `npm run ios:archive` will create `build/MsMadrigral.xcarchive` automatically.
-
-## Xcode settings
-
-- Bundle identifier: `com.flesentine.msmadrigal`
-- Display name: `Ms. Madrigral`
-- Version: `1.0`
-- Build: `1`
-- Device family: iPhone and iPad
-- Orientation: portrait and landscape
-- Signing: select the Apple Developer team and use automatic signing unless there is a reason not to.
 
 ## App icon and launch appearance
 
