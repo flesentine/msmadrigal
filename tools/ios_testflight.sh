@@ -40,7 +40,7 @@ cat > "$EXPORT_OPTIONS" <<'PLIST'
 </plist>
 PLIST
 
-say "Uploading build 1.0 (1) to App Store Connect / TestFlight"
+say "Uploading build 1.0 (2) to App Store Connect / TestFlight"
 if xcodebuild \
   -exportArchive \
   -archivePath "$ARCHIVE_PATH" \
