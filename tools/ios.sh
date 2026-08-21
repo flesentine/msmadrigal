@@ -13,6 +13,7 @@ PUBLIC_INDEX="ios/App/App/public/index.html"
 PUBLIC_APP="ios/App/App/public/app.js"
 PUBLIC_FOCUS="ios/App/App/public/ios-focus.js"
 PUBLIC_BOOT="ios/App/App/public/ios-boot.js"
+PUBLIC_INFO="ios/App/App/public/ios-info.js"
 PUBLIC_PETSCII="ios/App/App/public/petscii.js"
 
 say() { printf '\n==> %s\n' "$*"; }
@@ -35,8 +36,10 @@ verify_native_bundle() {
   [[ -f www/index.html ]] || fail "www/index.html was not generated."
   [[ -f www/ios-focus.js ]] || fail "www/ios-focus.js was not generated."
   [[ -f www/ios-boot.js ]] || fail "www/ios-boot.js was not generated."
+  [[ -f www/ios-info.js ]] || fail "www/ios-info.js was not generated."
+  [[ -f www/privacy.html ]] || fail "www/privacy.html was not generated."
   [[ -f www/petscii.js ]] || fail "www/petscii.js was not generated."
-  grep -q 'name="ios-native-build" content="81"' www/index.html || fail "Generated www bundle is not native build 81."
+  grep -q 'name="ios-native-build" content="82"' www/index.html || fail "Generated www bundle is not native build 82."
   grep -q 'style="display:none!important" aria-hidden="true">500 WORD VOCABULARY' www/index.html || fail "Native subtitle hide was not applied."
   grep -q 'class="controls" style="display:none!important"' www/index.html || fail "Native controls hide was not applied."
   grep -q 'transform: rotate(-28deg) !important;' www/index.html || fail "Native portrait pointer adjustment was not applied."
@@ -46,7 +49,7 @@ verify_native_bundle() {
   grep -q 'id="c64BootOverlay"' www/index.html || fail "Native retro boot overlay was not packaged."
   grep -q 'id="c64BootCanvas"' www/index.html || fail "Native retro boot canvas was not packaged."
   grep -q 'c64-boot-screen::before' www/index.html || fail "Native boot CRT scanlines were not packaged."
-  grep -q 'ios-boot.js?v=81' www/index.html || fail "Native retro boot script is not linked."
+  grep -q 'ios-boot.js?v=82' www/index.html || fail "Native retro boot script is not linked."
   grep -q 'MADRIGRAL_RETRO_GLYPHS' www/petscii.js || fail "Native app is missing the original retro glyph set."
   grep -q 'MADRIGRAL_RETRO_GLYPHS' www/ios-boot.js || fail "Native boot is not using the original retro glyph set."
   ! grep -q '901225-01' www/petscii.js || fail "Third-party character ROM marker is still present in native text renderer."
@@ -56,7 +59,11 @@ verify_native_bundle() {
   grep -q 'LOAD"MSMAD",8,1' www/ios-boot.js || fail "Native retro disk-loading sequence is missing."
   grep -q 'RETRO VOICE - TAP / SPACE' www/index.html || fail "Native start screen still contains third-party voice branding."
   grep -q 'RETRO VOICE READY -' www/app.js || fail "Native status copy still contains third-party voice branding."
-  grep -q 'ios-focus.js?v=81' www/index.html || fail "Native focus walk-in script is not linked."
+  grep -q 'id="privacyButton"' www/index.html || fail "Native in-app privacy button was not packaged."
+  grep -q 'src="privacy.html"' www/index.html || fail "Native privacy policy is not embedded in-app."
+  grep -q 'ios-info.js?v=82' www/index.html || fail "Native privacy behavior is not linked."
+  grep -q 'openPrivacy' www/ios-info.js || fail "Native privacy dialog behavior is missing."
+  grep -q 'ios-focus.js?v=82' www/index.html || fail "Native focus walk-in script is not linked."
   grep -q 'replayWalkIn' www/ios-focus.js || fail "Native focus walk-in behavior was not packaged."
   grep -q 'TOUCH TO REVEAL SPANISH' www/app.js || fail "Mobile touch prompt was not packaged."
   grep -q 'Hola, soy Ms. Madrigral.' www/app.js || fail "Updated Ms. Madrigral intro fallback was not packaged."
@@ -65,8 +72,10 @@ verify_native_bundle() {
   [[ -f "$PUBLIC_APP" ]] || fail "$PUBLIC_APP was not copied by Capacitor."
   [[ -f "$PUBLIC_FOCUS" ]] || fail "$PUBLIC_FOCUS was not copied by Capacitor."
   [[ -f "$PUBLIC_BOOT" ]] || fail "$PUBLIC_BOOT was not copied by Capacitor."
+  [[ -f "$PUBLIC_INFO" ]] || fail "$PUBLIC_INFO was not copied by Capacitor."
   [[ -f "$PUBLIC_PETSCII" ]] || fail "$PUBLIC_PETSCII was not copied by Capacitor."
-  grep -q 'name="ios-native-build" content="81"' "$PUBLIC_INDEX" || fail "Xcode public bundle is stale; expected native build 81."
+  [[ -f ios/App/App/public/privacy.html ]] || fail "Xcode public bundle is missing privacy.html."
+  grep -q 'name="ios-native-build" content="82"' "$PUBLIC_INDEX" || fail "Xcode public bundle is stale; expected native build 82."
   grep -q 'class="controls" style="display:none!important"' "$PUBLIC_INDEX" || fail "Xcode public bundle still has visible controls."
   grep -q 'transform: rotate(-28deg) !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing portrait pointer adjustment."
   grep -q 'z-index: 9 !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing portrait teacher layering."
@@ -80,10 +89,13 @@ verify_native_bundle() {
   grep -q 'MADRIGRAL BASIC V2' "$PUBLIC_BOOT" || fail "Xcode public bundle is missing Madrigral boot text."
   grep -q 'RETRO VOICE - TAP / SPACE' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing retro voice label."
   grep -q 'RETRO VOICE READY -' "$PUBLIC_APP" || fail "Xcode public bundle is missing retro voice status."
+  grep -q 'id="privacyButton"' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing in-app privacy access."
+  grep -q 'src="privacy.html"' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing bundled privacy policy view."
+  grep -q 'openPrivacy' "$PUBLIC_INFO" || fail "Xcode public bundle is missing privacy dialog behavior."
   grep -q 'TOUCH TO REVEAL SPANISH' "$PUBLIC_APP" || fail "Xcode public bundle is missing mobile touch prompt."
   grep -q 'replayWalkIn' "$PUBLIC_FOCUS" || fail "Xcode public bundle is missing focus walk-in behavior."
 
-  say "Native bundle verification: OK (build 81)"
+  say "Native bundle verification: OK (build 82)"
 }
 
 bootstrap() {
@@ -149,7 +161,7 @@ check() {
   need_xcode
 
   say "Checking required files"
-  for f in package.json capacitor.config.ts vocab.csv privacy.html support.html ios-config/PrivacyInfo.xcprivacy ios-focus.js ios-boot.js; do
+  for f in package.json capacitor.config.ts vocab.csv privacy.html support.html ios-config/PrivacyInfo.xcprivacy ios-focus.js ios-boot.js ios-info.js; do
     [[ -f "$f" ]] || fail "Missing $f"
   done
 
