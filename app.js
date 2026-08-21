@@ -142,6 +142,27 @@
     promptEl.textContent = spanishSide ? '' : revealPromptText();
   }
 
+  // WKWebView can revoke the transient user gesture before the teacher finishes
+  // walking. Prime Web Audio synchronously on pointer-down so the bundled intro
+  // and later vocabulary clips remain audible after the animation delay.
+  function primeAudioFromGesture() {
+    if (muted) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    try {
+      if (!audioContext) audioContext = new AudioContextClass();
+      if (audioContext.state === 'suspended') {
+        const resumePromise = audioContext.resume();
+        if (resumePromise && typeof resumePromise.catch === 'function') {
+          resumePromise.catch(() => {});
+        }
+      }
+    } catch (error) {
+      console.warn('Could not prime Web Audio from touch.', error);
+    }
+  }
+
   async function ensureAudioContext() {
     if (audioContext) {
       if (audioContext.state === 'suspended') {
@@ -262,6 +283,16 @@
       return;
     }
 
+    if (context.state === 'suspended') {
+      try { await context.resume(); } catch (_) {}
+    }
+    if (context.state !== 'running') {
+      if (fallbackText && serial === speechSerial && !muted) {
+        await browserSpeak(fallbackText, options);
+      }
+      return;
+    }
+
     stopCurrentSource();
     if (window.speechSynthesis) speechSynthesis.cancel();
 
@@ -313,6 +344,10 @@
     starting = true;
 
     try {
+      // Call this before any await. On iOS the Start touch is the permission
+      // window for audible Web Audio; waiting for data first can lose it.
+      if (isIOSNative) primeAudioFromGesture();
+
       if (!vocab.length) {
         promptEl.textContent = 'LOADING 500 WORDS...';
         startButton.textContent = 'LOADING...';
@@ -426,6 +461,10 @@
       promptEl.textContent = 'LOAD FAILED';
     }
   }
+
+  // pointerdown fires while iOS still considers the interaction a direct user
+  // gesture. Prime audio here instead of waiting for the later click event.
+  startOverlay.addEventListener('pointerdown', primeAudioFromGesture, { passive: true });
 
   startButton.addEventListener('click', event => {
     event.stopPropagation();
