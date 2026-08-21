@@ -24,17 +24,18 @@ fi
 
 if [[ -z "$TEAM_ID" ]]; then
   IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
-  mapfile -t TEAMS < <(printf '%s\n' "$IDENTITIES" \
+  TEAMS="$(printf '%s\n' "$IDENTITIES" \
     | sed -nE 's/.*"Apple (Development|Distribution):.*\(([A-Za-z0-9]{10})\)".*/\2/p' \
-    | sort -u)
+    | sort -u)"
+  TEAM_COUNT="$(printf '%s\n' "$TEAMS" | awk 'NF {n++} END {print n+0}')"
 
-  if [[ "${#TEAMS[@]}" -eq 1 ]]; then
-    TEAM_ID="${TEAMS[0]}"
+  if [[ "$TEAM_COUNT" -eq 1 ]]; then
+    TEAM_ID="$(printf '%s\n' "$TEAMS" | awk 'NF {print; exit}')"
     say "Detected Apple signing team from Keychain"
     printf 'Team ID: %s\n' "$TEAM_ID"
-  elif [[ "${#TEAMS[@]}" -gt 1 ]]; then
+  elif [[ "$TEAM_COUNT" -gt 1 ]]; then
     say "Multiple Apple signing teams detected"
-    printf '  %s\n' "${TEAMS[@]}"
+    printf '%s\n' "$TEAMS" | sed 's/^/  /'
     cat <<'EOF'
 
 Choose the correct team explicitly:
