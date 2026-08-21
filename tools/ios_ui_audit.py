@@ -39,6 +39,7 @@ def main() -> int:
     require(focus, "reducedMotionQuery.matches", "resume motion bypass")
     require(info, "masthead.style.setProperty('display', 'none', 'important')", "native masthead removal")
     require(info, "touch-action: manipulation !important", "double-tap zoom suppression")
+    require(info, "top: 33% !important", "landscape pointer position")
     require(info, "openButton.textContent = 'privacy'", "subtle Privacy label")
     require(info, "min-height: 44px !important", "Privacy touch target")
     require(info, "background: transparent !important", "Privacy transparent styling")
@@ -47,7 +48,7 @@ def main() -> int:
     require(index, 'id="muteButton"', "Sound control")
     require(index, 'aria-pressed="false"', "Sound accessibility state")
 
-    print("Native UI audit: OK (audio primed; double-tap zoom off; masthead hidden; privacy subtle; controls restored; Reduce Motion honored)")
+    print("Native UI audit: OK (audio primed; double-tap zoom off; landscape pointer tuned; masthead hidden; privacy subtle; controls restored; Reduce Motion honored)")
     return 0
 
 
