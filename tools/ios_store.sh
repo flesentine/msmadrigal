@@ -14,7 +14,6 @@ SIGNING_CONFIG="ios-config/Signing.local.xcconfig"
 PRIVACY_SOURCE="ios-config/PrivacyInfo.xcprivacy"
 PRIVACY_NATIVE="ios/App/App/PrivacyInfo.xcprivacy"
 ICON_SOURCE="ios-config/AppIcon-source.png"
-ICON_NATIVE="ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 
 say() { printf '\n==> %s\n' "$*"; }
 warn() { printf '\nWARNING: %s\n' "$*" >&2; }
@@ -70,28 +69,9 @@ check_store_icon() {
     return 0
   fi
 
-  command -v sips >/dev/null 2>&1 || fail "macOS sips tool is required to prepare the App Store icon."
-
-  local source_width source_height source_alpha
-  source_width="$(sips -g pixelWidth "$ICON_SOURCE" 2>/dev/null | awk '/pixelWidth:/ {print $2}')"
-  source_height="$(sips -g pixelHeight "$ICON_SOURCE" 2>/dev/null | awk '/pixelHeight:/ {print $2}')"
-  source_alpha="$(sips -g hasAlpha "$ICON_SOURCE" 2>/dev/null | awk '/hasAlpha:/ {print $2}')"
-  [[ -n "$source_width" && "$source_width" == "$source_height" ]] || fail "$ICON_SOURCE must be a square PNG."
-  [[ "$source_alpha" != "yes" ]] || fail "$ICON_SOURCE must not contain transparency."
-
   if [[ -d ios/App ]]; then
-    mkdir -p "$(dirname "$ICON_NATIVE")"
-    sips -z 1024 1024 "$ICON_SOURCE" --out "$ICON_NATIVE" >/dev/null
-
-    local width height alpha
-    width="$(sips -g pixelWidth "$ICON_NATIVE" 2>/dev/null | awk '/pixelWidth:/ {print $2}')"
-    height="$(sips -g pixelHeight "$ICON_NATIVE" 2>/dev/null | awk '/pixelHeight:/ {print $2}')"
-    alpha="$(sips -g hasAlpha "$ICON_NATIVE" 2>/dev/null | awk '/hasAlpha:/ {print $2}')"
-    [[ "$width" == "1024" && "$height" == "1024" ]] || fail "Generated App Store icon must be exactly 1024x1024 pixels."
-    [[ "$alpha" != "yes" ]] || fail "Generated App Store icon must not contain transparency."
+    bash tools/prepare_app_icon.sh
   fi
-
-  printf 'App Store icon: OK (source %sx%s, generated 1024x1024 opaque asset)\n' "$source_width" "$source_height"
 }
 
 check_signing_ready() {
@@ -126,6 +106,7 @@ verify_archive() {
   [[ -n "$app_path" ]] || fail "No .app product found inside $ARCHIVE_PATH"
   [[ -f "$app_path/Info.plist" ]] || fail "Archived app is missing Info.plist"
   [[ -f "$app_path/PrivacyInfo.xcprivacy" ]] || fail "Archived app is missing PrivacyInfo.xcprivacy at the app bundle root"
+  [[ -f "$app_path/Assets.car" ]] || fail "Archived app is missing compiled asset catalog (Assets.car)"
 
   python3 - "$app_path/Info.plist" "$app_path/PrivacyInfo.xcprivacy" <<'PY'
 import plistlib
@@ -141,7 +122,7 @@ with info_path.open('rb') as f:
 expected_info = {
     'CFBundleIdentifier': 'com.flesentine.msmadrigal',
     'CFBundleShortVersionString': '1.0',
-    'CFBundleVersion': '1',
+    'CFBundleVersion': '2',
     'ITSAppUsesNonExemptEncryption': False,
 }
 for key, value in expected_info.items():
@@ -162,7 +143,7 @@ for key, value in expected_privacy.items():
         raise SystemExit(f'Archived PrivacyInfo.xcprivacy has unexpected {key}: {privacy.get(key)!r}')
 PY
 
-  printf 'Archived app compliance: OK (bundle/version/build/export/privacy manifest)\n'
+  printf 'Archived app compliance: OK (bundle/version/build/icon assets/export/privacy manifest)\n'
 }
 
 prepare_release() {
