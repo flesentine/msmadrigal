@@ -4,7 +4,7 @@
   "private": true,
   "description": "Ms. Madrigral Spanish 500 — retro 8-bit Spanish vocabulary trainer",
   "scripts": {
-    "build:ios-web": "python3 tools/build_mobile_bundle.py && python3 tools/ios_spanish_accuracy.py && python3 tools/ios_offline_audit.py",
+    "build:ios-web": "python3 tools/build_mobile_bundle.py && python3 tools/ios_spanish_accuracy.py && python3 tools/ios_offline_audit.py && python3 tools/ios_ui_audit.py",
     "security:audit": "npm audit --audit-level=moderate",
     "ios:bootstrap": "bash tools/apple_sdk_gate.sh && bash tools/ios_store.sh bootstrap",
     "ios:setup": "bash tools/apple_sdk_gate.sh && bash tools/ios_store.sh setup",
