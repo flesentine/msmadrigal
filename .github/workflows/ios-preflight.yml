@@ -45,11 +45,18 @@ jobs:
       - name: Run App Store checks
         run: npm run ios:check
       - name: Compile unsigned simulator build
-        run: >-
-          xcodebuild
-          -workspace ios/App/App.xcworkspace
-          -scheme App
-          -configuration Debug
-          -destination 'generic/platform=iOS Simulator'
-          CODE_SIGNING_ALLOWED=NO
-          build
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f ios/App/App.xcworkspace/contents.xcworkspacedata ]]; then
+            container_args=(-workspace ios/App/App.xcworkspace)
+          else
+            container_args=(-project ios/App/App.xcodeproj)
+          fi
+          xcodebuild \
+            "${container_args[@]}" \
+            -scheme App \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
