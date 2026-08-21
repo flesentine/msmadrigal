@@ -6,6 +6,7 @@ cd "$ROOT"
 
 BUNDLE_ID="com.flesentine.msmadrigal"
 WORKSPACE="ios/App/App.xcworkspace"
+PROJECT="ios/App/App.xcodeproj"
 SCHEME="App"
 ARCHIVE_PATH="build/MsMadrigral.xcarchive"
 XCCONFIG="ios-config/AppStore.xcconfig"
@@ -17,6 +18,17 @@ ICON_NATIVE="ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 say() { printf '\n==> %s\n' "$*"; }
 warn() { printf '\nWARNING: %s\n' "$*" >&2; }
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
+
+resolve_xcode_container() {
+  XCODE_ARGS=()
+  if [[ -f "$WORKSPACE/contents.xcworkspacedata" ]]; then
+    XCODE_ARGS=(-workspace "$WORKSPACE")
+  elif [[ -d "$PROJECT" ]]; then
+    XCODE_ARGS=(-project "$PROJECT")
+  else
+    fail "Missing Xcode container. Expected $WORKSPACE or $PROJECT."
+  fi
+}
 
 check_privacy_manifest() {
   [[ -f "$PRIVACY_SOURCE" ]] || fail "Missing $PRIVACY_SOURCE"
@@ -151,11 +163,11 @@ check_release() {
 archive_release() {
   prepare_release
   check_store_icon true
-  [[ -f "$WORKSPACE/contents.xcworkspacedata" ]] || fail "Workspace not found at $WORKSPACE"
+  resolve_xcode_container
   mkdir -p build
   say "Archiving App Store release"
   xcodebuild \
-    -workspace "$WORKSPACE" \
+    "${XCODE_ARGS[@]}" \
     -scheme "$SCHEME" \
     -configuration Release \
     -destination 'generic/platform=iOS' \
