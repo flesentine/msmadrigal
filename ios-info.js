@@ -51,7 +51,21 @@
   const openButton = document.getElementById('privacyButton');
   const overlay = document.getElementById('privacyOverlay');
   const closeButton = document.getElementById('privacyCloseButton');
-  if (!openButton || !overlay || !closeButton) return;
+  const board = document.getElementById('board');
+  if (!openButton || !overlay || !closeButton || !board) return;
+
+  // The game already handles taps anywhere inside its frame. Extend the same
+  // behavior to the rest of the native screen so a mobile user can tap any
+  // non-control area to flip/advance. Dispatch through the board's existing
+  // click handler so vocabulary/audio state still has one source of truth.
+  document.addEventListener('click', event => {
+    if (document.documentElement.classList.contains('privacy-open')) return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+    if (target.closest('#game')) return;
+    if (target.closest('button, a, input, select, textarea, iframe, .native-privacy-overlay')) return;
+    board.click();
+  });
 
   // Keep Privacy easy to discover for review/accessibility, but visually quiet:
   // tiny low-contrast text with no visible chrome and a generous invisible
