@@ -29,8 +29,8 @@ def make_ios_bundle_self_contained() -> None:
     """Apply native-only changes directly to the generated iOS bundle.
 
     Keep the public website untouched. For iOS, hide the subtitle/controls with
-    inline styles, add safe-area layout rules, and stage an authentic PETSCII
-    C64 boot/loading sequence before the existing start screen appears.
+    inline styles, add safe-area layout rules, and stage an original retro
+    8-bit boot/loading sequence before the existing start screen appears.
     """
     styles_path = OUT / "styles.css"
     styles = styles_path.read_text(encoding="utf-8")
@@ -62,17 +62,22 @@ def make_ios_bundle_self_contained() -> None:
         '<div class="controls" style="display:none!important" aria-hidden="true" aria-label="Game controls">',
         1,
     )
+    index = index.replace(
+        '<div id="startHint" class="start-hint">C64 VOICE - TAP / SPACE</div>',
+        '<div id="startHint" class="start-hint">RETRO VOICE - TAP / SPACE</div>',
+        1,
+    )
 
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
-  <meta name="ios-native-build" content="80">
+  <meta name="ios-native-build" content="81">
   <style id="ios-native-packaged-layout">
     html.ios-native .subtitle,
     html.ios-native .controls { display: none !important; }
 
-    /* Native startup nostalgia: real C64 ROM PETSCII drawn to a 320x200 canvas.
-       The outer border, scanlines, bloom and edge falloff keep the same CRT feel
-       as the rest of the game. */
+    /* Native startup nostalgia: original retro glyphs drawn to a 320x200
+       canvas. The outer border, scanlines, bloom and edge falloff keep the
+       same CRT feel as the rest of the game. */
     html.ios-native #c64BootOverlay {
       position: fixed;
       inset: 0;
@@ -124,7 +129,7 @@ def make_ios_bundle_self_contained() -> None:
         drop-shadow(-.4px 0 rgba(55,90,255,.09));
     }
 
-    /* C64 CRT scanlines / faint RGB mask. */
+    /* CRT scanlines / faint RGB mask. */
     html.ios-native .c64-boot-screen::before {
       content: "";
       position: absolute;
@@ -304,22 +309,29 @@ def make_ios_bundle_self_contained() -> None:
     # game scripts so neither feature changes the game's vocabulary state.
     index = index.replace(
         '</body>',
-        '  <script src="ios-boot.js?v=80"></script>\n  <script src="ios-focus.js?v=80"></script>\n</body>',
+        '  <script src="ios-boot.js?v=81"></script>\n  <script src="ios-focus.js?v=81"></script>\n</body>',
         1,
     )
 
     # Bust native WKWebView caches after this packaging change.
-    index = index.replace('styles.css?v=72', 'styles.css?v=80')
-    index = index.replace('petscii.css?v=72', 'petscii.css?v=80')
-    index = index.replace('app.js?v=72', 'app.js?v=80')
-    index = index.replace('petscii.js?v=72', 'petscii.js?v=80')
+    index = index.replace('styles.css?v=72', 'styles.css?v=81')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=81')
+    index = index.replace('app.js?v=72', 'app.js?v=81')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=81')
     index_path.write_text(index, encoding="utf-8")
+
+    # Remove third-party computer branding from native user-facing copy while
+    # keeping the public historical web version untouched.
+    app_path = OUT / "app.js"
+    app = app_path.read_text(encoding="utf-8")
+    app = app.replace('C64 VOICE READY -', 'RETRO VOICE READY -')
+    app_path.write_text(app, encoding="utf-8")
 
 
 def main() -> int:
     espeak = shutil.which("espeak-ng")
     if not espeak:
-        print("ERROR: espeak-ng is required to build the bundled C64 voice audio.", file=sys.stderr)
+        print("ERROR: espeak-ng is required to build the bundled retro voice audio.", file=sys.stderr)
         print("On macOS: brew install espeak-ng", file=sys.stderr)
         return 2
 
