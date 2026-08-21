@@ -76,8 +76,6 @@ phase_id = sys.argv[2]
 text = path.read_text(encoding='utf-8')
 phase_name = 'Copy Privacy Manifest'
 
-# Add the phase to the App target's ordered buildPhases list. The Capacitor
-# project is generated locally, so patch it deterministically after every sync.
 if f'{phase_id} /* {phase_name} */' not in text:
     target_re = re.compile(
         r'(?P<prefix>[A-F0-9]{24} /\* App \*/ = \{\n\s*isa = PBXNativeTarget;)(?P<body>.*?)(?P<suffix>\n\s*\};)',
@@ -139,6 +137,10 @@ if f'{phase_id} /* {phase_name} */ = {{' not in text:
 
 path.write_text(text, encoding='utf-8')
 PY
+
+  bash tools/prepare_app_icon.sh
+else
+  bash tools/prepare_app_icon.sh --check
 fi
 
 say "Verifying iOS release settings"
@@ -185,8 +187,9 @@ SETTINGS="$(xcodebuild \
 
 grep -q "PRODUCT_BUNDLE_IDENTIFIER = $BUNDLE_ID" <<<"$SETTINGS" || fail "Release bundle identifier is not $BUNDLE_ID."
 grep -q 'MARKETING_VERSION = 1.0' <<<"$SETTINGS" || fail "Release marketing version is not 1.0."
-grep -q 'CURRENT_PROJECT_VERSION = 1' <<<"$SETTINGS" || fail "Release build number is not 1."
+grep -q 'CURRENT_PROJECT_VERSION = 2' <<<"$SETTINGS" || fail "Release build number is not 2."
 grep -q 'TARGETED_DEVICE_FAMILY = 1,2' <<<"$SETTINGS" || fail "Release device family is not iPhone + iPad."
 grep -q 'CODE_SIGN_STYLE = Automatic' <<<"$SETTINGS" || fail "Automatic signing is not enabled for the release configuration."
+grep -q 'ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon' <<<"$SETTINGS" || fail "Release app icon catalog is not AppIcon."
 
-printf 'App Store project settings: OK (bundle %s, version 1.0, build 1, iPhone+iPad, privacy manifest copy phase, export compliance declared)\n' "$BUNDLE_ID"
+printf 'App Store project settings: OK (bundle %s, version 1.0, build 2, iPhone+iPad, AppIcon wired, privacy manifest copy phase, export compliance declared)\n' "$BUNDLE_ID"
