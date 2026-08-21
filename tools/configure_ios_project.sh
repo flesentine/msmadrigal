@@ -32,6 +32,7 @@ with path.open('rb') as f:
     data = plistlib.load(f)
 
 data['CFBundleDisplayName'] = 'Ms. Madrigral'
+data['ITSAppUsesNonExemptEncryption'] = False
 data['UISupportedInterfaceOrientations'] = [
     'UIInterfaceOrientationPortrait',
     'UIInterfaceOrientationLandscapeLeft',
@@ -73,6 +74,8 @@ expected_ipad = [
 
 if data.get('CFBundleDisplayName') != 'Ms. Madrigral':
     raise SystemExit('CFBundleDisplayName is not Ms. Madrigral')
+if data.get('ITSAppUsesNonExemptEncryption') is not False:
+    raise SystemExit('ITSAppUsesNonExemptEncryption must be false for this offline build')
 if data.get('UISupportedInterfaceOrientations') != expected_phone:
     raise SystemExit('iPhone orientations do not match release configuration')
 if data.get('UISupportedInterfaceOrientations~ipad') != expected_ipad:
@@ -92,4 +95,4 @@ grep -q 'CURRENT_PROJECT_VERSION = 1' <<<"$SETTINGS" || fail "Release build numb
 grep -q 'TARGETED_DEVICE_FAMILY = 1,2' <<<"$SETTINGS" || fail "Release device family is not iPhone + iPad."
 grep -q 'CODE_SIGN_STYLE = Automatic' <<<"$SETTINGS" || fail "Automatic signing is not enabled for the release configuration."
 
-printf 'App Store project settings: OK (bundle %s, version 1.0, build 1, iPhone+iPad)\n' "$BUNDLE_ID"
+printf 'App Store project settings: OK (bundle %s, version 1.0, build 1, iPhone+iPad, export compliance declared)\n' "$BUNDLE_ID"
