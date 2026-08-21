@@ -30,6 +30,9 @@ def main() -> int:
 
     require(app, "controls.style.setProperty('display', 'flex', 'important')", "iOS control restoration")
     require(app, "controls.removeAttribute('aria-hidden')", "iOS control accessibility")
+    require(app, "function primeAudioFromGesture()", "iOS audio priming")
+    require(app, "startOverlay.addEventListener('pointerdown', primeAudioFromGesture", "iOS audio gesture unlock")
+    require(app, "context.state !== 'running'", "iOS silent audio fallback")
     require(app, "prefers-reduced-motion: reduce", "launch Reduce Motion preference")
     require(app, "reducedMotionQuery.matches", "launch motion bypass")
     require(focus, "prefers-reduced-motion: reduce", "resume Reduce Motion preference")
@@ -44,7 +47,7 @@ def main() -> int:
     require(index, 'id="muteButton"', "Sound control")
     require(index, 'aria-pressed="false"', "Sound accessibility state")
 
-    print("Native UI audit: OK (double-tap zoom off; masthead hidden; privacy subtle; controls restored; Reduce Motion honored)")
+    print("Native UI audit: OK (audio primed; double-tap zoom off; masthead hidden; privacy subtle; controls restored; Reduce Motion honored)")
     return 0
 
 
