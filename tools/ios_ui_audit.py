@@ -40,6 +40,8 @@ def main() -> int:
     require(info, "masthead.style.setProperty('display', 'none', 'important')", "native masthead removal")
     require(info, "touch-action: manipulation !important", "double-tap zoom suppression")
     require(info, "top: 29% !important", "landscape pointer position")
+    require(info, "board.click();", "native anywhere-tap advance")
+    require(info, "target.closest('#game')", "native anywhere-tap de-duplication")
     require(info, "openButton.textContent = 'privacy'", "subtle Privacy label")
     require(info, "min-height: 44px !important", "Privacy touch target")
     require(info, "background: transparent !important", "Privacy transparent styling")
@@ -48,7 +50,7 @@ def main() -> int:
     require(index, 'id="muteButton"', "Sound control")
     require(index, 'aria-pressed="false"', "Sound accessibility state")
 
-    print("Native UI audit: OK (audio primed; double-tap zoom off; landscape pointer tuned; masthead hidden; privacy subtle; controls restored; Reduce Motion honored)")
+    print("Native UI audit: OK (audio primed; anywhere-tap enabled; double-tap zoom off; landscape pointer tuned; masthead hidden; privacy subtle; controls restored; Reduce Motion honored)")
     return 0
 
 
