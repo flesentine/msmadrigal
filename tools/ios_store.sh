@@ -12,7 +12,7 @@ ARCHIVE_PATH="build/MsMadrigral.xcarchive"
 XCCONFIG="ios-config/AppStore.xcconfig"
 PRIVACY_SOURCE="ios-config/PrivacyInfo.xcprivacy"
 PRIVACY_NATIVE="ios/App/App/PrivacyInfo.xcprivacy"
-ICON_SOURCE="ios-config/AppIcon-1024.png"
+ICON_SOURCE="ios-config/AppIcon-source.png"
 ICON_NATIVE="ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 
 say() { printf '\n==> %s\n' "$*"; }
@@ -63,26 +63,34 @@ check_store_icon() {
   local require_icon="${1:-false}"
   if [[ ! -f "$ICON_SOURCE" ]]; then
     if [[ "$require_icon" == "true" ]]; then
-      fail "Final App Store icon missing. Add a 1024x1024 PNG at $ICON_SOURCE before archiving."
+      fail "App icon artwork missing at $ICON_SOURCE."
     fi
-    warn "Final App Store icon is not checked in yet. Add a 1024x1024 PNG at $ICON_SOURCE before archiving."
+    warn "App icon artwork is not checked in yet at $ICON_SOURCE."
     return 0
   fi
 
-  command -v sips >/dev/null 2>&1 || fail "macOS sips tool is required to validate the App Store icon."
-  local width height alpha
-  width="$(sips -g pixelWidth "$ICON_SOURCE" 2>/dev/null | awk '/pixelWidth:/ {print $2}')"
-  height="$(sips -g pixelHeight "$ICON_SOURCE" 2>/dev/null | awk '/pixelHeight:/ {print $2}')"
-  alpha="$(sips -g hasAlpha "$ICON_SOURCE" 2>/dev/null | awk '/hasAlpha:/ {print $2}')"
-  [[ "$width" == "1024" && "$height" == "1024" ]] || fail "$ICON_SOURCE must be exactly 1024x1024 pixels."
-  [[ "$alpha" != "yes" ]] || fail "$ICON_SOURCE must not contain transparency."
+  command -v sips >/dev/null 2>&1 || fail "macOS sips tool is required to prepare the App Store icon."
+
+  local source_width source_height source_alpha
+  source_width="$(sips -g pixelWidth "$ICON_SOURCE" 2>/dev/null | awk '/pixelWidth:/ {print $2}')"
+  source_height="$(sips -g pixelHeight "$ICON_SOURCE" 2>/dev/null | awk '/pixelHeight:/ {print $2}')"
+  source_alpha="$(sips -g hasAlpha "$ICON_SOURCE" 2>/dev/null | awk '/hasAlpha:/ {print $2}')"
+  [[ -n "$source_width" && "$source_width" == "$source_height" ]] || fail "$ICON_SOURCE must be a square PNG."
+  [[ "$source_alpha" != "yes" ]] || fail "$ICON_SOURCE must not contain transparency."
 
   if [[ -d ios/App ]]; then
     mkdir -p "$(dirname "$ICON_NATIVE")"
-    cp "$ICON_SOURCE" "$ICON_NATIVE"
-    cmp -s "$ICON_SOURCE" "$ICON_NATIVE" || fail "Failed to install App Store icon into the native asset catalog."
+    sips -z 1024 1024 "$ICON_SOURCE" --out "$ICON_NATIVE" >/dev/null
+
+    local width height alpha
+    width="$(sips -g pixelWidth "$ICON_NATIVE" 2>/dev/null | awk '/pixelWidth:/ {print $2}')"
+    height="$(sips -g pixelHeight "$ICON_NATIVE" 2>/dev/null | awk '/pixelHeight:/ {print $2}')"
+    alpha="$(sips -g hasAlpha "$ICON_NATIVE" 2>/dev/null | awk '/hasAlpha:/ {print $2}')"
+    [[ "$width" == "1024" && "$height" == "1024" ]] || fail "Generated App Store icon must be exactly 1024x1024 pixels."
+    [[ "$alpha" != "yes" ]] || fail "Generated App Store icon must not contain transparency."
   fi
-  printf 'App Store icon: OK (1024x1024, opaque)\n'
+
+  printf 'App Store icon: OK (source %sx%s, generated 1024x1024 opaque asset)\n' "$source_width" "$source_height"
 }
 
 verify_archive() {
