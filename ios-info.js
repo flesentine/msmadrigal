@@ -3,6 +3,16 @@
 
   if (!document.documentElement.classList.contains('ios-native')) return;
 
+  // The source controls are intentionally hidden by the native packaging
+  // markup during initial paint. Restore them at runtime so the App Store
+  // build exposes the same Reshuffle and Sound controls described in support
+  // and store metadata without changing the public web layout.
+  const controls = document.querySelector('.controls');
+  if (controls) {
+    controls.removeAttribute('aria-hidden');
+    controls.style.setProperty('display', 'flex', 'important');
+  }
+
   const openButton = document.getElementById('privacyButton');
   const overlay = document.getElementById('privacyOverlay');
   const closeButton = document.getElementById('privacyCloseButton');
