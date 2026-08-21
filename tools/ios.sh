@@ -7,6 +7,7 @@ cd "$ROOT"
 APP_NAME="Ms. Madrigral"
 BUNDLE_ID="com.flesentine.msmadrigal"
 WORKSPACE="ios/App/App.xcworkspace"
+PROJECT="ios/App/App.xcodeproj"
 SCHEME="App"
 ARCHIVE_PATH="build/MsMadrigral.xcarchive"
 PUBLIC_INDEX="ios/App/App/public/index.html"
@@ -19,6 +20,19 @@ PUBLIC_PETSCII_CSS="ios/App/App/public/petscii.css"
 
 say() { printf '\n==> %s\n' "$*"; }
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
+
+resolve_xcode_container() {
+  XCODE_ARGS=()
+  if [[ -f "$WORKSPACE/contents.xcworkspacedata" ]]; then
+    XCODE_ARGS=(-workspace "$WORKSPACE")
+    XCODE_CONTAINER_LABEL="workspace"
+  elif [[ -d "$PROJECT" ]]; then
+    XCODE_ARGS=(-project "$PROJECT")
+    XCODE_CONTAINER_LABEL="project"
+  else
+    fail "Missing Xcode container. Expected $WORKSPACE or $PROJECT."
+  fi
+}
 
 need_macos() {
   [[ "$(uname -s)" == "Darwin" ]] || fail "iOS builds require macOS."
@@ -181,9 +195,10 @@ check() {
 
   if [[ -d ios/App ]]; then
     say "Checking Xcode project"
-    xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -showBuildSettings >/dev/null
-    printf 'Xcode workspace: OK\n'
-    verify_native_bundle || true
+    resolve_xcode_container
+    xcodebuild "${XCODE_ARGS[@]}" -scheme "$SCHEME" -showBuildSettings >/dev/null
+    printf 'Xcode %s: OK\n' "$XCODE_CONTAINER_LABEL"
+    verify_native_bundle
   else
     printf 'iOS native project: not generated yet (run npm run ios:setup)\n'
   fi
@@ -192,18 +207,17 @@ check() {
   printf '%s\n' \
     '- Apple Developer team/signing must be selected in Xcode.' \
     '- Final 1024x1024 app icon is still required.' \
-    '- Verify PrivacyInfo.xcprivacy is included in the App target Resources.' \
     '- Run on a real iPhone and TestFlight before submission.'
 }
 
 archive() {
   prepare
-  [[ -f "$WORKSPACE/contents.xcworkspacedata" ]] || fail "Workspace not found at $WORKSPACE"
+  resolve_xcode_container
 
   mkdir -p build
   say "Archiving release build"
   xcodebuild \
-    -workspace "$WORKSPACE" \
+    "${XCODE_ARGS[@]}" \
     -scheme "$SCHEME" \
     -configuration Release \
     -destination 'generic/platform=iOS' \
