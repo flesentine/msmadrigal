@@ -75,7 +75,7 @@ Use the app's dark CRT background as the launch-screen background so the transit
 
 Learn and review 500 useful Spanish words in a fast, retro vocabulary trainer inspired by classic home computers. See the English word, tap to reveal the Spanish answer, hear the pronunciation, and tap again to continue. Reshuffle anytime for a new randomized order. The vocabulary, game logic, and pronunciation audio are bundled with the app for offline study.
 
-**Keywords:** spanish,vocabulary,language,words,flashcards,retro,c64,learning,pronunciation,study
+**Keywords:** spanish,vocabulary,language,words,flashcards,retro,8bit,learning,pronunciation,study
 
 **Privacy policy URL:** https://flesentine.github.io/msmadrigal/privacy.html
 
