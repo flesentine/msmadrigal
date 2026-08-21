@@ -3,6 +3,24 @@
 
   if (!document.documentElement.classList.contains('ios-native')) return;
 
+  // Treat the native game surface as an app UI rather than a zoomable web page.
+  // `manipulation` keeps normal pan/pinch behavior available but disables the
+  // iOS double-tap-to-zoom gesture that can strand the game at a magnified scale.
+  const touchStyle = document.createElement('style');
+  touchStyle.id = 'ios-touch-behavior-style';
+  touchStyle.textContent = `
+    html.ios-native,
+    html.ios-native body,
+    html.ios-native .game,
+    html.ios-native .scene,
+    html.ios-native .board,
+    html.ios-native .controls,
+    html.ios-native button {
+      touch-action: manipulation !important;
+    }
+  `;
+  document.head.appendChild(touchStyle);
+
   // Keep the native top strip dedicated to controls. The public web build
   // still shows the Ms. Madrigral masthead, while iOS gets more room around
   // Privacy / Reshuffle / Sound and avoids overlap on narrow devices.
