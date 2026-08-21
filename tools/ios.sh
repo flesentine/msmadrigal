@@ -12,6 +12,7 @@ ARCHIVE_PATH="build/MsMadrigral.xcarchive"
 PUBLIC_INDEX="ios/App/App/public/index.html"
 PUBLIC_APP="ios/App/App/public/app.js"
 PUBLIC_FOCUS="ios/App/App/public/ios-focus.js"
+PUBLIC_BOOT="ios/App/App/public/ios-boot.js"
 
 say() { printf '\n==> %s\n' "$*"; }
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
@@ -32,14 +33,19 @@ ensure_homebrew() {
 verify_native_bundle() {
   [[ -f www/index.html ]] || fail "www/index.html was not generated."
   [[ -f www/ios-focus.js ]] || fail "www/ios-focus.js was not generated."
-  grep -q 'name="ios-native-build" content="78"' www/index.html || fail "Generated www bundle is not native build 78."
+  [[ -f www/ios-boot.js ]] || fail "www/ios-boot.js was not generated."
+  grep -q 'name="ios-native-build" content="79"' www/index.html || fail "Generated www bundle is not native build 79."
   grep -q 'style="display:none!important" aria-hidden="true">500 WORD VOCABULARY' www/index.html || fail "Native subtitle hide was not applied."
   grep -q 'class="controls" style="display:none!important"' www/index.html || fail "Native controls hide was not applied."
   grep -q 'transform: rotate(-28deg) !important;' www/index.html || fail "Native portrait pointer adjustment was not applied."
   grep -q 'z-index: 9 !important;' www/index.html || fail "Native portrait teacher layering was not applied."
   grep -q 'z-index: 10 !important;' www/index.html || fail "Native portrait pointer layering was not applied."
   grep -q 'grid-template-columns: minmax(0, 1fr) auto !important;' www/index.html || fail "Native landscape status layout was not applied."
-  grep -q 'ios-focus.js?v=78' www/index.html || fail "Native focus walk-in script is not linked."
+  grep -q 'id="c64BootOverlay"' www/index.html || fail "Native C64 boot overlay was not packaged."
+  grep -q 'ios-boot.js?v=79' www/index.html || fail "Native C64 boot script is not linked."
+  grep -q 'COMMODORE 64 BASIC V2' www/ios-boot.js || fail "Native C64 boot sequence is missing BASIC startup text."
+  grep -q 'LOAD"\*",8,1' www/ios-boot.js || fail "Native C64 disk-loading sequence is missing."
+  grep -q 'ios-focus.js?v=79' www/index.html || fail "Native focus walk-in script is not linked."
   grep -q 'replayWalkIn' www/ios-focus.js || fail "Native focus walk-in behavior was not packaged."
   grep -q 'TOUCH TO REVEAL SPANISH' www/app.js || fail "Mobile touch prompt was not packaged."
   grep -q 'Hola, soy Ms. Madrigral.' www/app.js || fail "Updated Ms. Madrigral intro fallback was not packaged."
@@ -47,16 +53,19 @@ verify_native_bundle() {
   [[ -f "$PUBLIC_INDEX" ]] || fail "$PUBLIC_INDEX was not copied by Capacitor."
   [[ -f "$PUBLIC_APP" ]] || fail "$PUBLIC_APP was not copied by Capacitor."
   [[ -f "$PUBLIC_FOCUS" ]] || fail "$PUBLIC_FOCUS was not copied by Capacitor."
-  grep -q 'name="ios-native-build" content="78"' "$PUBLIC_INDEX" || fail "Xcode public bundle is stale; expected native build 78."
+  [[ -f "$PUBLIC_BOOT" ]] || fail "$PUBLIC_BOOT was not copied by Capacitor."
+  grep -q 'name="ios-native-build" content="79"' "$PUBLIC_INDEX" || fail "Xcode public bundle is stale; expected native build 79."
   grep -q 'class="controls" style="display:none!important"' "$PUBLIC_INDEX" || fail "Xcode public bundle still has visible controls."
   grep -q 'transform: rotate(-28deg) !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing portrait pointer adjustment."
   grep -q 'z-index: 9 !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing portrait teacher layering."
   grep -q 'z-index: 10 !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing portrait pointer layering."
   grep -q 'grid-template-columns: minmax(0, 1fr) auto !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing landscape status layout."
+  grep -q 'id="c64BootOverlay"' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing C64 boot overlay."
+  grep -q 'COMMODORE 64 BASIC V2' "$PUBLIC_BOOT" || fail "Xcode public bundle is missing C64 boot behavior."
   grep -q 'TOUCH TO REVEAL SPANISH' "$PUBLIC_APP" || fail "Xcode public bundle is missing mobile touch prompt."
   grep -q 'replayWalkIn' "$PUBLIC_FOCUS" || fail "Xcode public bundle is missing focus walk-in behavior."
 
-  say "Native bundle verification: OK (build 78)"
+  say "Native bundle verification: OK (build 79)"
 }
 
 bootstrap() {
@@ -122,7 +131,7 @@ check() {
   need_xcode
 
   say "Checking required files"
-  for f in package.json capacitor.config.ts vocab.csv privacy.html support.html ios-config/PrivacyInfo.xcprivacy ios-focus.js; do
+  for f in package.json capacitor.config.ts vocab.csv privacy.html support.html ios-config/PrivacyInfo.xcprivacy ios-focus.js ios-boot.js; do
     [[ -f "$f" ]] || fail "Missing $f"
   done
 
