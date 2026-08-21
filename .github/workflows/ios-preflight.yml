@@ -1,0 +1,55 @@
+name: iOS App Store Preflight
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - app-store-preflight
+
+permissions:
+  contents: read
+
+jobs:
+  npm-security:
+    name: npm security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package.json
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+      - name: Security gate
+        run: bash tools/npm_security.sh
+
+  native-ios:
+    name: Native iOS bundle
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package.json
+      - name: Install espeak-ng
+        run: brew install espeak-ng
+      - name: Install dependencies
+        run: npm install
+      - name: Prepare native iOS project
+        run: npm run ios:setup
+      - name: Run App Store checks
+        run: npm run ios:check
+      - name: Compile unsigned simulator build
+        run: >-
+          xcodebuild
+          -workspace ios/App/App.xcworkspace
+          -scheme App
+          -configuration Debug
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+          build
