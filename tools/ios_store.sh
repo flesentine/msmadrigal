@@ -122,6 +122,7 @@ PY
 
 prepare_release() {
   bash tools/ios.sh prepare
+  bash tools/npm_security.sh
   bash tools/configure_ios_project.sh
   check_privacy_manifest
   check_store_icon false
@@ -139,6 +140,7 @@ open_release() {
 
 check_release() {
   bash tools/ios.sh check
+  bash tools/npm_security.sh
   check_privacy_manifest
   check_store_icon false
   if [[ -d ios/App ]]; then
@@ -169,6 +171,7 @@ archive_release() {
 case "${1:-help}" in
   bootstrap)
     bash tools/ios.sh bootstrap
+    bash tools/npm_security.sh
     bash tools/configure_ios_project.sh
     check_privacy_manifest
     check_store_icon false
