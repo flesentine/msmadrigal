@@ -67,7 +67,7 @@ Use the app's dark CRT background as the launch-screen background so the transit
 
 **Name:** Ms. Madrigral: Spanish 500
 
-**Subtitle:** Retro Spanish vocabulary trainer
+**Subtitle:** Retro Spanish vocabulary
 
 **Primary category:** Education
 
