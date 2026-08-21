@@ -21,8 +21,9 @@ That command:
 - regenerates all 500 pronunciation samples
 - creates the Capacitor iOS project on first run
 - syncs later web changes into the native project
-- copies the privacy manifest into the native App folder
+- copies and validates the privacy manifest
 - applies the version-controlled App Store release configuration
+- installs the final App Store icon automatically when `ios-config/AppIcon-1024.png` is present
 
 Useful commands:
 
@@ -34,11 +35,14 @@ npm run ios:archive   # rebuild + create Release .xcarchive with store settings
 npm run ios:clean     # remove generated web/build output
 ```
 
+`npm run ios:archive` intentionally refuses to archive until the final App Store icon exists and passes the 1024x1024/opaque checks.
+
 ## Reproducible release configuration
 
 The generated Capacitor Xcode project does not need to be committed in order for the release-critical settings to be reviewable and repeatable. They are stored in version control at:
 
 - `ios-config/AppStore.xcconfig`
+- `ios-config/PrivacyInfo.xcprivacy`
 - `tools/configure_ios_project.sh`
 - `tools/ios_store.sh`
 
@@ -52,6 +56,8 @@ Every `ios:setup`, `ios:open`, and `ios:archive` run applies/verifies:
 - iPhone orientations: portrait + both landscape orientations
 - iPad orientations: portrait, upside-down portrait + both landscape orientations
 - Signing style: automatic
+- Export compliance declaration: `ITSAppUsesNonExemptEncryption = false`
+- Privacy manifest parses correctly and matches the native copy
 
 The Apple Developer Team remains intentionally unset in source control because it belongs to the developer account/signing environment.
 
@@ -61,17 +67,21 @@ These still require a one-time Apple/Xcode setup:
 
 - choose your Apple Developer Team under Signing & Capabilities
 - allow Xcode to create/manage signing certificates and provisioning profiles
-- add the final app icon
-- confirm `PrivacyInfo.xcprivacy` is included in the App target Resources
 - create the App Store Connect app record
 - supply screenshots and final store metadata
 - validate/TestFlight/upload using your Apple account
 
-Once signing is configured, `npm run ios:archive` will create `build/MsMadrigral.xcarchive` automatically.
+Once signing is configured and the final icon is present, `npm run ios:archive` will create `build/MsMadrigral.xcarchive` automatically.
 
 ## App icon and launch appearance
 
-A final 1024x1024 App Store icon still needs to be supplied before archive/upload. It should not contain transparency.
+Put the final icon here:
+
+```text
+ios-config/AppIcon-1024.png
+```
+
+It must be exactly 1024x1024 pixels and must not contain transparency. The release workflow copies it into the generated native AppIcon asset catalog and verifies it before archive.
 
 Use the app's dark CRT background as the launch-screen background so the transition into the game is not a white flash.
 
@@ -107,18 +117,25 @@ For the current build:
 
 Re-check these answers if analytics, ads, sign-in, cloud sync, crash-reporting SDKs, or other network services are added.
 
+## Export compliance
+
+The current offline app does not implement its own proprietary or non-exempt encryption. The release script writes `ITSAppUsesNonExemptEncryption = false` into the generated native `Info.plist` and verifies that value before archive.
+
+Re-evaluate this declaration if future native libraries add non-exempt cryptography or if the app's security/network architecture changes.
+
 ## Review notes draft
 
 `Ms. Madrigral is an interactive 500-word Spanish vocabulary trainer. The complete vocabulary set and pronunciation audio are bundled in the app and work offline. Tap the chalkboard to reveal Spanish, tap again for the next word, and use Reshuffle to randomize the 500-word deck. No account, login, purchases, advertising, or tracking are used.`
 
 ## Before upload
 
+- Add `ios-config/AppIcon-1024.png`.
 - Run `npm run ios:check`.
 - Test on a real iPhone and at least one iPad Simulator size.
 - Confirm portrait and landscape layouts.
 - Confirm all 500 words load and pronunciation plays with Airplane Mode on.
 - Confirm Sound Off remains silent.
 - Confirm no external network request is required during normal play.
-- Add final app icon.
+- Confirm the privacy manifest is present in the built app bundle.
 - Run `npm run ios:archive` after signing is configured.
 - Validate/upload from Xcode Organizer and run a TestFlight build before App Review.
