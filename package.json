@@ -5,6 +5,7 @@
   "description": "Ms. Madrigral Spanish 500 — retro 8-bit Spanish vocabulary trainer",
   "scripts": {
     "build:ios-web": "python3 tools/build_mobile_bundle.py && python3 tools/ios_spanish_accuracy.py",
+    "security:audit": "npm audit --audit-level=moderate",
     "ios:bootstrap": "bash tools/ios_store.sh bootstrap",
     "ios:setup": "bash tools/ios_store.sh setup",
     "ios:check": "bash tools/ios_store.sh check",
@@ -21,5 +22,8 @@
   "devDependencies": {
     "@capacitor/cli": "8.5.0",
     "typescript": "^5.9.2"
+  },
+  "overrides": {
+    "tar": "7.5.22"
   }
 }
