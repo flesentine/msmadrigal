@@ -71,7 +71,7 @@ def make_ios_bundle_self_contained() -> None:
 
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
-  <meta name="ios-native-build" content="82">
+  <meta name="ios-native-build" content="83">
   <style id="ios-native-packaged-layout">
     html.ios-native .subtitle,
     html.ios-native .controls { display: none !important; }
@@ -413,15 +413,15 @@ def make_ios_bundle_self_contained() -> None:
     # normal game scripts so none of them changes the vocabulary state.
     index = index.replace(
         '</body>',
-        '  <script src="ios-boot.js?v=82"></script>\n  <script src="ios-focus.js?v=82"></script>\n  <script src="ios-info.js?v=82"></script>\n</body>',
+        '  <script src="ios-boot.js?v=83"></script>\n  <script src="ios-focus.js?v=83"></script>\n  <script src="ios-info.js?v=83"></script>\n</body>',
         1,
     )
 
     # Bust native WKWebView caches after this packaging change.
-    index = index.replace('styles.css?v=72', 'styles.css?v=82')
-    index = index.replace('petscii.css?v=72', 'petscii.css?v=82')
-    index = index.replace('app.js?v=72', 'app.js?v=82')
-    index = index.replace('petscii.js?v=72', 'petscii.js?v=82')
+    index = index.replace('styles.css?v=72', 'styles.css?v=83')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=83')
+    index = index.replace('app.js?v=72', 'app.js?v=83')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=83')
     index_path.write_text(index, encoding="utf-8")
 
     # Remove third-party computer branding from native user-facing copy while
