@@ -12,6 +12,7 @@
     "ios:open": "bash tools/apple_sdk_gate.sh && bash tools/ios_store.sh open",
     "ios:signing": "bash tools/ios_signing.sh",
     "ios:archive": "bash tools/apple_sdk_gate.sh && bash tools/ios_store.sh archive",
+    "ios:testflight": "bash tools/apple_sdk_gate.sh && bash tools/ios_testflight.sh",
     "ios:clean": "bash tools/ios_store.sh clean",
     "ios:add": "npm run ios:setup",
     "ios:sync": "npm run ios:setup"
