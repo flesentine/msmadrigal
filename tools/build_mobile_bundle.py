@@ -19,6 +19,7 @@ FILES = [
     "petscii.js",
     "ios-focus.js",
     "ios-boot.js",
+    "ios-info.js",
     "vocab.csv",
     "privacy.html",
     "support.html",
@@ -29,8 +30,8 @@ def make_ios_bundle_self_contained() -> None:
     """Apply native-only changes directly to the generated iOS bundle.
 
     Keep the public website untouched. For iOS, hide the subtitle/controls with
-    inline styles, add safe-area layout rules, and stage an original retro
-    8-bit boot/loading sequence before the existing start screen appears.
+    inline styles, add safe-area layout rules, stage an original retro 8-bit
+    boot/loading sequence, and expose the bundled privacy policy in-app.
     """
     styles_path = OUT / "styles.css"
     styles = styles_path.read_text(encoding="utf-8")
@@ -70,7 +71,7 @@ def make_ios_bundle_self_contained() -> None:
 
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
-  <meta name="ios-native-build" content="81">
+  <meta name="ios-native-build" content="82">
   <style id="ios-native-packaged-layout">
     html.ios-native .subtitle,
     html.ios-native .controls { display: none !important; }
@@ -182,6 +183,91 @@ def make_ios_bundle_self_contained() -> None:
       65% { opacity: .912; }
     }
 
+    /* App Store privacy access stays inside the app and opens the bundled
+       policy in a dismissible native-only modal. */
+    html.ios-native .native-privacy-button {
+      position: fixed;
+      z-index: 72;
+      top: max(10px, calc(env(safe-area-inset-top) + 8px));
+      left: max(12px, calc(env(safe-area-inset-left) + 8px));
+      min-width: 74px;
+      min-height: 34px;
+      padding: 0 10px;
+      border: 1px solid rgba(198,197,221,.62);
+      border-radius: 3px;
+      background: rgba(5,5,5,.68);
+      color: #c6c5dd;
+      font: 700 11px/1 ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html.ios-native .native-privacy-button:active {
+      background: rgba(108,105,255,.38);
+    }
+
+    html.ios-native .native-privacy-overlay[hidden] {
+      display: none !important;
+    }
+
+    html.ios-native .native-privacy-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      display: grid;
+      place-items: center;
+      padding:
+        max(20px, env(safe-area-inset-top))
+        max(16px, env(safe-area-inset-right))
+        max(20px, env(safe-area-inset-bottom))
+        max(16px, env(safe-area-inset-left));
+      background: rgba(0,0,0,.84);
+    }
+
+    html.ios-native .native-privacy-card {
+      width: min(94vw, 760px);
+      height: min(86dvh, 760px);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      overflow: hidden;
+      border: 2px solid #6c69ff;
+      border-radius: 8px;
+      background: #111;
+      box-shadow: 0 18px 70px rgba(0,0,0,.55);
+    }
+
+    html.ios-native .native-privacy-title {
+      padding: 12px 16px;
+      color: #f2f2e8;
+      background: #232055;
+      font: 700 13px/1.2 ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      letter-spacing: .08em;
+      text-align: center;
+    }
+
+    html.ios-native .native-privacy-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+
+    html.ios-native .native-privacy-close {
+      min-height: 46px;
+      border: 0;
+      border-top: 1px solid #6c69ff;
+      background: #17163b;
+      color: #f2f2e8;
+      font: 700 13px/1 ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      letter-spacing: .06em;
+    }
+
+    html.privacy-open,
+    html.privacy-open body {
+      overflow: hidden !important;
+    }
+
     @media (orientation: portrait) and (max-width: 700px) {
       html.ios-native #c64BootOverlay {
         padding:
@@ -192,6 +278,15 @@ def make_ios_bundle_self_contained() -> None:
       }
       html.ios-native .c64-boot-screen {
         width: 100%;
+      }
+      html.ios-native .native-privacy-button {
+        min-width: 68px;
+        min-height: 32px;
+        font-size: 10px;
+      }
+      html.ios-native .native-privacy-card {
+        width: 96vw;
+        height: min(84dvh, 700px);
       }
     }
 
@@ -303,21 +398,30 @@ def make_ios_bundle_self_contained() -> None:
     </div>
   </div>
 '''
-    index = index.replace('<body>\n', '<body>\n' + boot_markup, 1)
+    privacy_markup = '''  <button id="privacyButton" class="native-privacy-button" type="button" aria-haspopup="dialog" aria-controls="privacyOverlay">PRIVACY</button>
+  <div id="privacyOverlay" class="native-privacy-overlay" hidden>
+    <section class="native-privacy-card" role="dialog" aria-modal="true" aria-labelledby="privacyDialogTitle">
+      <div id="privacyDialogTitle" class="native-privacy-title">PRIVACY POLICY</div>
+      <iframe class="native-privacy-frame" src="privacy.html" title="Ms. Madrigral Privacy Policy"></iframe>
+      <button id="privacyCloseButton" class="native-privacy-close" type="button">BACK TO CLASS</button>
+    </section>
+  </div>
+'''
+    index = index.replace('<body>\n', '<body>\n' + boot_markup + privacy_markup, 1)
 
-    # Native-only boot and focus/resume behavior. These load after the normal
-    # game scripts so neither feature changes the game's vocabulary state.
+    # Native-only boot, lifecycle, and privacy behavior. These load after the
+    # normal game scripts so none of them changes the vocabulary state.
     index = index.replace(
         '</body>',
-        '  <script src="ios-boot.js?v=81"></script>\n  <script src="ios-focus.js?v=81"></script>\n</body>',
+        '  <script src="ios-boot.js?v=82"></script>\n  <script src="ios-focus.js?v=82"></script>\n  <script src="ios-info.js?v=82"></script>\n</body>',
         1,
     )
 
     # Bust native WKWebView caches after this packaging change.
-    index = index.replace('styles.css?v=72', 'styles.css?v=81')
-    index = index.replace('petscii.css?v=72', 'petscii.css?v=81')
-    index = index.replace('app.js?v=72', 'app.js?v=81')
-    index = index.replace('petscii.js?v=72', 'petscii.js?v=81')
+    index = index.replace('styles.css?v=72', 'styles.css?v=82')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=82')
+    index = index.replace('app.js?v=72', 'app.js?v=82')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=82')
     index_path.write_text(index, encoding="utf-8")
 
     # Remove third-party computer branding from native user-facing copy while
