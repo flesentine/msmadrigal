@@ -16,6 +16,7 @@
   const teacherSprite = document.getElementById('teacherSprite');
   const startOverlay = document.getElementById('startOverlay');
   const startButton = document.getElementById('startButton');
+  const controls = document.querySelector('.controls');
   const shuffleButton = document.getElementById('shuffleButton');
   const muteButton = document.getElementById('muteButton');
 
@@ -39,6 +40,16 @@
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   const mobileInputQuery = window.matchMedia('(pointer: coarse), (max-width: 700px)');
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // The native packager historically hid the web controls. Keep the same
+  // compact buttons, but explicitly restore them for the iOS app so users can
+  // reshuffle and silence pronunciation without relying on a keyboard.
+  if (isIOSNative && controls) {
+    controls.style.setProperty('display', 'flex', 'important');
+    controls.removeAttribute('aria-hidden');
+    controls.setAttribute('aria-label', 'Game controls');
+  }
 
   function usesTouchPrompt() {
     return isIOSNative || mobileInputQuery.matches ||
@@ -324,22 +335,28 @@
 
       wordEl.textContent = '';
       progressEl.textContent = '0 / 500';
-      promptEl.textContent = 'MS. MADRIGRAL IS COMING...';
 
-      teacher.classList.remove('arrived');
-      teacher.classList.add('walking');
-      let frame = false;
-      walkTimer = setInterval(() => {
-        frame = !frame;
-        setWalkFrame(frame);
-      }, 115);
+      if (reducedMotionQuery.matches) {
+        setWalkFrame(false);
+        teacher.classList.remove('walking');
+        teacher.classList.add('arrived');
+      } else {
+        promptEl.textContent = 'MS. MADRIGRAL IS COMING...';
+        teacher.classList.remove('arrived');
+        teacher.classList.add('walking');
+        let frame = false;
+        walkTimer = setInterval(() => {
+          frame = !frame;
+          setWalkFrame(frame);
+        }, 115);
 
-      await sleep(1400);
-      clearInterval(walkTimer);
-      walkTimer = null;
-      setWalkFrame(false);
-      teacher.classList.remove('walking');
-      teacher.classList.add('arrived');
+        await sleep(1400);
+        clearInterval(walkTimer);
+        walkTimer = null;
+        setWalkFrame(false);
+        teacher.classList.remove('walking');
+        teacher.classList.add('arrived');
+      }
 
       promptEl.textContent = 'HOLA...';
       await playC64Track('intro', 'Hola, soy Ms. Madrigral.', {
