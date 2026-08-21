@@ -87,22 +87,37 @@
     return canvas;
   }
 
+  function makeAccessibleText(text) {
+    const span = document.createElement('span');
+    span.className = 'petscii-accessible-text';
+    span.textContent = text;
+    return span;
+  }
+
   function bindBitmap(el, className, color) {
     if (!el) return;
     let observer;
+
     const render = text => {
-      const value = String(text || '').replace(/\s+/g, ' ').trim().toUpperCase();
+      const accessibleValue = String(text || '').replace(/\s+/g, ' ').trim();
+      const visualValue = accessibleValue.toUpperCase();
       observer?.disconnect();
       el.textContent = '';
-      el.dataset.petsciiText = value;
-      if (value) el.appendChild(makeBitmap(value, className, color));
+      el.dataset.petsciiText = accessibleValue;
+      if (accessibleValue) {
+        el.appendChild(makeBitmap(visualValue, className, color));
+        el.appendChild(makeAccessibleText(accessibleValue));
+      }
       observer?.observe(el, { childList: true, subtree: true, characterData: true });
     };
+
     observer = new MutationObserver(() => {
       const canvas = el.querySelector(':scope > canvas.petscii-bitmap');
-      if (canvas && el.childNodes.length === 1) return;
+      const accessible = el.querySelector(':scope > .petscii-accessible-text');
+      if (canvas && accessible && el.childNodes.length === 2) return;
       render(el.textContent || el.dataset.petsciiText || '');
     });
+
     render(el.textContent);
   }
 
