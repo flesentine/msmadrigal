@@ -9,13 +9,75 @@ WORKSPACE="ios/App/App.xcworkspace"
 SCHEME="App"
 ARCHIVE_PATH="build/MsMadrigral.xcarchive"
 XCCONFIG="ios-config/AppStore.xcconfig"
+PRIVACY_SOURCE="ios-config/PrivacyInfo.xcprivacy"
+PRIVACY_NATIVE="ios/App/App/PrivacyInfo.xcprivacy"
+ICON_SOURCE="ios-config/AppIcon-1024.png"
+ICON_NATIVE="ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 
 say() { printf '\n==> %s\n' "$*"; }
+warn() { printf '\nWARNING: %s\n' "$*" >&2; }
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
+
+check_privacy_manifest() {
+  [[ -f "$PRIVACY_SOURCE" ]] || fail "Missing $PRIVACY_SOURCE"
+  python3 - "$PRIVACY_SOURCE" <<'PY'
+import plistlib
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+with path.open('rb') as f:
+    data = plistlib.load(f)
+
+expected = {
+    'NSPrivacyTracking': False,
+    'NSPrivacyTrackingDomains': [],
+    'NSPrivacyCollectedDataTypes': [],
+    'NSPrivacyAccessedAPITypes': [],
+}
+for key, value in expected.items():
+    if data.get(key) != value:
+        raise SystemExit(f'{path}: unexpected {key}: {data.get(key)!r}')
+PY
+
+  if [[ -d ios/App ]]; then
+    [[ -f "$PRIVACY_NATIVE" ]] || fail "Native app is missing $PRIVACY_NATIVE"
+    cmp -s "$PRIVACY_SOURCE" "$PRIVACY_NATIVE" || fail "Native privacy manifest does not match $PRIVACY_SOURCE"
+  fi
+  printf 'Privacy manifest: OK\n'
+}
+
+check_store_icon() {
+  local require_icon="${1:-false}"
+  if [[ ! -f "$ICON_SOURCE" ]]; then
+    if [[ "$require_icon" == "true" ]]; then
+      fail "Final App Store icon missing. Add a 1024x1024 PNG at $ICON_SOURCE before archiving."
+    fi
+    warn "Final App Store icon is not checked in yet. Add a 1024x1024 PNG at $ICON_SOURCE before archiving."
+    return 0
+  fi
+
+  command -v sips >/dev/null 2>&1 || fail "macOS sips tool is required to validate the App Store icon."
+  local width height alpha
+  width="$(sips -g pixelWidth "$ICON_SOURCE" 2>/dev/null | awk '/pixelWidth:/ {print $2}')"
+  height="$(sips -g pixelHeight "$ICON_SOURCE" 2>/dev/null | awk '/pixelHeight:/ {print $2}')"
+  alpha="$(sips -g hasAlpha "$ICON_SOURCE" 2>/dev/null | awk '/hasAlpha:/ {print $2}')"
+  [[ "$width" == "1024" && "$height" == "1024" ]] || fail "$ICON_SOURCE must be exactly 1024x1024 pixels."
+  [[ "$alpha" != "yes" ]] || fail "$ICON_SOURCE must not contain transparency."
+
+  if [[ -d ios/App ]]; then
+    mkdir -p "$(dirname "$ICON_NATIVE")"
+    cp "$ICON_SOURCE" "$ICON_NATIVE"
+    cmp -s "$ICON_SOURCE" "$ICON_NATIVE" || fail "Failed to install App Store icon into the native asset catalog."
+  fi
+  printf 'App Store icon: OK (1024x1024, opaque)\n'
+}
 
 prepare_release() {
   bash tools/ios.sh prepare
   bash tools/configure_ios_project.sh
+  check_privacy_manifest
+  check_store_icon false
 }
 
 open_release() {
@@ -30,6 +92,8 @@ open_release() {
 
 check_release() {
   bash tools/ios.sh check
+  check_privacy_manifest
+  check_store_icon false
   if [[ -d ios/App ]]; then
     bash tools/configure_ios_project.sh --check
   fi
@@ -37,6 +101,7 @@ check_release() {
 
 archive_release() {
   prepare_release
+  check_store_icon true
   [[ -f "$WORKSPACE/contents.xcworkspacedata" ]] || fail "Workspace not found at $WORKSPACE"
   mkdir -p build
   say "Archiving App Store release"
@@ -57,6 +122,8 @@ case "${1:-help}" in
   bootstrap)
     bash tools/ios.sh bootstrap
     bash tools/configure_ios_project.sh
+    check_privacy_manifest
+    check_store_icon false
     ;;
   setup|prepare)
     prepare_release
