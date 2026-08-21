@@ -7,9 +7,8 @@
   const canvas = document.getElementById('c64BootCanvas');
   if (!overlay || !canvas) return;
 
-  // Same real C64 901225-01 character-ROM bytes used by the game PETSCII text.
-  const ROM_B64 = 'PGZubmBiPAAYPGZ+ZmZmAHxmZnxmZnwAPGZgYGBmPAB4bGZmZmx4AH5gYHhgYH4AfmBgeGBgYAA8ZmBuZmY8AGZmZn5mZmYAPBgYGBgYPAAeDAwMDGw4AGZseHB4bGYAYGBgYGBgfgBjd39rY2NjAGZ2fn5uZmYAPGZmZmZmPAB8ZmZ8YGBgADxmZmZmPA4AfGZmfHhsZgA8ZmA8BmY8AH4YGBgYGBgAZmZmZmZmPABmZmZmZjwYAGNjY2t/d2MAZmY8GDxmZgBmZmY8GBgYAH4GDBgwYH4APDAwMDAwPAAMEjB8MGL8ADwMDAwMDDwAABg8fhgYGBgAEDB/fzAQAAAAAAAAAAAAGBgYGAAAGABmZmYAAAAAAGZm/2b/ZmYAGD5gPAZ8GABiZgwYMGZGADxmPDhnZj8ABgwYAAAAAAAMGDAwMBgMADAYDAwMGDAAAGY8/zxmAAAAGBh+GBgAAAAAAAAAGBgwAAAAfgAAAAAAAAAAABgYAAADBgwYMGAAPGZudmZmPAAYGDgYGBh+ADxmBgwwYH4APGYGHAZmPAAGDh5mfwYGAH5gfAYGZjwAPGZgfGZmPAB+ZgwYGBgYADxmZjxmZjwAPGZmPgZmPAAAABgAABgAAAAAGAAAGBgwDhgwYDAYDgAAAH4AfgAAAHAYDAYMGHAAPGYGDBgAGAA=';
-  const ROM = Uint8Array.from(atob(ROM_B64), ch => ch.charCodeAt(0));
+  const GLYPHS = window.MADRIGRAL_RETRO_GLYPHS;
+  if (!GLYPHS) return;
 
   const COLS = 40;
   const ROWS = 25;
@@ -32,20 +31,16 @@
   const timers = [];
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function screenCode(ch) {
-    const c = String(ch || ' ').toUpperCase().charCodeAt(0);
-    if (c >= 65 && c <= 90) return c - 64;
-    if (c >= 32 && c <= 63) return c;
-    return 32;
+  function glyphFor(ch) {
+    return GLYPHS[String(ch || ' ').toUpperCase()] || GLYPHS['?'];
   }
 
   function drawGlyph(ch, col, row) {
-    const code = screenCode(ch);
-    const base = code * 8;
-    for (let y = 0; y < 8; y++) {
-      const bits = ROM[base + y] || 0;
-      for (let x = 0; x < 8; x++) {
-        if (bits & (0x80 >> x)) ctx.fillRect(col * 8 + x, row * 8 + y, 1, 1);
+    const rows = glyphFor(ch);
+    for (let y = 0; y < 7; y++) {
+      const bits = rows[y];
+      for (let x = 0; x < 5; x++) {
+        if (bits[x] === '1') ctx.fillRect(col * CELL + x + 1, row * CELL + y, 1, 1);
       }
     }
   }
@@ -108,21 +103,21 @@
   render();
 
   if (reduceMotion) {
-    centered(1, '**** COMMODORE 64 BASIC V2 ****');
+    centered(1, '**** MADRIGRAL BASIC V2 ****');
     centered(3, '64K RAM SYSTEM  38911 BASIC BYTES FREE');
     put(5, 0, 'READY.');
-    put(6, 0, 'LOAD"*",8,1');
-    put(8, 0, 'SEARCHING FOR *');
+    put(6, 0, 'LOAD"MSMAD",8,1');
+    put(8, 0, 'SEARCHING FOR MSMAD');
     put(9, 0, 'LOADING');
     put(11, 0, 'READY.');
     put(12, 0, 'RUN');
     schedule(180, finish);
   } else {
-    schedule(90, () => centered(1, '**** COMMODORE 64 BASIC V2 ****'));
+    schedule(90, () => centered(1, '**** MADRIGRAL BASIC V2 ****'));
     schedule(420, () => centered(3, '64K RAM SYSTEM  38911 BASIC BYTES FREE'));
     schedule(900, () => put(5, 0, 'READY.'));
-    typeAt(6, 0, 'LOAD"*",8,1', 1260, 54);
-    schedule(2170, () => put(8, 0, 'SEARCHING FOR *'));
+    typeAt(6, 0, 'LOAD"MSMAD",8,1', 1260, 54);
+    schedule(2170, () => put(8, 0, 'SEARCHING FOR MSMAD'));
     schedule(2700, () => put(9, 0, 'LOADING'));
     schedule(3340, () => put(11, 0, 'READY.'));
     typeAt(12, 0, 'RUN', 3600, 75);
