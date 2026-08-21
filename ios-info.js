@@ -27,6 +27,40 @@
   const closeButton = document.getElementById('privacyCloseButton');
   if (!openButton || !overlay || !closeButton) return;
 
+  // Keep Privacy easy to discover for review/accessibility, but visually quiet:
+  // tiny low-contrast text with no visible chrome and a generous invisible
+  // touch target underneath it.
+  openButton.textContent = 'privacy';
+  openButton.setAttribute('aria-label', 'Privacy policy');
+
+  const privacyStyle = document.createElement('style');
+  privacyStyle.id = 'ios-privacy-link-style';
+  privacyStyle.textContent = `
+    html.ios-native .native-privacy-button {
+      min-width: 64px !important;
+      min-height: 44px !important;
+      padding: 0 !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      color: rgba(198, 197, 221, .46) !important;
+      opacity: 1 !important;
+      font-size: 9px !important;
+      font-weight: 500 !important;
+      letter-spacing: .04em !important;
+      text-transform: lowercase !important;
+    }
+
+    html.ios-native .native-privacy-button:active,
+    html.ios-native .native-privacy-button:focus-visible {
+      background: transparent !important;
+      color: rgba(242, 242, 232, .88) !important;
+      outline: none !important;
+    }
+  `;
+  document.head.appendChild(privacyStyle);
+
   let previousFocus = null;
 
   function openPrivacy() {
