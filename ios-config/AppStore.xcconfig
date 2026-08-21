@@ -1,0 +1,8 @@
+// App Store release settings applied by npm run ios:setup/open/archive.
+// Signing team stays intentionally unset so Xcode can use the developer's account.
+
+PRODUCT_BUNDLE_IDENTIFIER = com.flesentine.msmadrigal
+MARKETING_VERSION = 1.0
+CURRENT_PROJECT_VERSION = 1
+TARGETED_DEVICE_FAMILY = 1,2
+CODE_SIGN_STYLE = Automatic
