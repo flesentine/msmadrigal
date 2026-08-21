@@ -29,8 +29,8 @@ def make_ios_bundle_self_contained() -> None:
     """Apply native-only changes directly to the generated iOS bundle.
 
     Keep the public website untouched. For iOS, hide the subtitle/controls with
-    inline styles, add safe-area layout rules, and stage an old-school C64 boot
-    and disk-loading sequence before the existing start screen appears.
+    inline styles, add safe-area layout rules, and stage an authentic PETSCII
+    C64 boot/loading sequence before the existing start screen appears.
     """
     styles_path = OUT / "styles.css"
     styles = styles_path.read_text(encoding="utf-8")
@@ -65,23 +65,25 @@ def make_ios_bundle_self_contained() -> None:
 
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
-  <meta name="ios-native-build" content="79">
+  <meta name="ios-native-build" content="80">
   <style id="ios-native-packaged-layout">
     html.ios-native .subtitle,
     html.ios-native .controls { display: none !important; }
 
-    /* Native startup nostalgia: approximate a real C64 BASIC screen and disk
-       load before revealing the existing Ms. Madrigral start panel. */
+    /* Native startup nostalgia: real C64 ROM PETSCII drawn to a 320x200 canvas.
+       The outer border, scanlines, bloom and edge falloff keep the same CRT feel
+       as the rest of the game. */
     html.ios-native #c64BootOverlay {
       position: fixed;
       inset: 0;
       z-index: 10000;
-      display: flex;
+      display: grid;
+      place-items: center;
       padding:
-        max(28px, env(safe-area-inset-top))
-        max(28px, env(safe-area-inset-right))
-        max(28px, env(safe-area-inset-bottom))
-        max(28px, env(safe-area-inset-left));
+        max(24px, env(safe-area-inset-top))
+        max(24px, env(safe-area-inset-right))
+        max(24px, env(safe-area-inset-bottom))
+        max(24px, env(safe-area-inset-left));
       background: #7167c6;
       opacity: 1;
       transition: opacity 280ms steps(4, end);
@@ -95,65 +97,102 @@ def make_ios_bundle_self_contained() -> None:
 
     html.ios-native .c64-boot-screen {
       position: relative;
-      flex: 1 1 auto;
+      width: min(100%, 960px);
+      aspect-ratio: 8 / 5;
+      max-height: calc(100dvh - max(48px, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
       overflow: hidden;
       background: #352879;
-      color: #a6a0ff;
-      padding: clamp(22px, 5vw, 54px);
-      font-family: ui-monospace, Menlo, Monaco, "Courier New", monospace;
-      font-size: clamp(14px, 2.2vw, 25px);
-      font-weight: 700;
-      line-height: 1.12;
-      letter-spacing: .02em;
-      text-transform: uppercase;
-      text-shadow: 1px 0 rgba(255,255,255,.08);
-      box-shadow: inset 0 0 46px rgba(0,0,0,.12);
+      border-radius: 12px / 9px;
+      box-shadow:
+        0 0 0 clamp(14px, 3vw, 34px) #7167c6,
+        0 16px 70px rgba(0,0,0,.28),
+        inset 0 0 46px rgba(0,0,0,.16);
     }
 
-    html.ios-native #c64BootOutput {
-      display: inline;
-      margin: 0;
-      white-space: pre-wrap;
-      font: inherit;
-      color: inherit;
+    html.ios-native #c64BootCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      filter:
+        saturate(1.05)
+        contrast(1.04)
+        brightness(1.02)
+        blur(.16px)
+        drop-shadow(.4px 0 rgba(255,55,40,.10))
+        drop-shadow(-.4px 0 rgba(55,90,255,.09));
     }
 
-    html.ios-native #c64BootCursor {
-      display: inline-block;
-      width: .68em;
-      height: 1em;
-      margin-left: .08em;
-      vertical-align: -.13em;
-      background: currentColor;
-      animation: c64-boot-blink 560ms steps(1, end) infinite;
+    /* C64 CRT scanlines / faint RGB mask. */
+    html.ios-native .c64-boot-screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: .92;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(0,0,0,.20) 0,
+          rgba(0,0,0,.20) 1px,
+          rgba(255,255,255,.018) 1px,
+          rgba(255,255,255,.018) 2px,
+          transparent 2px,
+          transparent 3px
+        ),
+        repeating-linear-gradient(
+          to right,
+          rgba(255,50,50,.028) 0,
+          rgba(255,50,50,.028) 1px,
+          rgba(65,255,95,.020) 1px,
+          rgba(65,255,95,.020) 2px,
+          rgba(70,90,255,.028) 2px,
+          rgba(70,90,255,.028) 3px
+        );
+      animation: c64-boot-crt-flicker 7s steps(1, end) infinite;
     }
 
-    html.ios-native #c64BootCursor.c64-boot-cursor-off {
-      visibility: hidden;
+    /* Curved glass highlight and edge falloff. */
+    html.ios-native .c64-boot-screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      border-radius: inherit;
+      background:
+        radial-gradient(ellipse at 48% 42%, transparent 0 55%, rgba(0,0,0,.07) 73%, rgba(0,0,0,.29) 100%),
+        linear-gradient(118deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 18%, transparent 34% 100%);
+      box-shadow:
+        inset 0 0 14px rgba(255,255,255,.03),
+        inset 0 0 70px rgba(0,0,0,.27);
     }
 
-    @keyframes c64-boot-blink {
-      0%, 49% { opacity: 1; }
-      50%, 100% { opacity: 0; }
+    @keyframes c64-boot-crt-flicker {
+      0%, 16%, 35%, 64%, 100% { opacity: .92; }
+      17% { opacity: .905; }
+      36% { opacity: .928; }
+      65% { opacity: .912; }
     }
 
     @media (orientation: portrait) and (max-width: 700px) {
       html.ios-native #c64BootOverlay {
         padding:
-          max(44px, env(safe-area-inset-top))
-          max(18px, env(safe-area-inset-right))
-          max(30px, env(safe-area-inset-bottom))
-          max(18px, env(safe-area-inset-left));
+          max(52px, env(safe-area-inset-top))
+          max(22px, env(safe-area-inset-right))
+          max(34px, env(safe-area-inset-bottom))
+          max(22px, env(safe-area-inset-left));
       }
       html.ios-native .c64-boot-screen {
-        padding: 26px 20px;
-        font-size: clamp(13px, 4vw, 19px);
+        width: 100%;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
       html.ios-native #c64BootOverlay { transition-duration: 80ms; }
-      html.ios-native #c64BootCursor { animation: none; }
+      html.ios-native .c64-boot-screen::before { animation: none; }
     }
 
     html.ios-native .masthead {
@@ -195,8 +234,6 @@ def make_ios_bundle_self_contained() -> None:
         height: 86% !important;
       }
 
-      /* Keep the prompt and counter in separate layout columns so long mobile
-         copy can never collide with the progress counter. */
       html.ios-native .statusbar {
         left: max(72px, env(safe-area-inset-left)) !important;
         right: max(72px, env(safe-area-inset-right)) !important;
@@ -233,9 +270,6 @@ def make_ios_bundle_self_contained() -> None:
         top: calc(env(safe-area-inset-top) + 18px) !important;
       }
 
-      /* The board normally sits above the teacher stacking context. In portrait
-         raise the teacher only for layering so the pointer can visibly cross
-         the green frame instead of disappearing behind it. */
       html.ios-native .teacher {
         z-index: 9 !important;
       }
@@ -260,7 +294,7 @@ def make_ios_bundle_self_contained() -> None:
 
     boot_markup = '''  <div id="c64BootOverlay" aria-hidden="true">
     <div class="c64-boot-screen">
-      <pre id="c64BootOutput"></pre><span id="c64BootCursor"></span>
+      <canvas id="c64BootCanvas" width="320" height="200"></canvas>
     </div>
   </div>
 '''
@@ -270,15 +304,15 @@ def make_ios_bundle_self_contained() -> None:
     # game scripts so neither feature changes the game's vocabulary state.
     index = index.replace(
         '</body>',
-        '  <script src="ios-boot.js?v=79"></script>\n  <script src="ios-focus.js?v=79"></script>\n</body>',
+        '  <script src="ios-boot.js?v=80"></script>\n  <script src="ios-focus.js?v=80"></script>\n</body>',
         1,
     )
 
     # Bust native WKWebView caches after this packaging change.
-    index = index.replace('styles.css?v=72', 'styles.css?v=79')
-    index = index.replace('petscii.css?v=72', 'petscii.css?v=79')
-    index = index.replace('app.js?v=72', 'app.js?v=79')
-    index = index.replace('petscii.js?v=72', 'petscii.js?v=79')
+    index = index.replace('styles.css?v=72', 'styles.css?v=80')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=80')
+    index = index.replace('app.js?v=72', 'app.js?v=80')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=80')
     index_path.write_text(index, encoding="utf-8")
 
 
