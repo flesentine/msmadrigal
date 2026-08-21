@@ -35,7 +35,7 @@ npm run ios:archive   # rebuild + create Release .xcarchive with store settings
 npm run ios:clean     # remove generated web/build output
 ```
 
-`npm run ios:archive` intentionally refuses to archive until the final App Store icon exists and passes the 1024x1024/opaque checks.
+`npm run ios:archive` intentionally refuses to archive until the final App Store icon exists and passes the 1024x1024/opaque checks. After Xcode creates the archive, the script also inspects the finished `.app` bundle and verifies its bundle ID, version, build number, export-compliance flag, and bundled privacy manifest.
 
 ## Reproducible release configuration
 
@@ -103,6 +103,29 @@ Learn and review 500 useful Spanish words in a fast, retro vocabulary trainer in
 
 **Support URL:** https://flesentine.github.io/msmadrigal/support.html
 
+## App Store Connect record
+
+Create an iOS app record using:
+
+- Name: `Ms. Madrigral: Spanish 500`
+- Primary language: English (U.S.)
+- Bundle ID: `com.flesentine.msmadrigal`
+- SKU: use a private internal identifier such as `msmadrigal-ios-1`
+- Primary category: Education
+
+After the record exists, the first uploaded build is associated to it using the bundle ID and version from the app bundle.
+
+## Screenshots
+
+Because this build supports both iPhone and iPad, prepare screenshots for both device families. App Store Connect currently accepts one to ten screenshots per supported device size. If the UI is the same across device sizes, supplying the highest-resolution required set lets App Store Connect scale it for smaller devices.
+
+For this app, the simplest submission set is:
+
+- iPhone: a current 6.9-inch accepted screenshot size
+- iPad: a current 13-inch accepted screenshot size
+- capture the actual app UI; no app preview video is required
+- screenshots must be JPEG/JPG/PNG without transparency
+
 ## Privacy answers
 
 For the current build:
@@ -137,5 +160,6 @@ Re-evaluate this declaration if future native libraries add non-exempt cryptogra
 - Confirm Sound Off remains silent.
 - Confirm no external network request is required during normal play.
 - Confirm the privacy manifest is present in the built app bundle.
+- Capture the iPhone and iPad App Store screenshots.
 - Run `npm run ios:archive` after signing is configured.
 - Validate/upload from Xcode Organizer and run a TestFlight build before App Review.
