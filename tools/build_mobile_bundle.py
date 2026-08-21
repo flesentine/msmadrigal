@@ -18,6 +18,7 @@ FILES = [
     "petscii.css",
     "petscii.js",
     "ios-focus.js",
+    "ios-boot.js",
     "vocab.csv",
     "privacy.html",
     "support.html",
@@ -28,8 +29,8 @@ def make_ios_bundle_self_contained() -> None:
     """Apply native-only changes directly to the generated iOS bundle.
 
     Keep the public website untouched. For iOS, hide the subtitle/controls with
-    inline styles and use higher-specificity safe-area rules so the packaged
-    app stays clear of Dynamic Island/notches in both orientations.
+    inline styles, add safe-area layout rules, and stage an old-school C64 boot
+    and disk-loading sequence before the existing start screen appears.
     """
     styles_path = OUT / "styles.css"
     styles = styles_path.read_text(encoding="utf-8")
@@ -64,10 +65,96 @@ def make_ios_bundle_self_contained() -> None:
 
     native_head = '''  <meta name="format-detection" content="telephone=no">
   <meta name="color-scheme" content="dark">
-  <meta name="ios-native-build" content="78">
+  <meta name="ios-native-build" content="79">
   <style id="ios-native-packaged-layout">
     html.ios-native .subtitle,
     html.ios-native .controls { display: none !important; }
+
+    /* Native startup nostalgia: approximate a real C64 BASIC screen and disk
+       load before revealing the existing Ms. Madrigral start panel. */
+    html.ios-native #c64BootOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      padding:
+        max(28px, env(safe-area-inset-top))
+        max(28px, env(safe-area-inset-right))
+        max(28px, env(safe-area-inset-bottom))
+        max(28px, env(safe-area-inset-left));
+      background: #7167c6;
+      opacity: 1;
+      transition: opacity 280ms steps(4, end);
+      touch-action: manipulation;
+    }
+
+    html.ios-native #c64BootOverlay.c64-boot-done {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    html.ios-native .c64-boot-screen {
+      position: relative;
+      flex: 1 1 auto;
+      overflow: hidden;
+      background: #352879;
+      color: #a6a0ff;
+      padding: clamp(22px, 5vw, 54px);
+      font-family: ui-monospace, Menlo, Monaco, "Courier New", monospace;
+      font-size: clamp(14px, 2.2vw, 25px);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      text-shadow: 1px 0 rgba(255,255,255,.08);
+      box-shadow: inset 0 0 46px rgba(0,0,0,.12);
+    }
+
+    html.ios-native #c64BootOutput {
+      display: inline;
+      margin: 0;
+      white-space: pre-wrap;
+      font: inherit;
+      color: inherit;
+    }
+
+    html.ios-native #c64BootCursor {
+      display: inline-block;
+      width: .68em;
+      height: 1em;
+      margin-left: .08em;
+      vertical-align: -.13em;
+      background: currentColor;
+      animation: c64-boot-blink 560ms steps(1, end) infinite;
+    }
+
+    html.ios-native #c64BootCursor.c64-boot-cursor-off {
+      visibility: hidden;
+    }
+
+    @keyframes c64-boot-blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @media (orientation: portrait) and (max-width: 700px) {
+      html.ios-native #c64BootOverlay {
+        padding:
+          max(44px, env(safe-area-inset-top))
+          max(18px, env(safe-area-inset-right))
+          max(30px, env(safe-area-inset-bottom))
+          max(18px, env(safe-area-inset-left));
+      }
+      html.ios-native .c64-boot-screen {
+        padding: 26px 20px;
+        font-size: clamp(13px, 4vw, 19px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html.ios-native #c64BootOverlay { transition-duration: 80ms; }
+      html.ios-native #c64BootCursor { animation: none; }
+    }
 
     html.ios-native .masthead {
       left: max(24px, env(safe-area-inset-left)) !important;
@@ -171,19 +258,27 @@ def make_ios_bundle_self_contained() -> None:
         1,
     )
 
-    # Native-only focus/resume behavior. Load after the normal game scripts so
-    # it can replay the existing teacher animation without changing game state.
+    boot_markup = '''  <div id="c64BootOverlay" aria-hidden="true">
+    <div class="c64-boot-screen">
+      <pre id="c64BootOutput"></pre><span id="c64BootCursor"></span>
+    </div>
+  </div>
+'''
+    index = index.replace('<body>\n', '<body>\n' + boot_markup, 1)
+
+    # Native-only boot and focus/resume behavior. These load after the normal
+    # game scripts so neither feature changes the game's vocabulary state.
     index = index.replace(
         '</body>',
-        '  <script src="ios-focus.js?v=78"></script>\n</body>',
+        '  <script src="ios-boot.js?v=79"></script>\n  <script src="ios-focus.js?v=79"></script>\n</body>',
         1,
     )
 
     # Bust native WKWebView caches after this packaging change.
-    index = index.replace('styles.css?v=72', 'styles.css?v=78')
-    index = index.replace('petscii.css?v=72', 'petscii.css?v=78')
-    index = index.replace('app.js?v=72', 'app.js?v=78')
-    index = index.replace('petscii.js?v=72', 'petscii.js?v=78')
+    index = index.replace('styles.css?v=72', 'styles.css?v=79')
+    index = index.replace('petscii.css?v=72', 'petscii.css?v=79')
+    index = index.replace('app.js?v=72', 'app.js?v=79')
+    index = index.replace('petscii.js?v=72', 'petscii.js?v=79')
     index_path.write_text(index, encoding="utf-8")
 
 
