@@ -7,6 +7,7 @@ cd "$ROOT"
 MODE="${1:-apply}"
 PLIST="ios/App/App/Info.plist"
 WORKSPACE="ios/App/App.xcworkspace"
+PROJECT="ios/App/App.xcodeproj"
 SCHEME="App"
 XCCONFIG="ios-config/AppStore.xcconfig"
 BUNDLE_ID="com.flesentine.msmadrigal"
@@ -14,11 +15,23 @@ BUNDLE_ID="com.flesentine.msmadrigal"
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
 say() { printf '\n==> %s\n' "$*"; }
 
+xcode_container_args() {
+  if [[ -f "$WORKSPACE/contents.xcworkspacedata" ]]; then
+    printf '%s\0%s\0' '-workspace' "$WORKSPACE"
+  elif [[ -d "$PROJECT" ]]; then
+    printf '%s\0%s\0' '-project' "$PROJECT"
+  else
+    fail "Missing Xcode container. Expected $WORKSPACE or $PROJECT."
+  fi
+}
+
 [[ -f "$PLIST" ]] || fail "Missing $PLIST. Run npm run ios:setup first."
-[[ -f "$WORKSPACE/contents.xcworkspacedata" ]] || fail "Missing $WORKSPACE."
 [[ -f "$XCCONFIG" ]] || fail "Missing $XCCONFIG."
 command -v python3 >/dev/null 2>&1 || fail "python3 is required."
 command -v xcodebuild >/dev/null 2>&1 || fail "xcodebuild is required."
+
+XCODE_ARGS=()
+while IFS= read -r -d '' arg; do XCODE_ARGS+=("$arg"); done < <(xcode_container_args)
 
 if [[ "$MODE" != "--check" ]]; then
   say "Applying version-controlled iOS release settings"
@@ -83,7 +96,7 @@ if data.get('UISupportedInterfaceOrientations~ipad') != expected_ipad:
 PY
 
 SETTINGS="$(xcodebuild \
-  -workspace "$WORKSPACE" \
+  "${XCODE_ARGS[@]}" \
   -scheme "$SCHEME" \
   -configuration Release \
   -showBuildSettings \
