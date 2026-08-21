@@ -13,17 +13,41 @@ say() { printf '\n==> %s\n' "$*"; }
 [[ "$(uname -s)" == "Darwin" ]] || fail "Apple signing setup must run on macOS."
 command -v security >/dev/null 2>&1 || fail "macOS security tool is unavailable."
 
+IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
+DISTRIBUTION_TEAMS="$(printf '%s\n' "$IDENTITIES" \
+  | sed -nE 's/.*"Apple Distribution:.*\(([A-Za-z0-9]{10})\)".*/\1/p' \
+  | sort -u)"
+DISTRIBUTION_COUNT="$(printf '%s\n' "$DISTRIBUTION_TEAMS" | awk 'NF {n++} END {print n+0}')"
+
 if [[ -z "$TEAM_ID" && -f "$LOCAL_CONFIG" ]]; then
   CURRENT="$(awk -F= '/^[[:space:]]*DEVELOPMENT_TEAM[[:space:]]*=/{gsub(/[[:space:]]/, "", $2); print $2; exit}' "$LOCAL_CONFIG")"
   if [[ -n "$CURRENT" ]]; then
-    printf 'Apple Development Team: %s\n' "$CURRENT"
-    printf 'Local signing config: %s\n' "$LOCAL_CONFIG"
-    exit 0
+    if printf '%s\n' "$DISTRIBUTION_TEAMS" | grep -qx "$CURRENT"; then
+      printf 'Apple Distribution Team: %s\n' "$CURRENT"
+      printf 'Local signing config: %s\n' "$LOCAL_CONFIG"
+      exit 0
+    fi
+
+    if [[ "$DISTRIBUTION_COUNT" -eq 1 ]]; then
+      TEAM_ID="$(printf '%s\n' "$DISTRIBUTION_TEAMS" | awk 'NF {print; exit}')"
+      say "Replacing stale local team with Apple Distribution team"
+      printf 'Previous Team ID: %s\n' "$CURRENT"
+      printf 'Distribution Team ID: %s\n' "$TEAM_ID"
+    else
+      printf 'Apple signing team: %s\n' "$CURRENT"
+      printf 'Local signing config: %s\n' "$LOCAL_CONFIG"
+      exit 0
+    fi
   fi
 fi
 
+if [[ -z "$TEAM_ID" && "$DISTRIBUTION_COUNT" -eq 1 ]]; then
+  TEAM_ID="$(printf '%s\n' "$DISTRIBUTION_TEAMS" | awk 'NF {print; exit}')"
+  say "Detected Apple Distribution team from Keychain"
+  printf 'Team ID: %s\n' "$TEAM_ID"
+fi
+
 if [[ -z "$TEAM_ID" ]]; then
-  IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
   TEAMS="$(printf '%s\n' "$IDENTITIES" \
     | sed -nE 's/.*"Apple (Development|Distribution):.*\(([A-Za-z0-9]{10})\)".*/\2/p' \
     | sort -u)"
@@ -38,7 +62,7 @@ if [[ -z "$TEAM_ID" ]]; then
     printf '%s\n' "$TEAMS" | sed 's/^/  /'
     cat <<'EOF'
 
-Choose the correct team explicitly:
+Choose the correct App Store Connect team explicitly:
 
   npm run ios:signing -- YOURTEAMID
 EOF
