@@ -1,116 +1,88 @@
 # iOS / App Store release checklist
 
-The iOS build uses Capacitor and bundles the full vocabulary app locally rather than loading the GitHub Pages site in a remote web view.
+The iOS build uses Capacitor and bundles the 500-word vocabulary app and pronunciation audio locally. Normal learning activity does not depend on the GitHub Pages site or a remote API.
 
-## Automated Mac workflow
+## Bash-first Mac workflow
 
-Install Xcode once, launch it once, and install Homebrew. After that, nearly all local setup is automated.
-
-From the repository root:
+Install Xcode once, launch it once, sign into your Apple account in Xcode, and install Homebrew. From the repository root:
 
 ```bash
 npm run ios:bootstrap
 ```
 
-That command:
-
-- verifies macOS and Xcode
-- installs Node.js and `espeak-ng` with Homebrew if needed
-- installs npm dependencies
-- rebuilds the offline `www` bundle
-- regenerates all 500 pronunciation samples
-- creates the Capacitor iOS project on first run
-- syncs later web changes into the native project
-- copies and validates the privacy manifest
-- applies the version-controlled App Store release configuration
-- runs the npm security gate
-- installs the final App Store icon automatically when `ios-config/AppIcon-1024.png` is present
-
 Useful commands:
 
 ```bash
-npm run security:audit # fail on moderate-or-higher npm vulnerabilities
-npm run ios:check      # inspect local toolchain/readiness + release settings
-npm run ios:setup      # rebuild + sync + apply release settings
-npm run ios:open       # rebuild + sync + apply settings + open Xcode
-npm run ios:archive    # rebuild + create Release .xcarchive with store settings
-npm run ios:clean      # remove generated web/build output
+npm run security:audit             # fail on moderate-or-higher npm vulnerabilities
+npm run ios:check                  # toolchain, App Store, privacy, icon checks
+npm run ios:setup                  # rebuild + sync native iOS project
+npm run ios:open                   # rebuild + sync + open Xcode
+npm run ios:signing -- YOURTEAMID  # save Apple Team ID locally (gitignored)
+npm run ios:archive                # create signed App Store .xcarchive
+npm run ios:clean                  # remove generated web/build output
 ```
 
-`npm run ios:archive` intentionally refuses to archive until the final App Store icon exists and passes the 1024x1024/opaque checks. After Xcode creates the archive, the script also inspects the finished `.app` bundle and verifies its bundle ID, version, build number, export-compliance flag, and bundled privacy manifest.
+The developer-specific Team ID is written only to `ios-config/Signing.local.xcconfig`, which is gitignored. `AppStore.xcconfig` optionally includes that local file, so signing stays reproducible without publishing account-specific details.
 
-GitHub Actions also runs an iOS App Store preflight on pushes and pull requests. It installs dependencies, runs the npm security gate, builds the native iOS bundle on macOS, runs the release checks, and compiles an unsigned Simulator build.
+`npm run ios:archive` uses automatic signing with `-allowProvisioningUpdates`. It refuses to archive if no Apple Development Team resolves from the local config or Xcode project.
 
-## Dependency security
+## Automated release gates
 
-The project pins release-critical transitive dependencies that have current security fixes:
+GitHub Actions runs the App Store preflight on pull requests and on `main`. The current pipeline checks:
 
-- `tar = 7.5.22`
-- `uuid = 11.1.1`
-
-`@capacitor/cli 8.5.0` currently depends transitively on `xcode 3.0.1`, whose declared `uuid ^7.0.3` range can otherwise resolve to a vulnerable release. The project-level override keeps the CommonJS-compatible patched `uuid 11.1.1` until the upstream dependency is updated.
-
-Every release check runs `npm audit --audit-level=moderate` and fails if a moderate, high, or critical advisory is present.
+- npm audit: zero moderate/high/critical findings
+- patched transitive dependencies: `tar 7.5.22`, `uuid 11.1.1`
+- all 500 vocabulary entries and bundled pronunciation audio
+- representative Spanish accents / ñ / ü / inverted punctuation
+- offline/privacy executable-code audit
+- native controls and Reduce Motion regressions
+- Capacitor 8 native project generation
+- privacy manifest validity
+- App Store release build settings
+- final app icon generation
+- Xcode 26 / iOS 26 SDK minimum
+- unsigned iOS Simulator compile
 
 ## Reproducible release configuration
 
-The generated Capacitor Xcode project does not need to be committed in order for the release-critical settings to be reviewable and repeatable. They are stored in version control at:
+Version-controlled release settings live in:
 
 - `ios-config/AppStore.xcconfig`
 - `ios-config/PrivacyInfo.xcprivacy`
+- `ios-config/AppIcon-source.png`
 - `tools/configure_ios_project.sh`
 - `tools/ios_store.sh`
+- `tools/ios_signing.sh`
 - `tools/npm_security.sh`
+- `tools/apple_sdk_gate.sh`
 
-Every `ios:setup`, `ios:open`, and `ios:archive` run applies/verifies:
+Every setup/archive applies or verifies:
 
 - Bundle identifier: `com.flesentine.msmadrigal`
 - Display name: `Ms. Madrigral`
 - Version: `1.0`
 - Build: `1`
-- Device family: iPhone and iPad
-- iPhone orientations: portrait + both landscape orientations
-- iPad orientations: portrait, upside-down portrait + both landscape orientations
-- Signing style: automatic
-- Export compliance declaration: `ITSAppUsesNonExemptEncryption = false`
-- Privacy manifest parses correctly and matches the native copy
+- Device family: iPhone + iPad
+- Automatic signing
+- iPhone portrait + landscape
+- iPad portrait + upside-down + landscape
+- `ITSAppUsesNonExemptEncryption = false`
+- privacy manifest
 
-The Apple Developer Team remains intentionally unset in source control because it belongs to the developer account/signing environment.
+## App icon
 
-## What still requires Apple credentials or human input
-
-- choose the Apple Developer Team under Signing & Capabilities
-- allow Xcode to create/manage signing certificates and provisioning profiles
-- add the final 1024x1024 app icon artwork
-- create the App Store Connect app record
-- add a real support contact email/phone to the public support page
-- provide App Review contact name, email, and phone
-- supply screenshots
-- choose price/availability
-- validate/TestFlight/upload using the Apple account
-
-Once signing is configured and the final icon is present, `npm run ios:archive` will create `build/MsMadrigral.xcarchive` automatically.
-
-## App icon and launch appearance
-
-Put the final icon here:
+The final no-text Ms. Madrigal pixel portrait is checked in at:
 
 ```text
-ios-config/AppIcon-1024.png
+ios-config/AppIcon-source.png
 ```
 
-It must be exactly 1024x1024 pixels and must not contain transparency. The release workflow copies it into the generated native AppIcon asset catalog and verifies it before archive.
-
-Use the app's dark CRT background as the launch-screen background so the transition into the game is not a white flash.
+The release workflow validates that it is square and opaque, then generates the required 1024×1024 App Store asset in the native Xcode asset catalog. The release no longer depends on the default Capacitor icon.
 
 ## Store metadata
 
 **Name:** Ms. Madrigral: Spanish 500  
-**Characters:** 26 / 30
-
 **Subtitle:** Retro Spanish vocabulary  
-**Characters:** 24 / 30
-
 **Primary category:** Education
 
 **Description:**
@@ -123,88 +95,39 @@ Learn and review 500 useful Spanish words in a fast, retro vocabulary trainer in
 
 **Support URL:** https://flesentine.github.io/msmadrigal/support.html
 
-The public support page should be updated with a real support email or phone before submission; a GitHub issue link alone is weaker than Apple's current support-contact guidance.
+A real reachable support email or phone should be added to the public support page before submission. Do not invent contact details.
 
 ## App Store Connect record
 
-Create an iOS app record using:
+Use:
 
 - Name: `Ms. Madrigral: Spanish 500`
 - Primary language: English (U.S.)
 - Bundle ID: `com.flesentine.msmadrigal`
-- SKU: use a private internal identifier such as `msmadrigal-ios-1`
+- SKU: `msmadrigal-ios-1` (or another private internal SKU)
 - Primary category: Education
-- Made for Kids: No, unless the app is intentionally being committed to Apple's Kids category rules
-- Standard Apple EULA: use the default unless a custom license is specifically needed
+- Made for Kids: No unless intentionally committing to Apple's Kids Category requirements
+- Standard Apple EULA
 
-## Proposed age-rating answers
+## Age rating
 
-For the current vocabulary trainer, the expected Apple global rating is **4+** if the released content remains as it is now.
+For the current build, expected rating is **4+**. The app has no violence, sexual content, profanity, drugs/alcohol, gambling, loot boxes, user-generated content, chat/social features, advertising, unrestricted web access, or purchases.
 
-Answer **None / No** for:
-
-- profanity or crude humor
-- horror or fear themes
-- alcohol, tobacco, or drug references
-- sexual or suggestive content
-- nudity
-- cartoon/fantasy violence
-- realistic violence
-- graphic/sadistic violence
-- guns or weapons
-- medical/treatment information
-- gambling
-- simulated gambling
-- contests
-- loot boxes
-- unrestricted web access
-- user-generated content
-- messaging/chat
-- social media
-- advertising
-
-The app has no account, social features, purchases, ads, or external browsing during normal use.
-
-## Content rights
-
-The released app should only contain original developer-created material or material the developer is licensed/permitted to distribute. The native build intentionally removed third-party computer ROM data and branding.
-
-If App Store Connect asks whether the app contains, shows, or accesses third-party content, answer based on the final shipped assets. Do not treat open-source runtime libraries as user-facing third-party content, but do verify rights for any visible artwork, audio, text, trademarks, or media before submission.
+Answer the final App Store Connect questionnaire according to the exact build being submitted.
 
 ## Screenshots
 
-Because the app supports both iPhone and iPad, prepare screenshots for both device families. App Store Connect accepts one to ten screenshots per supported device size, and screenshots cannot contain transparency.
+Because the app supports both iPhone and iPad, capture both device families.
 
-Simplest current submission set:
-
-### iPhone 6.9-inch
-
-Use one accepted current portrait resolution consistently, for example:
-
-- `1320 x 2868`, or
-- `1290 x 2796`, or
-- `1260 x 2736`
-
-Landscape uses the corresponding reversed dimensions.
-
-### iPad 13-inch
-
-Use one accepted current portrait resolution consistently:
-
-- `2064 x 2752`, or
-- `2048 x 2732`
-
-Landscape uses the corresponding reversed dimensions.
-
-A preview video is optional; screenshots alone are sufficient.
-
-Suggested screenshot sequence:
+Suggested sequence:
 
 1. boot/start screen
 2. English vocabulary card
 3. revealed Spanish card with accented spelling
-4. teacher/chalkboard gameplay view
+4. teacher/chalkboard gameplay
 5. landscape layout
+
+Use current accepted App Store Connect sizes; a preview video is optional.
 
 ## Privacy answers
 
@@ -212,64 +135,66 @@ For the current build:
 
 - Data collection: **No, we do not collect data from this app**
 - Tracking: No
-- Data linked to the user: None
-- Data not linked to the user: None
+- Data linked to user: None
+- Data not linked to user: None
 - Accounts: None
 - Advertising: None
 - Analytics SDK: None
 - Location/camera/microphone/contacts/photos: Not requested
 
-Re-check these answers if analytics, ads, sign-in, cloud sync, crash-reporting SDKs, or other network services are added.
+Re-check these if analytics, ads, login, cloud sync, crash-reporting SDKs, or other network services are ever added.
 
 ## Accessibility
 
-The app includes semantic text alongside its retro bitmap rendering and ARIA labels/live regions for core vocabulary interactions. The packaged iOS UI also respects reduced-motion preferences for CRT effects.
+The app exposes semantic text alongside the retro bitmap rendering and uses ARIA labels/live regions for core vocabulary interactions. Native motion behavior honors Reduced Motion.
 
-Before publishing Accessibility Nutrition Labels, test every common task on both iPhone and iPad. Only claim a feature when the entire common flow works with it. In particular, physically test VoiceOver before claiming VoiceOver support.
+Before claiming App Store accessibility labels, physically test common tasks on iPhone and iPad. In particular, test VoiceOver before claiming VoiceOver support.
 
-Candidate labels to validate:
+Candidates to validate:
 
 - VoiceOver
 - Reduced Motion
 - Dark Interface
 - Sufficient Contrast
 
-Do not claim Larger Text unless the complete common flow remains usable at Apple's required large-text criteria.
-
 ## Export compliance
 
-The current offline app does not implement its own proprietary or non-exempt encryption. The release script writes `ITSAppUsesNonExemptEncryption = false` into the generated native `Info.plist` and verifies that value before archive.
+The current offline app does not implement proprietary/non-exempt encryption. The native Info.plist declares:
 
-Re-evaluate this declaration if future native libraries add non-exempt cryptography or if the app's security/network architecture changes.
+```text
+ITSAppUsesNonExemptEncryption = false
+```
+
+The archive verifier checks this value in the finished app bundle.
 
 ## App Review information
 
-App Store Connect requires a review contact name, email, and phone number. Supply real reachable contact information in App Store Connect.
-
 No demo account is required because the app has no login.
+
+Provide a real App Review contact name, email, and phone in App Store Connect.
 
 **Review notes:**
 
 `Ms. Madrigral is an interactive 500-word Spanish vocabulary trainer. The complete vocabulary set and pronunciation audio are bundled in the app and work offline. Tap the chalkboard to reveal Spanish, tap again for the next word, and use Reshuffle to randomize the 500-word deck. No account, login, purchases, advertising, analytics, or tracking are used.`
 
-## Before upload
+## Remaining submission checklist
 
-- [ ] Add `ios-config/AppIcon-1024.png`.
-- [ ] Run `npm run security:audit` and confirm zero moderate-or-higher findings.
-- [ ] Run `npm run ios:check`.
-- [ ] Select the Apple Developer Team in Xcode.
+- [x] Final icon artwork added and wired into Xcode release build.
+- [x] npm security audit gate.
+- [x] automated macOS native setup + Simulator compile.
+- [x] privacy/export-compliance preflight.
+- [ ] Configure local Apple Team ID: `npm run ios:signing -- YOURTEAMID`.
+- [ ] Run signed archive: `npm run ios:archive`.
 - [ ] Test on a real iPhone.
-- [ ] Test on at least one iPad size.
-- [ ] Confirm portrait and landscape layouts.
-- [ ] Confirm all 500 words load and pronunciation plays with Airplane Mode on.
-- [ ] Confirm Sound Off remains silent.
-- [ ] Confirm no external network request is required during normal play.
-- [ ] Test VoiceOver and Reduced Motion on-device before claiming accessibility labels.
-- [ ] Add real support contact information to `support.html`.
-- [ ] Create the App Store Connect app record.
+- [ ] Test on iPad.
+- [ ] Test portrait + landscape.
+- [ ] Test all 500 words/audio in Airplane Mode.
+- [ ] Confirm Sound Off is silent.
+- [ ] Test VoiceOver + Reduced Motion on device.
+- [ ] Add a real reachable support contact to `support.html`.
+- [ ] Create App Store Connect record.
 - [ ] Complete age rating, content rights, privacy, pricing, and availability.
-- [ ] Capture the iPhone and iPad App Store screenshots.
-- [ ] Run `npm run ios:archive` after signing is configured.
-- [ ] Validate/upload from Xcode Organizer.
+- [ ] Capture iPhone + iPad screenshots.
+- [ ] Validate/upload archive from Xcode Organizer.
 - [ ] Run a clean-install TestFlight test.
 - [ ] Submit for App Review.
