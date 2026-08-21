@@ -23,7 +23,7 @@
        sits a little low relative to her hand. Nudge only landscape upward. */
     @media (orientation: landscape) and (max-width: 1100px) and (max-height: 850px) {
       html.ios-native .teacher .pointer {
-        top: 33% !important;
+        top: 29% !important;
       }
     }
   `;
