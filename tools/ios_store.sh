@@ -10,6 +10,7 @@ PROJECT="ios/App/App.xcodeproj"
 SCHEME="App"
 ARCHIVE_PATH="build/MsMadrigral.xcarchive"
 XCCONFIG="ios-config/AppStore.xcconfig"
+SIGNING_CONFIG="ios-config/Signing.local.xcconfig"
 PRIVACY_SOURCE="ios-config/PrivacyInfo.xcprivacy"
 PRIVACY_NATIVE="ios/App/App/PrivacyInfo.xcprivacy"
 ICON_SOURCE="ios-config/AppIcon-source.png"
@@ -93,6 +94,30 @@ check_store_icon() {
   printf 'App Store icon: OK (source %sx%s, generated 1024x1024 opaque asset)\n' "$source_width" "$source_height"
 }
 
+check_signing_ready() {
+  resolve_xcode_container
+
+  local settings team
+  settings="$(xcodebuild \
+    "${XCODE_ARGS[@]}" \
+    -scheme "$SCHEME" \
+    -configuration Release \
+    -showBuildSettings \
+    -xcconfig "$XCCONFIG")"
+  team="$(awk -F' = ' '/^[[:space:]]*DEVELOPMENT_TEAM = /{print $2; exit}' <<<"$settings")"
+
+  if [[ -z "$team" ]]; then
+    fail "Apple Development Team is not configured. Run: npm run ios:signing -- YOURTEAMID"
+  fi
+
+  [[ "$team" =~ ^[A-Za-z0-9]{10}$ ]] || fail "Resolved DEVELOPMENT_TEAM is invalid: $team"
+  printf 'Apple signing team: %s\n' "$team"
+
+  if [[ ! -f "$SIGNING_CONFIG" ]]; then
+    warn "Using the team stored in the generated Xcode project. For a reproducible bash-only setup, run: npm run ios:signing -- $team"
+  fi
+}
+
 verify_archive() {
   [[ -d "$ARCHIVE_PATH" ]] || fail "Archive not found at $ARCHIVE_PATH"
 
@@ -171,9 +196,9 @@ check_release() {
 archive_release() {
   prepare_release
   check_store_icon true
-  resolve_xcode_container
+  check_signing_ready
   mkdir -p build
-  say "Archiving App Store release"
+  say "Archiving signed App Store release"
   xcodebuild \
     "${XCODE_ARGS[@]}" \
     -scheme "$SCHEME" \
@@ -181,6 +206,7 @@ archive_release() {
     -destination 'generic/platform=iOS' \
     -archivePath "$ARCHIVE_PATH" \
     -xcconfig "$XCCONFIG" \
+    -allowProvisioningUpdates \
     clean archive
   verify_archive
   say "Archive complete"
