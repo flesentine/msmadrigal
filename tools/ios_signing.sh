@@ -13,32 +13,51 @@ say() { printf '\n==> %s\n' "$*"; }
 [[ "$(uname -s)" == "Darwin" ]] || fail "Apple signing setup must run on macOS."
 command -v security >/dev/null 2>&1 || fail "macOS security tool is unavailable."
 
-if [[ -z "$TEAM_ID" ]]; then
-  if [[ -f "$LOCAL_CONFIG" ]]; then
-    CURRENT="$(awk -F= '/^[[:space:]]*DEVELOPMENT_TEAM[[:space:]]*=/{gsub(/[[:space:]]/, "", $2); print $2; exit}' "$LOCAL_CONFIG")"
-    if [[ -n "$CURRENT" ]]; then
-      printf 'Apple Development Team: %s\n' "$CURRENT"
-      printf 'Local signing config: %s\n' "$LOCAL_CONFIG"
-      exit 0
-    fi
+if [[ -z "$TEAM_ID" && -f "$LOCAL_CONFIG" ]]; then
+  CURRENT="$(awk -F= '/^[[:space:]]*DEVELOPMENT_TEAM[[:space:]]*=/{gsub(/[[:space:]]/, "", $2); print $2; exit}' "$LOCAL_CONFIG")"
+  if [[ -n "$CURRENT" ]]; then
+    printf 'Apple Development Team: %s\n' "$CURRENT"
+    printf 'Local signing config: %s\n' "$LOCAL_CONFIG"
+    exit 0
   fi
+fi
 
-  say "Installed code-signing identities"
-  security find-identity -v -p codesigning || true
-  cat <<'EOF'
+if [[ -z "$TEAM_ID" ]]; then
+  IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
+  mapfile -t TEAMS < <(printf '%s\n' "$IDENTITIES" \
+    | sed -nE 's/.*"Apple (Development|Distribution):.*\(([A-Za-z0-9]{10})\)".*/\2/p' \
+    | sort -u)
 
-No local Apple Team ID is configured yet.
+  if [[ "${#TEAMS[@]}" -eq 1 ]]; then
+    TEAM_ID="${TEAMS[0]}"
+    say "Detected Apple signing team from Keychain"
+    printf 'Team ID: %s\n' "$TEAM_ID"
+  elif [[ "${#TEAMS[@]}" -gt 1 ]]; then
+    say "Multiple Apple signing teams detected"
+    printf '  %s\n' "${TEAMS[@]}"
+    cat <<'EOF'
 
-Find your Team ID in Apple Developer / Xcode, then run:
+Choose the correct team explicitly:
+
+  npm run ios:signing -- YOURTEAMID
+EOF
+    exit 2
+  else
+    say "Installed code-signing identities"
+    printf '%s\n' "$IDENTITIES"
+    cat <<'EOF'
+
+No Apple Development/Distribution Team ID could be detected.
+
+Make sure your Apple Developer account is signed into Xcode and a signing
+certificate exists, or pass the Team ID explicitly:
 
   npm run ios:signing -- YOURTEAMID
 
-Example only:
-  npm run ios:signing -- ABC123DEFG
-
 The Team ID is stored only in ios-config/Signing.local.xcconfig, which is gitignored.
 EOF
-  exit 2
+    exit 2
+  fi
 fi
 
 if [[ ! "$TEAM_ID" =~ ^[A-Za-z0-9]{10}$ ]]; then
