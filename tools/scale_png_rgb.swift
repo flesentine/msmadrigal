@@ -1,6 +1,7 @@
 #!/usr/bin/env swift
 
 import CoreGraphics
+import Darwin
 import Foundation
 import ImageIO
 import UniformTypeIdentifiers
@@ -28,22 +29,24 @@ func renderRGB(_ image: CGImage, size: Int) -> ([UInt8], Int) {
     let colorSpace = CGColorSpaceCreateDeviceRGB()
     let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue)
 
-    guard let context = CGContext(
-        data: &pixels,
-        width: size,
-        height: size,
-        bitsPerComponent: 8,
-        bytesPerRow: bytesPerRow,
-        space: colorSpace,
-        bitmapInfo: bitmapInfo.rawValue
-    ) else {
-        fail("Could not create RGB bitmap context")
-    }
+    pixels.withUnsafeMutableBytes { raw in
+        guard let context = CGContext(
+            data: raw.baseAddress,
+            width: size,
+            height: size,
+            bitsPerComponent: 8,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo.rawValue
+        ) else {
+            fail("Could not create RGB bitmap context")
+        }
 
-    context.interpolationQuality = .none
-    context.setFillColor(red: 0, green: 0, blue: 0, alpha: 1)
-    context.fill(CGRect(x: 0, y: 0, width: size, height: size))
-    context.draw(image, in: CGRect(x: 0, y: 0, width: size, height: size))
+        context.interpolationQuality = .none
+        context.setFillColor(red: 0, green: 0, blue: 0, alpha: 1)
+        context.fill(CGRect(x: 0, y: 0, width: size, height: size))
+        context.draw(image, in: CGRect(x: 0, y: 0, width: size, height: size))
+    }
 
     return (pixels, bytesPerRow)
 }
@@ -75,25 +78,29 @@ func validateColorful(_ pixels: [UInt8], size: Int, bytesPerRow: Int, label: Str
 func makeCGImage(_ pixels: inout [UInt8], size: Int, bytesPerRow: Int) -> CGImage {
     let colorSpace = CGColorSpaceCreateDeviceRGB()
     let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue)
-    guard let context = CGContext(
-        data: &pixels,
-        width: size,
-        height: size,
-        bitsPerComponent: 8,
-        bytesPerRow: bytesPerRow,
-        space: colorSpace,
-        bitmapInfo: bitmapInfo.rawValue
-    ), let image = context.makeImage() else {
-        fail("Could not create output CGImage")
+
+    return pixels.withUnsafeMutableBytes { raw in
+        guard let context = CGContext(
+            data: raw.baseAddress,
+            width: size,
+            height: size,
+            bitsPerComponent: 8,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo.rawValue
+        ), let image = context.makeImage() else {
+            fail("Could not create output CGImage")
+        }
+        return image
     }
-    return image
 }
 
 func writePNG(_ image: CGImage, to path: String) {
     let url = URL(fileURLWithPath: path)
     try? FileManager.default.createDirectory(
         at: url.deletingLastPathComponent(),
-        withIntermediateDirectories: true
+        withIntermediateDirectories: true,
+        attributes: nil
     )
 
     guard let destination = CGImageDestinationCreateWithURL(
@@ -123,8 +130,7 @@ if args.count == 3 && args[1] == "--validate" {
 }
 
 if args.count != 4 {
-    print("usage: \(args[0]) SOURCE.png OUTPUT.png SIZE", to: &StandardError.shared)
-    print("       \(args[0]) --validate IMAGE.png", to: &StandardError.shared)
+    FileHandle.standardError.write(("usage: \(args[0]) SOURCE.png OUTPUT.png SIZE\n       \(args[0]) --validate IMAGE.png\n").data(using: .utf8)!)
     exit(2)
 }
 
@@ -142,10 +148,3 @@ validateColorful(pixels, size: size, bytesPerRow: bytesPerRow, label: outputPath
 let outputImage = makeCGImage(&pixels, size: size, bytesPerRow: bytesPerRow)
 writePNG(outputImage, to: outputPath)
 print("\(outputPath): OK (\(size)x\(size), opaque RGB PNG)")
-
-final class StandardError: TextOutputStream {
-    static let shared = StandardError()
-    func write(_ string: String) {
-        FileHandle.standardError.write(string.data(using: .utf8)!)
-    }
-}
