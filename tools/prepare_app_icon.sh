@@ -8,19 +8,19 @@ MODE="${1:-apply}"
 SOURCE="ios-config/AppIcon-source.png"
 SET_DIR="ios/App/App/Assets.xcassets/AppIcon.appiconset"
 CONTENTS="$SET_DIR/Contents.json"
-SCALER="tools/scale_png_rgb.py"
+SCALER="tools/scale_png_rgb.swift"
 
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
 say() { printf '\n==> %s\n' "$*"; }
 
 [[ -f "$SOURCE" ]] || fail "Missing app icon source: $SOURCE"
-[[ -f "$SCALER" ]] || fail "Missing deterministic PNG scaler: $SCALER"
-command -v python3 >/dev/null 2>&1 || fail "python3 is required to prepare app icons."
+[[ -f "$SCALER" ]] || fail "Missing CoreGraphics PNG scaler: $SCALER"
+command -v xcrun >/dev/null 2>&1 || fail "xcrun is required to prepare app icons."
+command -v swift >/dev/null 2>&1 || fail "Swift is required to prepare app icons."
 
-# Validate the real artwork before generating anything. This intentionally
-# rejects blank/near-black output so a broken conversion can never make it into
-# another TestFlight build unnoticed.
-python3 "$SCALER" --validate "$SOURCE" >/dev/null
+# Let Apple's own image stack decode the source, then reject blank/near-black
+# artwork before generating any AppIcon assets.
+xcrun swift "$SCALER" --validate "$SOURCE" >/dev/null
 
 required_files=(
   AppIcon-20.png AppIcon-20@2x.png AppIcon-20@3x.png
@@ -38,8 +38,8 @@ if [[ "$MODE" == "--check" ]]; then
   done
   grep -q '"idiom" : "ios-marketing"' "$CONTENTS" || fail "AppIcon Contents.json is missing the App Store marketing icon."
   grep -q '"filename" : "AppIcon-1024.png"' "$CONTENTS" || fail "AppIcon Contents.json is not wired to AppIcon-1024.png."
-  python3 "$SCALER" --validate "$SET_DIR/AppIcon-60@3x.png" >/dev/null
-  python3 "$SCALER" --validate "$SET_DIR/AppIcon-1024.png" >/dev/null
+  xcrun swift "$SCALER" --validate "$SET_DIR/AppIcon-60@3x.png" >/dev/null
+  xcrun swift "$SCALER" --validate "$SET_DIR/AppIcon-1024.png" >/dev/null
   printf 'AppIcon asset catalog: OK (color artwork verified; complete iPhone/iPad/App Store set)\n'
   exit 0
 fi
@@ -48,14 +48,13 @@ say "Generating complete iOS AppIcon asset catalog"
 mkdir -p "$SET_DIR"
 rm -f "$SET_DIR"/AppIcon-*.png
 
-# Use our stdlib-only RGB PNG scaler instead of `sips`. On this project sips
-# produced a valid-looking but effectively black icon rendition. This scaler
-# preserves the source RGB pixels exactly (nearest-neighbor for the 8-bit art)
-# and always writes opaque 8-bit RGB PNGs.
+# CoreGraphics/ImageIO performs the decode and output, avoiding the bad black
+# conversion previously produced by sips for this source image. Interpolation
+# is disabled so the 8-bit artwork stays crisp.
 make_icon() {
   local pixels="$1"
   local filename="$2"
-  python3 "$SCALER" "$SOURCE" "$SET_DIR/$filename" "$pixels" >/dev/null
+  xcrun swift "$SCALER" "$SOURCE" "$SET_DIR/$filename" "$pixels" >/dev/null
 }
 
 make_icon 20 AppIcon-20.png
