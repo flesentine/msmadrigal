@@ -7,6 +7,8 @@ cd "$ROOT"
 ARCHIVE_PATH="build/MsMadrigral.xcarchive"
 EXPORT_OPTIONS="build/TestFlightExportOptions.plist"
 EXPORT_PATH="build/TestFlightUpload"
+XCCONFIG="ios-config/AppStore.xcconfig"
+BUILD_NUMBER="$(awk -F= '/^[[:space:]]*CURRENT_PROJECT_VERSION[[:space:]]*=/{gsub(/[[:space:]]/, "", $2); print $2; exit}' "$XCCONFIG")"
 
 say() { printf '\n==> %s\n' "$*"; }
 warn() { printf '\nWARNING: %s\n' "$*" >&2; }
@@ -14,6 +16,7 @@ fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
 
 [[ "$(uname -s)" == "Darwin" ]] || fail "TestFlight upload must run on macOS."
 command -v xcodebuild >/dev/null 2>&1 || fail "xcodebuild is unavailable. Install/open Xcode first."
+[[ "$BUILD_NUMBER" =~ ^[0-9]+$ ]] || fail "Could not read a numeric CURRENT_PROJECT_VERSION from $XCCONFIG"
 
 say "Creating signed App Store archive"
 bash tools/ios_store.sh archive
@@ -40,7 +43,7 @@ cat > "$EXPORT_OPTIONS" <<'PLIST'
 </plist>
 PLIST
 
-say "Uploading build 1.0 (2) to App Store Connect / TestFlight"
+say "Uploading build 1.0 ($BUILD_NUMBER) to App Store Connect / TestFlight"
 if xcodebuild \
   -exportArchive \
   -archivePath "$ARCHIVE_PATH" \
