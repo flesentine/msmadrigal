@@ -4,12 +4,15 @@
   "private": true,
   "description": "Ms. Madrigral Spanish 500 — retro 8-bit Spanish vocabulary trainer",
   "scripts": {
-    "build:ios-web": "python3 tools/build_mobile_bundle.py && python3 tools/ios_spanish_accuracy.py",
-    "ios:bootstrap": "bash tools/ios_store.sh bootstrap",
-    "ios:setup": "bash tools/ios_store.sh setup",
-    "ios:check": "bash tools/ios_store.sh check",
-    "ios:open": "bash tools/ios_store.sh open",
-    "ios:archive": "bash tools/ios_store.sh archive",
+    "build:ios-web": "python3 tools/build_mobile_bundle.py && python3 tools/ios_spanish_accuracy.py && python3 tools/ios_offline_audit.py && python3 tools/ios_ui_audit.py",
+    "security:audit": "npm audit --audit-level=moderate",
+    "ios:bootstrap": "bash tools/apple_sdk_gate.sh && bash tools/ios_store.sh bootstrap",
+    "ios:setup": "bash tools/apple_sdk_gate.sh && bash tools/ios_store.sh setup",
+    "ios:check": "bash tools/apple_sdk_gate.sh && bash tools/ios_store.sh check",
+    "ios:open": "bash tools/apple_sdk_gate.sh && bash tools/ios_store.sh open",
+    "ios:signing": "bash tools/ios_signing.sh",
+    "ios:archive": "bash tools/apple_sdk_gate.sh && bash tools/ios_store.sh archive",
+    "ios:testflight": "bash tools/apple_sdk_gate.sh && bash tools/ios_testflight.sh",
     "ios:clean": "bash tools/ios_store.sh clean",
     "ios:add": "npm run ios:setup",
     "ios:sync": "npm run ios:setup"
@@ -21,5 +24,9 @@
   "devDependencies": {
     "@capacitor/cli": "8.5.0",
     "typescript": "^5.9.2"
+  },
+  "overrides": {
+    "tar": "7.5.22",
+    "uuid": "11.1.1"
   }
 }

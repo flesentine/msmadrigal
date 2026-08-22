@@ -4,7 +4,7 @@ The iOS build uses Capacitor and bundles the full vocabulary app locally rather 
 
 ## Automated Mac workflow
 
-Install Xcode once, launch it once, and install Homebrew. After that, nearly all local setup is automated.
+Install Xcode once, launch it once, sign into your Apple Developer account in Xcode, and install Homebrew. After that, nearly all local setup is automated.
 
 From the repository root:
 
@@ -12,35 +12,59 @@ From the repository root:
 npm run ios:bootstrap
 ```
 
-That command:
-
-- verifies macOS and Xcode
-- installs Node.js and `espeak-ng` with Homebrew if needed
-- installs npm dependencies
-- rebuilds the offline `www` bundle
-- regenerates all 500 pronunciation samples
-- creates the Capacitor iOS project on first run
-- syncs later web changes into the native project
-- copies the privacy manifest into the native App folder
-- applies the version-controlled App Store release configuration
-
 Useful commands:
 
 ```bash
-npm run ios:check     # inspect local toolchain/readiness + release settings
-npm run ios:setup     # rebuild + sync + apply release settings
-npm run ios:open      # rebuild + sync + apply settings + open Xcode
-npm run ios:archive   # rebuild + create Release .xcarchive with store settings
-npm run ios:clean     # remove generated web/build output
+npm run security:audit # fail on moderate-or-higher npm vulnerabilities
+npm run ios:check      # inspect local toolchain/readiness + release settings
+npm run ios:setup      # rebuild + sync + apply release settings
+npm run ios:open       # rebuild + sync + apply settings + open Xcode
+npm run ios:signing    # detect/save the local Apple Team ID
+npm run ios:archive    # rebuild + create signed Release .xcarchive
+npm run ios:testflight # archive + upload directly to App Store Connect/TestFlight
+npm run ios:clean      # remove generated web/build output
 ```
 
+The generated Ms. Madrigal app icon is checked in as `ios-config/AppIcon-source.png`. The release workflow produces a 1024x1024 opaque native App Store asset automatically and validates it before archive.
+
+`npm run ios:archive` inspects the finished `.app` bundle and verifies its bundle ID, version, build number, export-compliance flag, and bundled privacy manifest.
+
+`npm run ios:testflight` uses Xcode's `app-store-connect` distribution method with `destination=upload`. It requires an App Store Connect app record to exist first and uses the Apple account signed into Xcode. If command-line upload fails, it opens the signed archive in Xcode Organizer as a fallback.
+
+GitHub Actions also runs an iOS App Store preflight on pull requests. It installs dependencies, runs the npm security gate, builds the native iOS bundle on macOS, runs the release checks, and compiles an unsigned Simulator build.
+
+## First TestFlight upload
+
+Before uploading, create the App Store Connect record:
+
+- Platform: iOS
+- Name: `Ms. Madrigral: Spanish 500`
+- Primary language: English (U.S.)
+- Bundle ID: `com.flesentine.msmadrigal`
+- SKU: `msmadrigal-ios-1`
+- User Access: Full Access (unless you intentionally need restrictions)
+
+Then on the Mac:
+
+```bash
+git pull
+npm install
+npm run ios:signing
+npm run ios:testflight
+```
+
+After Apple finishes processing the build, open the TestFlight tab in App Store Connect and add it to an internal tester group. Internal testing is the fastest first validation path and does not require the external TestFlight beta-review flow.
+
+## Dependency security
+
+The project pins release-critical transitive dependencies that have current security fixes:
+
+- `tar = 7.5.22`
+- `uuid = 11.1.1`
+
+Every release check runs `npm audit --audit-level=moderate` and fails if a moderate, high, or critical advisory is present.
+
 ## Reproducible release configuration
-
-The generated Capacitor Xcode project does not need to be committed in order for the release-critical settings to be reviewable and repeatable. They are stored in version control at:
-
-- `ios-config/AppStore.xcconfig`
-- `tools/configure_ios_project.sh`
-- `tools/ios_store.sh`
 
 Every `ios:setup`, `ios:open`, and `ios:archive` run applies/verifies:
 
@@ -52,35 +76,15 @@ Every `ios:setup`, `ios:open`, and `ios:archive` run applies/verifies:
 - iPhone orientations: portrait + both landscape orientations
 - iPad orientations: portrait, upside-down portrait + both landscape orientations
 - Signing style: automatic
+- Export compliance declaration: `ITSAppUsesNonExemptEncryption = false`
+- Privacy manifest parses correctly and matches the native copy
 
-The Apple Developer Team remains intentionally unset in source control because it belongs to the developer account/signing environment.
+The Apple Developer Team is stored only in `ios-config/Signing.local.xcconfig`, which is gitignored.
 
-## What cannot be safely automated without Apple credentials
+## Store metadata
 
-These still require a one-time Apple/Xcode setup:
-
-- choose your Apple Developer Team under Signing & Capabilities
-- allow Xcode to create/manage signing certificates and provisioning profiles
-- add the final app icon
-- confirm `PrivacyInfo.xcprivacy` is included in the App target Resources
-- create the App Store Connect app record
-- supply screenshots and final store metadata
-- validate/TestFlight/upload using your Apple account
-
-Once signing is configured, `npm run ios:archive` will create `build/MsMadrigral.xcarchive` automatically.
-
-## App icon and launch appearance
-
-A final 1024x1024 App Store icon still needs to be supplied before archive/upload. It should not contain transparency.
-
-Use the app's dark CRT background as the launch-screen background so the transition into the game is not a white flash.
-
-## Store metadata draft
-
-**Name:** Ms. Madrigral: Spanish 500
-
-**Subtitle:** Retro Spanish vocabulary
-
+**Name:** Ms. Madrigral: Spanish 500  
+**Subtitle:** Retro Spanish vocabulary  
 **Primary category:** Education
 
 **Description:**
@@ -93,10 +97,13 @@ Learn and review 500 useful Spanish words in a fast, retro vocabulary trainer in
 
 **Support URL:** https://flesentine.github.io/msmadrigal/support.html
 
+The public support page still needs a real support email or phone before App Store submission.
+
 ## Privacy answers
 
 For the current build:
 
+- Data collection: **No, we do not collect data from this app**
 - Tracking: No
 - Data linked to the user: None
 - Data not linked to the user: None
@@ -107,18 +114,27 @@ For the current build:
 
 Re-check these answers if analytics, ads, sign-in, cloud sync, crash-reporting SDKs, or other network services are added.
 
-## Review notes draft
+## App Review information
 
-`Ms. Madrigral is an interactive 500-word Spanish vocabulary trainer. The complete vocabulary set and pronunciation audio are bundled in the app and work offline. Tap the chalkboard to reveal Spanish, tap again for the next word, and use Reshuffle to randomize the 500-word deck. No account, login, purchases, advertising, or tracking are used.`
+No demo account is required because the app has no login.
 
-## Before upload
+**Review notes:**
 
-- Run `npm run ios:check`.
-- Test on a real iPhone and at least one iPad Simulator size.
-- Confirm portrait and landscape layouts.
-- Confirm all 500 words load and pronunciation plays with Airplane Mode on.
-- Confirm Sound Off remains silent.
-- Confirm no external network request is required during normal play.
-- Add final app icon.
-- Run `npm run ios:archive` after signing is configured.
-- Validate/upload from Xcode Organizer and run a TestFlight build before App Review.
+`Ms. Madrigral is an interactive 500-word Spanish vocabulary trainer. The complete vocabulary set and pronunciation audio are bundled in the app and work offline. Tap the chalkboard to reveal Spanish, tap again for the next word, and use Reshuffle to randomize the 500-word deck. No account, login, purchases, advertising, analytics, or tracking are used.`
+
+## Remaining human/device work
+
+- [ ] Create the App Store Connect app record.
+- [ ] Run `npm run ios:signing` on the release Mac.
+- [ ] Run `npm run ios:testflight` and confirm Apple accepts/processes build 1.0 (1).
+- [ ] Install the processed build from TestFlight on a real iPhone.
+- [ ] Test on at least one iPad size.
+- [ ] Confirm portrait and landscape layouts.
+- [ ] Confirm all 500 words load and pronunciation plays with Airplane Mode on.
+- [ ] Confirm Sound Off remains silent.
+- [ ] Test VoiceOver and Reduced Motion on-device before claiming accessibility labels.
+- [ ] Add real support contact information to `support.html`.
+- [ ] Complete App Store metadata, age rating, privacy, content rights, pricing, and availability.
+- [ ] Capture iPhone and iPad App Store screenshots.
+- [ ] Run a final clean-install TestFlight test.
+- [ ] Submit for App Review.

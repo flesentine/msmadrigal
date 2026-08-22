@@ -16,6 +16,7 @@
   const teacherSprite = document.getElementById('teacherSprite');
   const startOverlay = document.getElementById('startOverlay');
   const startButton = document.getElementById('startButton');
+  const controls = document.querySelector('.controls');
   const shuffleButton = document.getElementById('shuffleButton');
   const muteButton = document.getElementById('muteButton');
 
@@ -39,6 +40,16 @@
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   const mobileInputQuery = window.matchMedia('(pointer: coarse), (max-width: 700px)');
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // The native packager historically hid the web controls. Keep the same
+  // compact buttons, but explicitly restore them for the iOS app so users can
+  // reshuffle and silence pronunciation without relying on a keyboard.
+  if (isIOSNative && controls) {
+    controls.style.setProperty('display', 'flex', 'important');
+    controls.removeAttribute('aria-hidden');
+    controls.setAttribute('aria-label', 'Game controls');
+  }
 
   function usesTouchPrompt() {
     return isIOSNative || mobileInputQuery.matches ||
@@ -129,6 +140,27 @@
       : `${entry.en}. ${verb} to reveal Spanish.`);
     progressEl.textContent = `${deckPos + 1} / ${deck.length}`;
     promptEl.textContent = spanishSide ? '' : revealPromptText();
+  }
+
+  // WKWebView can revoke the transient user gesture before the teacher finishes
+  // walking. Prime Web Audio synchronously on pointer-down so the bundled intro
+  // and later vocabulary clips remain audible after the animation delay.
+  function primeAudioFromGesture() {
+    if (muted) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    try {
+      if (!audioContext) audioContext = new AudioContextClass();
+      if (audioContext.state === 'suspended') {
+        const resumePromise = audioContext.resume();
+        if (resumePromise && typeof resumePromise.catch === 'function') {
+          resumePromise.catch(() => {});
+        }
+      }
+    } catch (error) {
+      console.warn('Could not prime Web Audio from touch.', error);
+    }
   }
 
   async function ensureAudioContext() {
@@ -251,6 +283,16 @@
       return;
     }
 
+    if (context.state === 'suspended') {
+      try { await context.resume(); } catch (_) {}
+    }
+    if (context.state !== 'running') {
+      if (fallbackText && serial === speechSerial && !muted) {
+        await browserSpeak(fallbackText, options);
+      }
+      return;
+    }
+
     stopCurrentSource();
     if (window.speechSynthesis) speechSynthesis.cancel();
 
@@ -302,6 +344,10 @@
     starting = true;
 
     try {
+      // Call this before any await. On iOS the Start touch is the permission
+      // window for audible Web Audio; waiting for data first can lose it.
+      if (isIOSNative) primeAudioFromGesture();
+
       if (!vocab.length) {
         promptEl.textContent = 'LOADING 500 WORDS...';
         startButton.textContent = 'LOADING...';
@@ -324,22 +370,28 @@
 
       wordEl.textContent = '';
       progressEl.textContent = '0 / 500';
-      promptEl.textContent = 'MS. MADRIGRAL IS COMING...';
 
-      teacher.classList.remove('arrived');
-      teacher.classList.add('walking');
-      let frame = false;
-      walkTimer = setInterval(() => {
-        frame = !frame;
-        setWalkFrame(frame);
-      }, 115);
+      if (reducedMotionQuery.matches) {
+        setWalkFrame(false);
+        teacher.classList.remove('walking');
+        teacher.classList.add('arrived');
+      } else {
+        promptEl.textContent = 'MS. MADRIGRAL IS COMING...';
+        teacher.classList.remove('arrived');
+        teacher.classList.add('walking');
+        let frame = false;
+        walkTimer = setInterval(() => {
+          frame = !frame;
+          setWalkFrame(frame);
+        }, 115);
 
-      await sleep(1400);
-      clearInterval(walkTimer);
-      walkTimer = null;
-      setWalkFrame(false);
-      teacher.classList.remove('walking');
-      teacher.classList.add('arrived');
+        await sleep(1400);
+        clearInterval(walkTimer);
+        walkTimer = null;
+        setWalkFrame(false);
+        teacher.classList.remove('walking');
+        teacher.classList.add('arrived');
+      }
 
       promptEl.textContent = 'HOLA...';
       await playC64Track('intro', 'Hola, soy Ms. Madrigral.', {
@@ -409,6 +461,10 @@
       promptEl.textContent = 'LOAD FAILED';
     }
   }
+
+  // pointerdown fires while iOS still considers the interaction a direct user
+  // gesture. Prime audio here instead of waiting for the later click event.
+  startOverlay.addEventListener('pointerdown', primeAudioFromGesture, { passive: true });
 
   startButton.addEventListener('click', event => {
     event.stopPropagation();
