@@ -224,7 +224,7 @@ case "${1:-help}" in
     archive_release
     ;;
   clean)
-    bash tools/ios_store.sh clean
+    bash tools/ios.sh clean
     ;;
   *)
     cat <<'EOF'
