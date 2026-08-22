@@ -14,10 +14,13 @@ SIGNING_CONFIG="ios-config/Signing.local.xcconfig"
 PRIVACY_SOURCE="ios-config/PrivacyInfo.xcprivacy"
 PRIVACY_NATIVE="ios/App/App/PrivacyInfo.xcprivacy"
 ICON_SOURCE="ios-config/AppIcon-source.png"
+BUILD_NUMBER="$(awk -F= '/^[[:space:]]*CURRENT_PROJECT_VERSION[[:space:]]*=/{gsub(/[[:space:]]/, "", $2); print $2; exit}' "$XCCONFIG")"
 
 say() { printf '\n==> %s\n' "$*"; }
 warn() { printf '\nWARNING: %s\n' "$*" >&2; }
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
+
+[[ "$BUILD_NUMBER" =~ ^[0-9]+$ ]] || fail "Could not read a numeric CURRENT_PROJECT_VERSION from $XCCONFIG"
 
 resolve_xcode_container() {
   XCODE_ARGS=()
@@ -108,13 +111,14 @@ verify_archive() {
   [[ -f "$app_path/PrivacyInfo.xcprivacy" ]] || fail "Archived app is missing PrivacyInfo.xcprivacy at the app bundle root"
   [[ -f "$app_path/Assets.car" ]] || fail "Archived app is missing compiled asset catalog (Assets.car)"
 
-  python3 - "$app_path/Info.plist" "$app_path/PrivacyInfo.xcprivacy" <<'PY'
+  python3 - "$app_path/Info.plist" "$app_path/PrivacyInfo.xcprivacy" "$BUILD_NUMBER" <<'PY'
 import plistlib
 import sys
 from pathlib import Path
 
 info_path = Path(sys.argv[1])
 privacy_path = Path(sys.argv[2])
+build_number = sys.argv[3]
 
 with info_path.open('rb') as f:
     info = plistlib.load(f)
@@ -122,12 +126,16 @@ with info_path.open('rb') as f:
 expected_info = {
     'CFBundleIdentifier': 'com.flesentine.msmadrigal',
     'CFBundleShortVersionString': '1.0',
-    'CFBundleVersion': '2',
+    'CFBundleVersion': build_number,
     'ITSAppUsesNonExemptEncryption': False,
 }
 for key, value in expected_info.items():
     if info.get(key) != value:
         raise SystemExit(f'Archived Info.plist has unexpected {key}: {info.get(key)!r}')
+
+icons = info.get('CFBundleIcons', {}).get('CFBundlePrimaryIcon', {})
+if icons.get('CFBundleIconName') != 'AppIcon':
+    raise SystemExit(f"Archived app primary icon is not AppIcon: {icons!r}")
 
 with privacy_path.open('rb') as f:
     privacy = plistlib.load(f)
@@ -143,7 +151,7 @@ for key, value in expected_privacy.items():
         raise SystemExit(f'Archived PrivacyInfo.xcprivacy has unexpected {key}: {privacy.get(key)!r}')
 PY
 
-  printf 'Archived app compliance: OK (bundle/version/build/icon assets/export/privacy manifest)\n'
+  printf 'Archived app compliance: OK (bundle/version/build %s/AppIcon/export/privacy manifest)\n' "$BUILD_NUMBER"
 }
 
 prepare_release() {
@@ -216,7 +224,7 @@ case "${1:-help}" in
     archive_release
     ;;
   clean)
-    bash tools/ios.sh clean
+    bash tools/ios_store.sh clean
     ;;
   *)
     cat <<'EOF'
