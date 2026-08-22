@@ -45,6 +45,12 @@ func renderRGB(_ image: CGImage, size: Int) -> ([UInt8], Int) {
         context.interpolationQuality = .none
         context.setFillColor(red: 0, green: 0, blue: 0, alpha: 1)
         context.fill(CGRect(x: 0, y: 0, width: size, height: size))
+
+        // Bitmap contexts use Quartz's lower-left origin while PNG rows are
+        // visually top-down. Flip once so generated icon artwork keeps the
+        // same orientation as the checked-in source image.
+        context.translateBy(x: 0, y: CGFloat(size))
+        context.scaleBy(x: 1, y: -1)
         context.draw(image, in: CGRect(x: 0, y: 0, width: size, height: size))
     }
 
