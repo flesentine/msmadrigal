@@ -8,19 +8,23 @@ MODE="${1:-apply}"
 SOURCE="ios-config/AppIcon-source.png"
 SET_DIR="ios/App/App/Assets.xcassets/AppIcon.appiconset"
 CONTENTS="$SET_DIR/Contents.json"
-SCALER="tools/scale_png_rgb.swift"
+SCALER_SOURCE="tools/scale_png_rgb.swift"
+SCALER_BIN="build/scale_png_rgb"
 
 fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
 say() { printf '\n==> %s\n' "$*"; }
 
 [[ -f "$SOURCE" ]] || fail "Missing app icon source: $SOURCE"
-[[ -f "$SCALER" ]] || fail "Missing CoreGraphics PNG scaler: $SCALER"
+[[ -f "$SCALER_SOURCE" ]] || fail "Missing CoreGraphics PNG scaler: $SCALER_SOURCE"
 command -v xcrun >/dev/null 2>&1 || fail "xcrun is required to prepare app icons."
-command -v swift >/dev/null 2>&1 || fail "Swift is required to prepare app icons."
+
+mkdir -p build
+say "Compiling AppIcon image scaler"
+xcrun swiftc "$SCALER_SOURCE" -o "$SCALER_BIN"
 
 # Let Apple's own image stack decode the source, then reject blank/near-black
 # artwork before generating any AppIcon assets.
-xcrun swift "$SCALER" --validate "$SOURCE" >/dev/null
+"$SCALER_BIN" --validate "$SOURCE" >/dev/null
 
 required_files=(
   AppIcon-20.png AppIcon-20@2x.png AppIcon-20@3x.png
@@ -38,8 +42,8 @@ if [[ "$MODE" == "--check" ]]; then
   done
   grep -q '"idiom" : "ios-marketing"' "$CONTENTS" || fail "AppIcon Contents.json is missing the App Store marketing icon."
   grep -q '"filename" : "AppIcon-1024.png"' "$CONTENTS" || fail "AppIcon Contents.json is not wired to AppIcon-1024.png."
-  xcrun swift "$SCALER" --validate "$SET_DIR/AppIcon-60@3x.png" >/dev/null
-  xcrun swift "$SCALER" --validate "$SET_DIR/AppIcon-1024.png" >/dev/null
+  "$SCALER_BIN" --validate "$SET_DIR/AppIcon-60@3x.png" >/dev/null
+  "$SCALER_BIN" --validate "$SET_DIR/AppIcon-1024.png" >/dev/null
   printf 'AppIcon asset catalog: OK (color artwork verified; complete iPhone/iPad/App Store set)\n'
   exit 0
 fi
@@ -54,7 +58,7 @@ rm -f "$SET_DIR"/AppIcon-*.png
 make_icon() {
   local pixels="$1"
   local filename="$2"
-  xcrun swift "$SCALER" "$SOURCE" "$SET_DIR/$filename" "$pixels" >/dev/null
+  "$SCALER_BIN" "$SOURCE" "$SET_DIR/$filename" "$pixels" >/dev/null
 }
 
 make_icon 20 AppIcon-20.png
