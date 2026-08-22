@@ -33,6 +33,9 @@ xcode_container_args() {
 command -v python3 >/dev/null 2>&1 || fail "python3 is required."
 command -v xcodebuild >/dev/null 2>&1 || fail "xcodebuild is required."
 
+EXPECTED_BUILD="$(awk -F= '/^[[:space:]]*CURRENT_PROJECT_VERSION[[:space:]]*=/{gsub(/[[:space:]]/, "", $2); print $2; exit}' "$XCCONFIG")"
+[[ "$EXPECTED_BUILD" =~ ^[0-9]+$ ]] || fail "Could not read a numeric CURRENT_PROJECT_VERSION from $XCCONFIG"
+
 XCODE_ARGS=()
 while IFS= read -r -d '' arg; do XCODE_ARGS+=("$arg"); done < <(xcode_container_args)
 
@@ -187,9 +190,9 @@ SETTINGS="$(xcodebuild \
 
 grep -q "PRODUCT_BUNDLE_IDENTIFIER = $BUNDLE_ID" <<<"$SETTINGS" || fail "Release bundle identifier is not $BUNDLE_ID."
 grep -q 'MARKETING_VERSION = 1.0' <<<"$SETTINGS" || fail "Release marketing version is not 1.0."
-grep -q 'CURRENT_PROJECT_VERSION = 2' <<<"$SETTINGS" || fail "Release build number is not 2."
+grep -q "CURRENT_PROJECT_VERSION = $EXPECTED_BUILD" <<<"$SETTINGS" || fail "Release build number is not $EXPECTED_BUILD."
 grep -q 'TARGETED_DEVICE_FAMILY = 1,2' <<<"$SETTINGS" || fail "Release device family is not iPhone + iPad."
 grep -q 'CODE_SIGN_STYLE = Automatic' <<<"$SETTINGS" || fail "Automatic signing is not enabled for the release configuration."
 grep -q 'ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon' <<<"$SETTINGS" || fail "Release app icon catalog is not AppIcon."
 
-printf 'App Store project settings: OK (bundle %s, version 1.0, build 2, iPhone+iPad, AppIcon wired, privacy manifest copy phase, export compliance declared)\n' "$BUNDLE_ID"
+printf 'App Store project settings: OK (bundle %s, version 1.0, build %s, iPhone+iPad, AppIcon wired, privacy manifest copy phase, export compliance declared)\n' "$BUNDLE_ID" "$EXPECTED_BUILD"
