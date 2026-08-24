@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.flesentine.msmadrigal',
-  appName: 'Ms. Madrigral',
+  appName: 'Ms. Madrigal',
   webDir: 'www',
 };
 

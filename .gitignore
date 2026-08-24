@@ -10,3 +10,6 @@ ios/App/DerivedData/
 *.ipa
 xcuserdata/
 *.xcuserstate
+
+# Developer-specific Apple signing settings
+ios-config/Signing.local.xcconfig

@@ -2,7 +2,7 @@
   'use strict';
 
   // Native iOS only: when the app returns from the background or regains
-  // focus, replay Ms. Madrigral's walk-in without resetting the current card.
+  // focus, replay Ms. Madrigal's walk-in without resetting the current card.
   if (!document.documentElement.classList.contains('ios-native')) return;
 
   const teacher = document.getElementById('teacher');
@@ -10,6 +10,7 @@
   const startOverlay = document.getElementById('startOverlay');
   if (!teacher || !teacherSprite || !startOverlay) return;
 
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   let wasHidden = document.hidden;
   let wasBlurred = false;
   let lastReplayAt = 0;
@@ -44,6 +45,11 @@
 
     teacher.classList.remove('walking', 'arrived');
     teacherSprite.classList.remove('frame-b');
+
+    if (reducedMotionQuery.matches) {
+      teacher.classList.add('arrived');
+      return;
+    }
 
     // Force a style pass so adding .walking always restarts the CSS animation.
     void teacher.offsetWidth;

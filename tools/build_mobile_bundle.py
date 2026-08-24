@@ -402,7 +402,7 @@ def make_ios_bundle_self_contained() -> None:
   <div id="privacyOverlay" class="native-privacy-overlay" hidden>
     <section class="native-privacy-card" role="dialog" aria-modal="true" aria-labelledby="privacyDialogTitle">
       <div id="privacyDialogTitle" class="native-privacy-title">PRIVACY POLICY</div>
-      <iframe class="native-privacy-frame" src="privacy.html" title="Ms. Madrigral Privacy Policy"></iframe>
+      <iframe class="native-privacy-frame" src="privacy.html" title="Ms. Madrigal Privacy Policy"></iframe>
       <button id="privacyCloseButton" class="native-privacy-close" type="button">BACK TO CLASS</button>
     </section>
   </div>

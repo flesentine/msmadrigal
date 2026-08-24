@@ -17,7 +17,7 @@ VOICE = "es+f3"
 SPEED = "145"
 PITCH = "56"
 AMPLITUDE = "190"
-INTRO = "Hola, soy Ms. Madrigral."
+INTRO = "Hola, soy Ms. Madrigal."
 
 
 def find_synth():

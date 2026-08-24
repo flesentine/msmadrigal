@@ -38,10 +38,10 @@ def update_vocab() -> None:
         writer.writeheader()
         writer.writerows(rows)
 
-    # These representative words catch the three most important Spanish cases:
-    # acute accent, enye, and accented vowel in a common word.
+    # Representative words catch common Spanish diacritics and pronouns.
+    # Note: the correct spelling is ADIÓS (accent on ó), not ADÍOS.
     text = VOCAB.read_text(encoding="utf-8")
-    for expected in ("ADÍOS", "NIÑO", "PÁJARO"):
+    for expected in ("ADIÓS", "SÍ", "TÚ", "ÉL", "NIÑO", "PÁJARO", "FRÍO"):
         if expected not in text:
             raise SystemExit(f"ERROR: native vocabulary is missing correct spelling: {expected}")
 
