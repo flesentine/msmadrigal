@@ -4,12 +4,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-APP_NAME="Ms. Madrigral"
+APP_NAME="Ms. Madrigal"
 BUNDLE_ID="com.flesentine.msmadrigal"
 WORKSPACE="ios/App/App.xcworkspace"
 PROJECT="ios/App/App.xcodeproj"
 SCHEME="App"
-ARCHIVE_PATH="build/MsMadrigral.xcarchive"
+ARCHIVE_PATH="build/MsMadrigal.xcarchive"
 PUBLIC_INDEX="ios/App/App/public/index.html"
 PUBLIC_APP="ios/App/App/public/app.js"
 PUBLIC_FOCUS="ios/App/App/public/ios-focus.js"
@@ -66,14 +66,14 @@ verify_native_bundle() {
   grep -q 'id="c64BootCanvas"' www/index.html || fail "Native retro boot canvas was not packaged."
   grep -q 'c64-boot-screen::before' www/index.html || fail "Native boot CRT scanlines were not packaged."
   grep -q 'ios-boot.js?v=83' www/index.html || fail "Native retro boot script is not linked."
-  grep -q 'MADRIGRAL_RETRO_GLYPHS' www/petscii.js || fail "Native app is missing the original retro glyph set."
-  grep -q 'MADRIGRAL_RETRO_GLYPHS' www/ios-boot.js || fail "Native boot is not using the original retro glyph set."
+  grep -q 'MADRIGAL_RETRO_GLYPHS' www/petscii.js || fail "Native app is missing the original retro glyph set."
+  grep -q 'MADRIGAL_RETRO_GLYPHS' www/ios-boot.js || fail "Native boot is not using the original retro glyph set."
   grep -q 'petscii-accessible-text' www/petscii.js || fail "Bitmap text does not preserve accessible text nodes."
   grep -q 'petscii-accessible-text' www/petscii.css || fail "Accessible bitmap text CSS is missing."
   ! grep -q '901225-01' www/petscii.js || fail "Third-party character ROM marker is still present in native text renderer."
   ! grep -q '901225-01' www/ios-boot.js || fail "Third-party character ROM marker is still present in native boot renderer."
   ! grep -q 'COMMODORE 64 BASIC V2' www/ios-boot.js || fail "Third-party boot branding is still present."
-  grep -q 'MADRIGRAL BASIC V2' www/ios-boot.js || fail "Native retro boot sequence is missing Madrigral startup text."
+  grep -q 'MADRIGAL BASIC V2' www/ios-boot.js || fail "Native retro boot sequence is missing Madrigal startup text."
   grep -q 'LOAD"MSMAD",8,1' www/ios-boot.js || fail "Native retro disk-loading sequence is missing."
   grep -q 'RETRO VOICE - TAP / SPACE' www/index.html || fail "Native start screen still contains third-party voice branding."
   grep -q 'RETRO VOICE READY -' www/app.js || fail "Native status copy still contains third-party voice branding."
@@ -84,7 +84,7 @@ verify_native_bundle() {
   grep -q 'ios-focus.js?v=83' www/index.html || fail "Native focus walk-in script is not linked."
   grep -q 'replayWalkIn' www/ios-focus.js || fail "Native focus walk-in behavior was not packaged."
   grep -q 'TOUCH TO REVEAL SPANISH' www/app.js || fail "Mobile touch prompt was not packaged."
-  grep -q 'Hola, soy Ms. Madrigral.' www/app.js || fail "Updated Ms. Madrigral intro fallback was not packaged."
+  grep -q 'Hola, soy Ms. Madrigal.' www/app.js || fail "Updated Ms. Madrigal intro fallback was not packaged."
 
   [[ -f "$PUBLIC_INDEX" ]] || fail "$PUBLIC_INDEX was not copied by Capacitor."
   [[ -f "$PUBLIC_APP" ]] || fail "$PUBLIC_APP was not copied by Capacitor."
@@ -102,12 +102,12 @@ verify_native_bundle() {
   grep -q 'grid-template-columns: minmax(0, 1fr) auto !important;' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing landscape status layout."
   grep -q 'id="c64BootCanvas"' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing retro boot canvas."
   grep -q 'c64-boot-screen::before' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing boot CRT scanlines."
-  grep -q 'MADRIGRAL_RETRO_GLYPHS' "$PUBLIC_PETSCII" || fail "Xcode public bundle is missing original retro glyphs."
-  grep -q 'MADRIGRAL_RETRO_GLYPHS' "$PUBLIC_BOOT" || fail "Xcode public boot is not using original retro glyphs."
+  grep -q 'MADRIGAL_RETRO_GLYPHS' "$PUBLIC_PETSCII" || fail "Xcode public bundle is missing original retro glyphs."
+  grep -q 'MADRIGAL_RETRO_GLYPHS' "$PUBLIC_BOOT" || fail "Xcode public boot is not using original retro glyphs."
   grep -q 'petscii-accessible-text' "$PUBLIC_PETSCII" || fail "Xcode public bitmap text is missing accessible text nodes."
   grep -q 'petscii-accessible-text' "$PUBLIC_PETSCII_CSS" || fail "Xcode public bitmap accessibility CSS is missing."
   ! grep -q 'COMMODORE 64 BASIC V2' "$PUBLIC_BOOT" || fail "Xcode public bundle still contains third-party boot branding."
-  grep -q 'MADRIGRAL BASIC V2' "$PUBLIC_BOOT" || fail "Xcode public bundle is missing Madrigral boot text."
+  grep -q 'MADRIGAL BASIC V2' "$PUBLIC_BOOT" || fail "Xcode public bundle is missing Madrigal boot text."
   grep -q 'RETRO VOICE - TAP / SPACE' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing retro voice label."
   grep -q 'RETRO VOICE READY -' "$PUBLIC_APP" || fail "Xcode public bundle is missing retro voice status."
   grep -q 'id="privacyButton"' "$PUBLIC_INDEX" || fail "Xcode public bundle is missing in-app privacy access."
@@ -237,7 +237,7 @@ clean() {
 
 usage() {
   cat <<'EOF'
-Ms. Madrigral iOS automation
+Ms. Madrigal iOS automation
 
 Usage:
   bash tools/ios.sh bootstrap   Install dependencies + create/sync iOS project

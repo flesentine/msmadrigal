@@ -376,7 +376,7 @@
         teacher.classList.remove('walking');
         teacher.classList.add('arrived');
       } else {
-        promptEl.textContent = 'MS. MADRIGRAL IS COMING...';
+        promptEl.textContent = 'MS. MADRIGAL IS COMING...';
         teacher.classList.remove('arrived');
         teacher.classList.add('walking');
         let frame = false;
@@ -394,7 +394,7 @@
       }
 
       promptEl.textContent = 'HOLA...';
-      await playC64Track('intro', 'Hola, soy Ms. Madrigral.', {
+      await playC64Track('intro', 'Hola, soy Ms. Madrigal.', {
         rate: 0.76,
         pitch: 1.04,
         wait: true,

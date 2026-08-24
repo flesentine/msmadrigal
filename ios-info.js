@@ -30,7 +30,7 @@
   document.head.appendChild(touchStyle);
 
   // Keep the native top strip dedicated to controls. The public web build
-  // still shows the Ms. Madrigral masthead, while iOS gets more room around
+  // still shows the Ms. Madrigal masthead, while iOS gets more room around
   // Privacy / Reshuffle / Sound and avoids overlap on narrow devices.
   const masthead = document.querySelector('.masthead');
   if (masthead) {

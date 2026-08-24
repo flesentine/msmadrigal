@@ -8,7 +8,7 @@ BUNDLE_ID="com.flesentine.msmadrigal"
 WORKSPACE="ios/App/App.xcworkspace"
 PROJECT="ios/App/App.xcodeproj"
 SCHEME="App"
-ARCHIVE_PATH="build/MsMadrigral.xcarchive"
+ARCHIVE_PATH="build/MsMadrigal.xcarchive"
 XCCONFIG="ios-config/AppStore.xcconfig"
 SIGNING_CONFIG="ios-config/Signing.local.xcconfig"
 PRIVACY_SOURCE="ios-config/PrivacyInfo.xcprivacy"
@@ -228,7 +228,7 @@ case "${1:-help}" in
     ;;
   *)
     cat <<'EOF'
-Ms. Madrigral App Store workflow
+Ms. Madrigal App Store workflow
 
 Usage:
   bash tools/ios_store.sh bootstrap

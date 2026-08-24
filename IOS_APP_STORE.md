@@ -38,7 +38,7 @@ GitHub Actions also runs an iOS App Store preflight on pull requests. It install
 Before uploading, create the App Store Connect record:
 
 - Platform: iOS
-- Name: `Ms. Madrigral: Spanish 500`
+- Name: `Ms. Madrigal: Spanish 500`
 - Primary language: English (U.S.)
 - Bundle ID: `com.flesentine.msmadrigal`
 - SKU: `msmadrigal-ios-1`
@@ -69,7 +69,7 @@ Every release check runs `npm audit --audit-level=moderate` and fails if a moder
 Every `ios:setup`, `ios:open`, and `ios:archive` run applies/verifies:
 
 - Bundle identifier: `com.flesentine.msmadrigal`
-- Display name: `Ms. Madrigral`
+- Display name: `Ms. Madrigal`
 - Version: `1.0`
 - Build: `1`
 - Device family: iPhone and iPad
@@ -83,7 +83,7 @@ The Apple Developer Team is stored only in `ios-config/Signing.local.xcconfig`, 
 
 ## Store metadata
 
-**Name:** Ms. Madrigral: Spanish 500  
+**Name:** Ms. Madrigal: Spanish 500  
 **Subtitle:** Retro Spanish vocabulary  
 **Primary category:** Education
 
@@ -120,7 +120,7 @@ No demo account is required because the app has no login.
 
 **Review notes:**
 
-`Ms. Madrigral is an interactive 500-word Spanish vocabulary trainer. The complete vocabulary set and pronunciation audio are bundled in the app and work offline. Tap the chalkboard to reveal Spanish, tap again for the next word, and use Reshuffle to randomize the 500-word deck. No account, login, purchases, advertising, analytics, or tracking are used.`
+`Ms. Madrigal is an interactive 500-word Spanish vocabulary trainer. The complete vocabulary set and pronunciation audio are bundled in the app and work offline. Tap the chalkboard to reveal Spanish, tap again for the next word, and use Reshuffle to randomize the 500-word deck. No account, login, purchases, advertising, analytics, or tracking are used.`
 
 ## Remaining human/device work
 

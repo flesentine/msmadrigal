@@ -7,7 +7,7 @@
   const canvas = document.getElementById('c64BootCanvas');
   if (!overlay || !canvas) return;
 
-  const GLYPHS = window.MADRIGRAL_RETRO_GLYPHS;
+  const GLYPHS = window.MADRIGAL_RETRO_GLYPHS;
   if (!GLYPHS) return;
 
   const COLS = 40;
@@ -103,7 +103,7 @@
   render();
 
   if (reduceMotion) {
-    centered(1, '**** MADRIGRAL BASIC V2 ****');
+    centered(1, '**** MADRIGAL BASIC V2 ****');
     centered(3, '64K RAM SYSTEM  38911 BASIC BYTES FREE');
     put(5, 0, 'READY.');
     put(6, 0, 'LOAD"MSMAD",8,1');
@@ -113,7 +113,7 @@
     put(12, 0, 'RUN');
     schedule(180, finish);
   } else {
-    schedule(90, () => centered(1, '**** MADRIGRAL BASIC V2 ****'));
+    schedule(90, () => centered(1, '**** MADRIGAL BASIC V2 ****'));
     schedule(420, () => centered(3, '64K RAM SYSTEM  38911 BASIC BYTES FREE'));
     schedule(900, () => put(5, 0, 'READY.'));
     typeAt(6, 0, 'LOAD"MSMAD",8,1', 1260, 54);

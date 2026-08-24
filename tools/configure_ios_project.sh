@@ -50,7 +50,7 @@ path = Path(sys.argv[1])
 with path.open('rb') as f:
     data = plistlib.load(f)
 
-data['CFBundleDisplayName'] = 'Ms. Madrigral'
+data['CFBundleDisplayName'] = 'Ms. Madrigal'
 data['ITSAppUsesNonExemptEncryption'] = False
 data['UISupportedInterfaceOrientations'] = [
     'UIInterfaceOrientationPortrait',
@@ -168,8 +168,8 @@ expected_ipad = [
     'UIInterfaceOrientationLandscapeRight',
 ]
 
-if data.get('CFBundleDisplayName') != 'Ms. Madrigral':
-    raise SystemExit('CFBundleDisplayName is not Ms. Madrigral')
+if data.get('CFBundleDisplayName') != 'Ms. Madrigal':
+    raise SystemExit('CFBundleDisplayName is not Ms. Madrigal')
 if data.get('ITSAppUsesNonExemptEncryption') is not False:
     raise SystemExit('ITSAppUsesNonExemptEncryption must be false for this offline build')
 if data.get('UISupportedInterfaceOrientations') != expected_phone:

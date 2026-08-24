@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-ARCHIVE_PATH="build/MsMadrigral.xcarchive"
+ARCHIVE_PATH="build/MsMadrigal.xcarchive"
 EXPORT_OPTIONS="build/TestFlightExportOptions.plist"
 EXPORT_PATH="build/TestFlightUpload"
 XCCONFIG="ios-config/AppStore.xcconfig"
@@ -62,7 +62,7 @@ open "$ARCHIVE_PATH" >/dev/null 2>&1 || true
 cat <<'EOF'
 
 In Xcode Organizer:
-  1. Select the MsMadrigral archive.
+  1. Select the MsMadrigal archive.
   2. Click Distribute App.
   3. Choose TestFlight & App Store.
   4. Use automatic signing and Upload.

@@ -2,7 +2,7 @@
   'use strict';
 
   // Native iOS only: when the app returns from the background or regains
-  // focus, replay Ms. Madrigral's walk-in without resetting the current card.
+  // focus, replay Ms. Madrigal's walk-in without resetting the current card.
   if (!document.documentElement.classList.contains('ios-native')) return;
 
   const teacher = document.getElementById('teacher');
