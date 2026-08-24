@@ -67,9 +67,10 @@
     board.click();
   });
 
-  // Keep Privacy easy to discover for review/accessibility, but visually quiet:
-  // tiny low-contrast text with no visible chrome and a generous invisible
-  // touch target underneath it.
+  // Keep Privacy easy to discover for review/accessibility, but visually quiet.
+  // In portrait, reserve the left side of the safe-area top strip for Privacy
+  // and force Reshuffle/Sound into a right-aligned lane so the controls can
+  // never overlap each other on narrow iPhones.
   openButton.textContent = 'privacy';
   openButton.setAttribute('aria-label', 'Privacy policy');
 
@@ -77,7 +78,13 @@
   privacyStyle.id = 'ios-privacy-link-style';
   privacyStyle.textContent = `
     html.ios-native .native-privacy-button {
+      position: fixed !important;
+      z-index: 74 !important;
+      top: max(8px, calc(env(safe-area-inset-top) + 8px)) !important;
+      left: max(10px, calc(env(safe-area-inset-left) + 10px)) !important;
+      width: 64px !important;
       min-width: 64px !important;
+      max-width: 64px !important;
       min-height: 44px !important;
       padding: 0 !important;
       border: 0 !important;
@@ -90,6 +97,19 @@
       font-weight: 500 !important;
       letter-spacing: .04em !important;
       text-transform: lowercase !important;
+      text-align: left !important;
+    }
+
+    html.ios-native .controls {
+      position: fixed !important;
+      z-index: 73 !important;
+      top: max(8px, calc(env(safe-area-inset-top) + 8px)) !important;
+      left: max(92px, calc(env(safe-area-inset-left) + 92px)) !important;
+      right: max(10px, calc(env(safe-area-inset-right) + 10px)) !important;
+      display: flex !important;
+      justify-content: flex-end !important;
+      align-items: flex-start !important;
+      gap: 8px !important;
     }
 
     html.ios-native .native-privacy-button:active,
@@ -97,6 +117,29 @@
       background: transparent !important;
       color: rgba(242, 242, 232, .88) !important;
       outline: none !important;
+    }
+
+    @media (orientation: portrait) and (max-width: 430px) {
+      html.ios-native .native-privacy-button {
+        left: max(8px, calc(env(safe-area-inset-left) + 8px)) !important;
+        width: 58px !important;
+        min-width: 58px !important;
+        max-width: 58px !important;
+        font-size: 8px !important;
+      }
+
+      html.ios-native .controls {
+        left: max(76px, calc(env(safe-area-inset-left) + 76px)) !important;
+        right: max(6px, calc(env(safe-area-inset-right) + 6px)) !important;
+        gap: 6px !important;
+      }
+
+      html.ios-native .controls .mini-button {
+        min-height: 36px !important;
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+        font-size: 9px !important;
+      }
     }
   `;
   document.head.appendChild(privacyStyle);
