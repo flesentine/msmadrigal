@@ -46,11 +46,14 @@ def main() -> int:
     require(info, "min-height: 44px !important", "Privacy touch target")
     require(info, "background: transparent !important", "Privacy transparent styling")
     require(info, "font-size: 9px !important", "Privacy low-profile text")
+    require(info, "left: max(92px, calc(env(safe-area-inset-left) + 92px)) !important", "top controls reserved lane")
+    require(info, "justify-content: flex-end !important", "top controls right alignment")
+    require(info, "left: max(76px, calc(env(safe-area-inset-left) + 76px)) !important", "narrow portrait control separation")
     require(index, 'id="shuffleButton"', "Reshuffle control")
     require(index, 'id="muteButton"', "Sound control")
     require(index, 'aria-pressed="false"', "Sound accessibility state")
 
-    print("Native UI audit: OK (audio primed; anywhere-tap enabled; double-tap zoom off; landscape pointer tuned; masthead hidden; privacy subtle; controls restored; Reduce Motion honored)")
+    print("Native UI audit: OK (audio primed; anywhere-tap enabled; double-tap zoom off; landscape pointer tuned; masthead hidden; privacy subtle; top controls separated; controls restored; Reduce Motion honored)")
     return 0
 
 
