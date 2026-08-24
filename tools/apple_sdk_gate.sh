@@ -6,7 +6,10 @@ fail() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
 command -v xcodebuild >/dev/null 2>&1 || fail "xcodebuild is required for App Store releases."
 command -v xcrun >/dev/null 2>&1 || fail "xcrun is required for App Store releases."
 
-XCODE_VERSION="$(xcodebuild -version | awk '/^Xcode / {print $2; exit}')"
+# Avoid an early-exit reader in this pipeline: with `set -o pipefail`, awk's
+# previous `exit` could close the pipe before xcodebuild finished writing and
+# surface as SIGPIPE / exit 141 even though the version check had succeeded.
+XCODE_VERSION="$(xcodebuild -version | awk '/^Xcode / {print $2}')"
 SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version)"
 XCODE_MAJOR="${XCODE_VERSION%%.*}"
 SDK_MAJOR="${SDK_VERSION%%.*}"
